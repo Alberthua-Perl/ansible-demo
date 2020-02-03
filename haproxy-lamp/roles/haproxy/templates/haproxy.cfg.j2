@@ -1,0 +1,41 @@
+# No use quoation mark to quoate variables 
+# in Jinja2 template. 
+global
+	maxconn		65535
+	uid			188
+	gid			188
+	spread-checks	3
+	daemon
+	nbproc		1
+	pidfile		/run/haproxy.pid
+
+defaults
+	log			127.0.0.1	local3
+	mode		{{ mode }}
+	option		httplog
+	option 		httpclose
+	option		dontlognull
+	option		forwardfor
+	option		redispatch
+	retries		5
+	maxconn		2000
+	stats		uri /haproxy-stats
+	stats		auth admin:admin
+	timeout		connect		5s
+	timeout		client		20s
+	timeout		server		20s
+
+frontend  HAProxy
+	bind		{{ ansible_default_ipv4.address }}:80
+	mode		{{ mode }}
+	option		httplog
+	default_backend		apache-php
+
+backend  apache-php
+	option		httpchk	HEAD /index.php HTTP/1.0
+	# web service health check
+	balance		{{ balance }}
+	{% for host in groups['web'] %}
+	server {{ hostvars[host].ansible_hostname }} {{ hostvars[host].ansible_default_ipv4.address }}:80  check inter	3000  rise 3  fall 2
+	{% endfor %}
+

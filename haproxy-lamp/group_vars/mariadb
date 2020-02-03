@@ -1,0 +1,6 @@
+---
+mysql_port: 3306
+user: ansible
+password: redhat
+database: ansible
+...

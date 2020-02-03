@@ -1,0 +1,9 @@
+[haproxy]
+haproxy.lab.example.com
+
+[web]
+webapp1.lab.example.com
+webapp2.lab.example.com
+
+[mariadb]
+mysql-server.lab.example.com

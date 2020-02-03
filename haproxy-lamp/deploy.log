@@ -1,0 +1,1071 @@
+2020-02-02 22:40:19,444 p=godev u=54210 | PLAY [Init base environment for all hosts] ***********************************************************************************************************
+2020-02-02 22:40:19,466 p=godev u=54210 | TASK [Gathering Facts] *******************************************************************************************************************************
+2020-02-02 22:40:24,004 p=godev u=54210 | ok: [haproxy.lab.example.com]
+2020-02-02 22:40:24,105 p=godev u=54210 | ok: [mysql-server.lab.example.com]
+2020-02-02 22:40:24,319 p=godev u=54210 | ok: [webapp1.lab.example.com]
+2020-02-02 22:40:24,393 p=godev u=54210 | ok: [webapp2.lab.example.com]
+2020-02-02 22:40:24,408 p=godev u=54210 | TASK [base : Copy CentOS-Base.repo to remote hosts] **************************************************************************************************
+2020-02-02 22:40:26,950 p=godev u=54210 | ok: [mysql-server.lab.example.com]
+2020-02-02 22:40:26,962 p=godev u=54210 | ok: [webapp1.lab.example.com]
+2020-02-02 22:40:26,994 p=godev u=54210 | ok: [haproxy.lab.example.com]
+2020-02-02 22:40:27,022 p=godev u=54210 | ok: [webapp2.lab.example.com]
+2020-02-02 22:40:27,036 p=godev u=54210 | TASK [base : Copy epel.repo to remote hosts] *********************************************************************************************************
+2020-02-02 22:40:29,181 p=godev u=54210 | ok: [haproxy.lab.example.com]
+2020-02-02 22:40:29,202 p=godev u=54210 | ok: [mysql-server.lab.example.com]
+2020-02-02 22:40:29,354 p=godev u=54210 | ok: [webapp2.lab.example.com]
+2020-02-02 22:40:29,372 p=godev u=54210 | ok: [webapp1.lab.example.com]
+2020-02-02 22:40:29,377 p=godev u=54210 | PLAY [Install HAProxy] *******************************************************************************************************************************
+2020-02-02 22:40:29,392 p=godev u=54210 | TASK [Gathering Facts] *******************************************************************************************************************************
+2020-02-02 22:40:30,267 p=godev u=54210 | ok: [haproxy.lab.example.com]
+2020-02-02 22:40:30,282 p=godev u=54210 | TASK [haproxy : Install HAproxy] *********************************************************************************************************************
+2020-02-02 22:40:57,165 p=godev u=54210 |  [ERROR]: User interrupted execution
+
+2020-02-02 22:41:48,949 p=godev u=54635 | PLAY [Init base environment for all hosts] ***********************************************************************************************************
+2020-02-02 22:41:48,963 p=godev u=54635 | TASK [Gathering Facts] *******************************************************************************************************************************
+2020-02-02 22:41:53,905 p=godev u=54635 | ok: [haproxy.lab.example.com]
+2020-02-02 22:41:54,319 p=godev u=54635 | ok: [webapp2.lab.example.com]
+2020-02-02 22:41:54,537 p=godev u=54635 | ok: [webapp1.lab.example.com]
+2020-02-02 22:41:54,564 p=godev u=54635 | ok: [mysql-server.lab.example.com]
+2020-02-02 22:41:54,578 p=godev u=54635 | TASK [base : Copy CentOS-Base.repo to remote hosts] **************************************************************************************************
+2020-02-02 22:41:57,227 p=godev u=54635 | ok: [webapp1.lab.example.com]
+2020-02-02 22:41:57,310 p=godev u=54635 | ok: [mysql-server.lab.example.com]
+2020-02-02 22:41:57,376 p=godev u=54635 | ok: [haproxy.lab.example.com]
+2020-02-02 22:41:57,387 p=godev u=54635 | ok: [webapp2.lab.example.com]
+2020-02-02 22:41:57,406 p=godev u=54635 | TASK [base : Copy epel.repo to remote hosts] *********************************************************************************************************
+2020-02-02 22:41:59,791 p=godev u=54635 | ok: [haproxy.lab.example.com]
+2020-02-02 22:41:59,824 p=godev u=54635 | ok: [mysql-server.lab.example.com]
+2020-02-02 22:41:59,924 p=godev u=54635 | ok: [webapp2.lab.example.com]
+2020-02-02 22:41:59,931 p=godev u=54635 | ok: [webapp1.lab.example.com]
+2020-02-02 22:41:59,939 p=godev u=54635 | PLAY [Install HAProxy] *******************************************************************************************************************************
+2020-02-02 22:41:59,957 p=godev u=54635 | TASK [Gathering Facts] *******************************************************************************************************************************
+2020-02-02 22:42:00,823 p=godev u=54635 | ok: [haproxy.lab.example.com]
+2020-02-02 22:42:00,836 p=godev u=54635 | TASK [haproxy : Install HAProxy] *********************************************************************************************************************
+2020-02-02 22:42:11,688 p=godev u=54635 | changed: [haproxy.lab.example.com] => (item=[u'haproxy'])
+2020-02-02 22:42:11,734 p=godev u=54635 | TASK [haproxy : Copy haproxy.cfg] ********************************************************************************************************************
+2020-02-02 22:42:11,960 p=godev u=54635 | fatal: [haproxy.lab.example.com]: FAILED! => {"changed": false, "msg": "AnsibleUndefinedVariable: 'ansible.vars.hostvars.HostVarsVars object' has no attribute 'ansibele_hostname'"}
+2020-02-02 22:42:11,961 p=godev u=54635 | PLAY RECAP *******************************************************************************************************************************************
+2020-02-02 22:42:11,962 p=godev u=54635 | haproxy.lab.example.com    : ok=5    changed=1    unreachable=0    failed=1    skipped=0    rescued=0    ignored=0   
+2020-02-02 22:42:11,962 p=godev u=54635 | mysql-server.lab.example.com : ok=3    changed=0    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0   
+2020-02-02 22:42:11,962 p=godev u=54635 | webapp1.lab.example.com    : ok=3    changed=0    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0   
+2020-02-02 22:42:11,962 p=godev u=54635 | webapp2.lab.example.com    : ok=3    changed=0    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0   
+2020-02-02 22:44:47,903 p=godev u=55208 | PLAY [Init base environment for all hosts] ***********************************************************************************************************
+2020-02-02 22:44:47,917 p=godev u=55208 | TASK [Gathering Facts] *******************************************************************************************************************************
+2020-02-02 22:44:52,297 p=godev u=55208 | ok: [haproxy.lab.example.com]
+2020-02-02 22:44:52,594 p=godev u=55208 | ok: [mysql-server.lab.example.com]
+2020-02-02 22:44:52,947 p=godev u=55208 | ok: [webapp1.lab.example.com]
+2020-02-02 22:44:52,961 p=godev u=55208 | ok: [webapp2.lab.example.com]
+2020-02-02 22:44:52,978 p=godev u=55208 | TASK [base : Copy CentOS-Base.repo to remote hosts] **************************************************************************************************
+2020-02-02 22:44:55,620 p=godev u=55208 | ok: [webapp2.lab.example.com]
+2020-02-02 22:44:55,627 p=godev u=55208 | ok: [haproxy.lab.example.com]
+2020-02-02 22:44:55,630 p=godev u=55208 | ok: [mysql-server.lab.example.com]
+2020-02-02 22:44:55,693 p=godev u=55208 | ok: [webapp1.lab.example.com]
+2020-02-02 22:44:55,708 p=godev u=55208 | TASK [base : Copy epel.repo to remote hosts] *********************************************************************************************************
+2020-02-02 22:44:57,806 p=godev u=55208 | ok: [mysql-server.lab.example.com]
+2020-02-02 22:44:57,955 p=godev u=55208 | ok: [haproxy.lab.example.com]
+2020-02-02 22:44:58,102 p=godev u=55208 | ok: [webapp2.lab.example.com]
+2020-02-02 22:44:58,217 p=godev u=55208 | ok: [webapp1.lab.example.com]
+2020-02-02 22:44:58,223 p=godev u=55208 | PLAY [Install HAProxy] *******************************************************************************************************************************
+2020-02-02 22:44:58,244 p=godev u=55208 | TASK [Gathering Facts] *******************************************************************************************************************************
+2020-02-02 22:44:59,093 p=godev u=55208 | ok: [haproxy.lab.example.com]
+2020-02-02 22:44:59,107 p=godev u=55208 | TASK [haproxy : Install HAProxy] *********************************************************************************************************************
+2020-02-02 22:45:00,016 p=godev u=55208 | ok: [haproxy.lab.example.com] => (item=[u'haproxy'])
+2020-02-02 22:45:00,031 p=godev u=55208 | TASK [haproxy : Copy haproxy.cfg] ********************************************************************************************************************
+2020-02-02 22:45:00,285 p=godev u=55208 | fatal: [haproxy.lab.example.com]: FAILED! => {"changed": false, "msg": "AnsibleUndefinedVariable: 'ansible.vars.hostvars.HostVarsVars object' has no attribute 'ansibele_hostname'"}
+2020-02-02 22:45:00,286 p=godev u=55208 | PLAY RECAP *******************************************************************************************************************************************
+2020-02-02 22:45:00,287 p=godev u=55208 | haproxy.lab.example.com    : ok=5    changed=0    unreachable=0    failed=1    skipped=0    rescued=0    ignored=0   
+2020-02-02 22:45:00,287 p=godev u=55208 | mysql-server.lab.example.com : ok=3    changed=0    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0   
+2020-02-02 22:45:00,287 p=godev u=55208 | webapp1.lab.example.com    : ok=3    changed=0    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0   
+2020-02-02 22:45:00,287 p=godev u=55208 | webapp2.lab.example.com    : ok=3    changed=0    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0   
+2020-02-02 22:46:24,186 p=godev u=55557 | PLAY [Init base environment for all hosts] ***********************************************************************************************************
+2020-02-02 22:46:24,200 p=godev u=55557 | TASK [Gathering Facts] *******************************************************************************************************************************
+2020-02-02 22:46:28,118 p=godev u=55557 | ok: [mysql-server.lab.example.com]
+2020-02-02 22:46:28,277 p=godev u=55557 | ok: [haproxy.lab.example.com]
+2020-02-02 22:46:28,427 p=godev u=55557 | ok: [webapp1.lab.example.com]
+2020-02-02 22:46:28,435 p=godev u=55557 | ok: [webapp2.lab.example.com]
+2020-02-02 22:46:28,451 p=godev u=55557 | TASK [base : Copy CentOS-Base.repo to remote hosts] **************************************************************************************************
+2020-02-02 22:46:31,008 p=godev u=55557 | ok: [webapp2.lab.example.com]
+2020-02-02 22:46:31,095 p=godev u=55557 | ok: [mysql-server.lab.example.com]
+2020-02-02 22:46:31,103 p=godev u=55557 | ok: [haproxy.lab.example.com]
+2020-02-02 22:46:31,143 p=godev u=55557 | ok: [webapp1.lab.example.com]
+2020-02-02 22:46:31,169 p=godev u=55557 | TASK [base : Copy epel.repo to remote hosts] *********************************************************************************************************
+2020-02-02 22:46:33,416 p=godev u=55557 | ok: [webapp2.lab.example.com]
+2020-02-02 22:46:33,562 p=godev u=55557 | ok: [haproxy.lab.example.com]
+2020-02-02 22:46:33,645 p=godev u=55557 | ok: [mysql-server.lab.example.com]
+2020-02-02 22:46:33,703 p=godev u=55557 | ok: [webapp1.lab.example.com]
+2020-02-02 22:46:33,709 p=godev u=55557 | PLAY [Install HAProxy] *******************************************************************************************************************************
+2020-02-02 22:46:33,732 p=godev u=55557 | TASK [Gathering Facts] *******************************************************************************************************************************
+2020-02-02 22:46:34,565 p=godev u=55557 | ok: [haproxy.lab.example.com]
+2020-02-02 22:46:34,578 p=godev u=55557 | TASK [haproxy : Install HAProxy] *********************************************************************************************************************
+2020-02-02 22:46:35,457 p=godev u=55557 | ok: [haproxy.lab.example.com] => (item=[u'haproxy'])
+2020-02-02 22:46:35,472 p=godev u=55557 | TASK [haproxy : Copy haproxy.cfg] ********************************************************************************************************************
+2020-02-02 22:46:36,538 p=godev u=55557 | changed: [haproxy.lab.example.com]
+2020-02-02 22:46:36,565 p=godev u=55557 | TASK [haproxy : Start HAProxy] ***********************************************************************************************************************
+2020-02-02 22:46:37,697 p=godev u=55557 | changed: [haproxy.lab.example.com]
+2020-02-02 22:46:37,698 p=godev u=55557 | RUNNING HANDLER [haproxy : restart_haproxy] **********************************************************************************************************
+2020-02-02 22:46:38,276 p=godev u=55557 | changed: [haproxy.lab.example.com]
+2020-02-02 22:46:38,279 p=godev u=55557 | PLAY [Install Apache and PHP] ************************************************************************************************************************
+2020-02-02 22:46:38,295 p=godev u=55557 | TASK [Gathering Facts] *******************************************************************************************************************************
+2020-02-02 22:46:39,616 p=godev u=55557 | ok: [webapp1.lab.example.com]
+2020-02-02 22:46:39,625 p=godev u=55557 | ok: [webapp2.lab.example.com]
+2020-02-02 22:46:39,643 p=godev u=55557 | TASK [apache-php : Install Apache and PHP] ***********************************************************************************************************
+2020-02-02 22:53:43,285 p=godev u=55557 | changed: [webapp1.lab.example.com] => (item=[u'httpd', u'php', u'php-mysql', u'libsemanage-python', u'libselinux-python'])
+2020-02-02 23:06:51,500 p=godev u=55557 | changed: [webapp2.lab.example.com] => (item=[u'httpd', u'php', u'php-mysql', u'libsemanage-python', u'libselinux-python'])
+2020-02-02 23:06:51,520 p=godev u=55557 | TASK [apache-php : Copy index.php.j2] ****************************************************************************************************************
+2020-02-02 23:06:53,390 p=godev u=55557 | changed: [webapp2.lab.example.com]
+2020-02-02 23:06:53,695 p=godev u=55557 | changed: [webapp1.lab.example.com]
+2020-02-02 23:06:53,709 p=godev u=55557 | TASK [apache-php : http service state] ***************************************************************************************************************
+2020-02-02 23:06:55,768 p=godev u=55557 | changed: [webapp2.lab.example.com]
+2020-02-02 23:06:56,390 p=godev u=55557 | changed: [webapp1.lab.example.com]
+2020-02-02 23:06:56,396 p=godev u=55557 | PLAY [Install MariaDB] *******************************************************************************************************************************
+2020-02-02 23:06:56,415 p=godev u=55557 | TASK [Gathering Facts] *******************************************************************************************************************************
+2020-02-02 23:06:58,226 p=godev u=55557 | ok: [mysql-server.lab.example.com]
+2020-02-02 23:06:58,242 p=godev u=55557 | TASK [mariadb : Install MariaDB server] **************************************************************************************************************
+2020-02-02 23:13:30,389 p=godev u=55557 | changed: [mysql-server.lab.example.com] => (item=[u'mariadb-server', u'MySQL-python'])
+2020-02-02 23:13:30,403 p=godev u=55557 | TASK [mariadb : Start MariaDB] ***********************************************************************************************************************
+2020-02-02 23:13:35,926 p=godev u=55557 | changed: [mysql-server.lab.example.com]
+2020-02-02 23:13:35,943 p=godev u=55557 | TASK [mariadb : Create DataBase] *********************************************************************************************************************
+2020-02-02 23:13:36,728 p=godev u=55557 | changed: [mysql-server.lab.example.com]
+2020-02-02 23:13:36,745 p=godev u=55557 | TASK [mariadb : Create Users] ************************************************************************************************************************
+2020-02-02 23:13:37,677 p=godev u=55557 | changed: [mysql-server.lab.example.com]
+2020-02-02 23:13:37,679 p=godev u=55557 | PLAY RECAP *******************************************************************************************************************************************
+2020-02-02 23:13:37,680 p=godev u=55557 | haproxy.lab.example.com    : ok=8    changed=3    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0   
+2020-02-02 23:13:37,680 p=godev u=55557 | mysql-server.lab.example.com : ok=8    changed=4    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0   
+2020-02-02 23:13:37,680 p=godev u=55557 | webapp1.lab.example.com    : ok=7    changed=3    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0   
+2020-02-02 23:13:37,680 p=godev u=55557 | webapp2.lab.example.com    : ok=7    changed=3    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0   
+2020-02-02 23:37:04,556 p=godev u=60355 | [WARNING]: module firewall not found in: /home/godev/.ansible/plugins/modules:/usr/share/ansible/plugins/modules:/usr/lib/python2.7/site-
+packages/ansible/modules
+
+2020-02-02 23:45:29,694 p=godev u=61047 | PLAY [Init base environment for all hosts] ***********************************************************************************************************
+2020-02-02 23:45:29,713 p=godev u=61047 | TASK [Gathering Facts] *******************************************************************************************************************************
+2020-02-02 23:45:34,664 p=godev u=61047 | ok: [mysql-server.lab.example.com]
+2020-02-02 23:45:34,816 p=godev u=61047 | ok: [haproxy.lab.example.com]
+2020-02-02 23:45:35,069 p=godev u=61047 | ok: [webapp2.lab.example.com]
+2020-02-02 23:45:35,204 p=godev u=61047 | ok: [webapp1.lab.example.com]
+2020-02-02 23:45:35,226 p=godev u=61047 | TASK [base : Copy CentOS-Base.repo to remote hosts] **************************************************************************************************
+2020-02-02 23:45:38,587 p=godev u=61047 | ok: [webapp2.lab.example.com]
+2020-02-02 23:45:38,693 p=godev u=61047 | ok: [webapp1.lab.example.com]
+2020-02-02 23:45:38,766 p=godev u=61047 | ok: [mysql-server.lab.example.com]
+2020-02-02 23:45:38,835 p=godev u=61047 | ok: [haproxy.lab.example.com]
+2020-02-02 23:45:38,868 p=godev u=61047 | TASK [base : Copy epel.repo to remote hosts] *********************************************************************************************************
+2020-02-02 23:45:41,830 p=godev u=61047 | ok: [haproxy.lab.example.com]
+2020-02-02 23:45:41,838 p=godev u=61047 | ok: [webapp1.lab.example.com]
+2020-02-02 23:45:41,979 p=godev u=61047 | ok: [mysql-server.lab.example.com]
+2020-02-02 23:45:42,013 p=godev u=61047 | ok: [webapp2.lab.example.com]
+2020-02-02 23:45:42,020 p=godev u=61047 | PLAY [Install HAProxy] *******************************************************************************************************************************
+2020-02-02 23:45:42,042 p=godev u=61047 | TASK [Gathering Facts] *******************************************************************************************************************************
+2020-02-02 23:45:48,165 p=godev u=61047 | ok: [haproxy.lab.example.com]
+2020-02-02 23:45:48,183 p=godev u=61047 | TASK [haproxy : Install HAProxy] *********************************************************************************************************************
+2020-02-02 23:45:49,267 p=godev u=61047 | ok: [haproxy.lab.example.com] => (item=[u'haproxy'])
+2020-02-02 23:45:49,286 p=godev u=61047 | TASK [haproxy : Copy haproxy.cfg] ********************************************************************************************************************
+2020-02-02 23:45:50,198 p=godev u=61047 | ok: [haproxy.lab.example.com]
+2020-02-02 23:45:50,215 p=godev u=61047 | TASK [haproxy : Start HAProxy] ***********************************************************************************************************************
+2020-02-02 23:45:51,707 p=godev u=61047 | changed: [haproxy.lab.example.com]
+2020-02-02 23:45:51,737 p=godev u=61047 | TASK [haproxy : Allow HAProxy service through firewalld] *********************************************************************************************
+2020-02-02 23:45:53,157 p=godev u=61047 | fatal: [haproxy.lab.example.com]: FAILED! => {"changed": false, "msg": "ERROR: Exception caught: org.fedoraproject.FirewallD1.Exception: INVALID_SERVICE: 'haproxy' not among existing services Permanent operation, Services are defined by port/tcp relationship and named as they are in /etc/services (on most systems)"}
+2020-02-02 23:45:53,158 p=godev u=61047 | PLAY RECAP *******************************************************************************************************************************************
+2020-02-02 23:45:53,159 p=godev u=61047 | haproxy.lab.example.com    : ok=7    changed=1    unreachable=0    failed=1    skipped=0    rescued=0    ignored=0   
+2020-02-02 23:45:53,159 p=godev u=61047 | mysql-server.lab.example.com : ok=3    changed=0    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0   
+2020-02-02 23:45:53,159 p=godev u=61047 | webapp1.lab.example.com    : ok=3    changed=0    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0   
+2020-02-02 23:45:53,159 p=godev u=61047 | webapp2.lab.example.com    : ok=3    changed=0    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0   
+2020-02-02 23:59:29,663 p=godev u=62518 | PLAY [Init base environment for all hosts] ***********************************************************************************************************
+2020-02-02 23:59:29,686 p=godev u=62518 | TASK [Gathering Facts] *******************************************************************************************************************************
+2020-02-02 23:59:33,976 p=godev u=62518 | ok: [webapp1.lab.example.com]
+2020-02-02 23:59:34,111 p=godev u=62518 | ok: [haproxy.lab.example.com]
+2020-02-02 23:59:34,245 p=godev u=62518 | ok: [mysql-server.lab.example.com]
+2020-02-02 23:59:39,192 p=godev u=62518 | ok: [webapp2.lab.example.com]
+2020-02-02 23:59:39,223 p=godev u=62518 | TASK [base : Copy CentOS-Base.repo to remote hosts] **************************************************************************************************
+2020-02-02 23:59:42,891 p=godev u=62518 | ok: [webapp1.lab.example.com]
+2020-02-02 23:59:42,994 p=godev u=62518 | ok: [mysql-server.lab.example.com]
+2020-02-02 23:59:43,112 p=godev u=62518 | ok: [webapp2.lab.example.com]
+2020-02-02 23:59:43,132 p=godev u=62518 | ok: [haproxy.lab.example.com]
+2020-02-02 23:59:43,152 p=godev u=62518 | TASK [base : Copy epel.repo to remote hosts] *********************************************************************************************************
+2020-02-02 23:59:45,901 p=godev u=62518 | ok: [webapp1.lab.example.com]
+2020-02-02 23:59:46,025 p=godev u=62518 | ok: [mysql-server.lab.example.com]
+2020-02-02 23:59:46,045 p=godev u=62518 | ok: [webapp2.lab.example.com]
+2020-02-02 23:59:46,111 p=godev u=62518 | ok: [haproxy.lab.example.com]
+2020-02-02 23:59:46,117 p=godev u=62518 | PLAY [Install HAProxy] *******************************************************************************************************************************
+2020-02-02 23:59:46,146 p=godev u=62518 | TASK [Gathering Facts] *******************************************************************************************************************************
+2020-02-02 23:59:47,043 p=godev u=62518 | ok: [haproxy.lab.example.com]
+2020-02-02 23:59:47,063 p=godev u=62518 | TASK [haproxy : Install HAProxy] *********************************************************************************************************************
+2020-02-02 23:59:48,021 p=godev u=62518 | ok: [haproxy.lab.example.com] => (item=[u'haproxy'])
+2020-02-02 23:59:48,042 p=godev u=62518 | TASK [haproxy : Copy haproxy.cfg] ********************************************************************************************************************
+2020-02-02 23:59:49,262 p=godev u=62518 | changed: [haproxy.lab.example.com]
+2020-02-02 23:59:49,283 p=godev u=62518 | TASK [haproxy : Start HAProxy] ***********************************************************************************************************************
+2020-02-02 23:59:50,388 p=godev u=62518 | ok: [haproxy.lab.example.com]
+2020-02-02 23:59:50,401 p=godev u=62518 | TASK [haproxy : Allow HAProxy service through firewalld] *********************************************************************************************
+2020-02-02 23:59:51,728 p=godev u=62518 | fatal: [haproxy.lab.example.com]: FAILED! => {"changed": false, "msg": "ERROR: Exception caught: org.fedoraproject.FirewallD1.Exception: INVALID_SERVICE: 'haproxy' not among existing services Permanent operation, Services are defined by port/tcp relationship and named as they are in /etc/services (on most systems)"}
+2020-02-02 23:59:51,730 p=godev u=62518 | RUNNING HANDLER [haproxy : restart_haproxy] **********************************************************************************************************
+2020-02-02 23:59:51,732 p=godev u=62518 | PLAY RECAP *******************************************************************************************************************************************
+2020-02-02 23:59:51,733 p=godev u=62518 | haproxy.lab.example.com    : ok=7    changed=1    unreachable=0    failed=1    skipped=0    rescued=0    ignored=0   
+2020-02-02 23:59:51,733 p=godev u=62518 | mysql-server.lab.example.com : ok=3    changed=0    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0   
+2020-02-02 23:59:51,733 p=godev u=62518 | webapp1.lab.example.com    : ok=3    changed=0    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0   
+2020-02-02 23:59:51,734 p=godev u=62518 | webapp2.lab.example.com    : ok=3    changed=0    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0   
+2020-02-03 00:02:46,409 p=godev u=63116 | PLAY [Init base environment for all hosts] ***********************************************************************************************************
+2020-02-03 00:02:46,423 p=godev u=63116 | TASK [Gathering Facts] *******************************************************************************************************************************
+2020-02-03 00:02:50,419 p=godev u=63116 | ok: [webapp1.lab.example.com]
+2020-02-03 00:02:50,700 p=godev u=63116 | ok: [webapp2.lab.example.com]
+2020-02-03 00:02:50,903 p=godev u=63116 | ok: [mysql-server.lab.example.com]
+2020-02-03 00:02:50,932 p=godev u=63116 | ok: [haproxy.lab.example.com]
+2020-02-03 00:02:50,965 p=godev u=63116 | TASK [base : Copy CentOS-Base.repo to remote hosts] **************************************************************************************************
+2020-02-03 00:02:53,620 p=godev u=63116 | ok: [webapp1.lab.example.com]
+2020-02-03 00:02:53,934 p=godev u=63116 | ok: [haproxy.lab.example.com]
+2020-02-03 00:02:53,969 p=godev u=63116 | ok: [webapp2.lab.example.com]
+2020-02-03 00:02:53,992 p=godev u=63116 | ok: [mysql-server.lab.example.com]
+2020-02-03 00:02:54,009 p=godev u=63116 | TASK [base : Copy epel.repo to remote hosts] *********************************************************************************************************
+2020-02-03 00:02:56,332 p=godev u=63116 | ok: [haproxy.lab.example.com]
+2020-02-03 00:02:56,417 p=godev u=63116 | ok: [webapp1.lab.example.com]
+2020-02-03 00:02:56,676 p=godev u=63116 | ok: [webapp2.lab.example.com]
+2020-02-03 00:02:56,732 p=godev u=63116 | ok: [mysql-server.lab.example.com]
+2020-02-03 00:02:56,739 p=godev u=63116 | PLAY [Install HAProxy] *******************************************************************************************************************************
+2020-02-03 00:02:56,765 p=godev u=63116 | TASK [Gathering Facts] *******************************************************************************************************************************
+2020-02-03 00:02:57,694 p=godev u=63116 | ok: [haproxy.lab.example.com]
+2020-02-03 00:02:57,714 p=godev u=63116 | TASK [haproxy : Install HAProxy] *********************************************************************************************************************
+2020-02-03 00:02:58,694 p=godev u=63116 | ok: [haproxy.lab.example.com] => (item=[u'haproxy'])
+2020-02-03 00:02:58,723 p=godev u=63116 | TASK [haproxy : Copy haproxy.cfg] ********************************************************************************************************************
+2020-02-03 00:02:59,556 p=godev u=63116 | ok: [haproxy.lab.example.com]
+2020-02-03 00:02:59,571 p=godev u=63116 | TASK [haproxy : Start HAProxy] ***********************************************************************************************************************
+2020-02-03 00:03:00,591 p=godev u=63116 | ok: [haproxy.lab.example.com]
+2020-02-03 00:03:00,606 p=godev u=63116 | TASK [haproxy : Allow HAProxy service through firewalld] *********************************************************************************************
+2020-02-03 00:03:01,801 p=godev u=63116 | changed: [haproxy.lab.example.com]
+2020-02-03 00:03:01,807 p=godev u=63116 | PLAY [Install Apache and PHP] ************************************************************************************************************************
+2020-02-03 00:03:01,828 p=godev u=63116 | TASK [Gathering Facts] *******************************************************************************************************************************
+2020-02-03 00:03:03,176 p=godev u=63116 | ok: [webapp2.lab.example.com]
+2020-02-03 00:03:03,436 p=godev u=63116 | ok: [webapp1.lab.example.com]
+2020-02-03 00:03:03,455 p=godev u=63116 | TASK [apache-php : Install Apache and PHP] ***********************************************************************************************************
+2020-02-03 00:03:04,656 p=godev u=63116 | ok: [webapp2.lab.example.com] => (item=[u'httpd', u'php', u'php-mysql', u'libsemanage-python', u'libselinux-python'])
+2020-02-03 00:03:04,698 p=godev u=63116 | ok: [webapp1.lab.example.com] => (item=[u'httpd', u'php', u'php-mysql', u'libsemanage-python', u'libselinux-python'])
+2020-02-03 00:03:04,730 p=godev u=63116 | TASK [apache-php : Copy index.php.j2] ****************************************************************************************************************
+2020-02-03 00:03:06,169 p=godev u=63116 | ok: [webapp2.lab.example.com]
+2020-02-03 00:03:06,180 p=godev u=63116 | ok: [webapp1.lab.example.com]
+2020-02-03 00:03:06,200 p=godev u=63116 | TASK [apache-php : http service state] ***************************************************************************************************************
+2020-02-03 00:03:07,321 p=godev u=63116 | ok: [webapp1.lab.example.com]
+2020-02-03 00:03:07,337 p=godev u=63116 | ok: [webapp2.lab.example.com]
+2020-02-03 00:03:07,356 p=godev u=63116 | TASK [apache-php : Allow Apache service through firewalld] *******************************************************************************************
+2020-02-03 00:03:08,573 p=godev u=63116 | changed: [webapp1.lab.example.com]
+2020-02-03 00:03:08,814 p=godev u=63116 | changed: [webapp2.lab.example.com]
+2020-02-03 00:03:08,820 p=godev u=63116 | PLAY [Install MariaDB] *******************************************************************************************************************************
+2020-02-03 00:03:08,845 p=godev u=63116 | TASK [Gathering Facts] *******************************************************************************************************************************
+2020-02-03 00:03:09,953 p=godev u=63116 | ok: [mysql-server.lab.example.com]
+2020-02-03 00:03:10,006 p=godev u=63116 | TASK [mariadb : Install MariaDB server] **************************************************************************************************************
+2020-02-03 00:03:10,846 p=godev u=63116 | ok: [mysql-server.lab.example.com] => (item=[u'mariadb-server', u'MySQL-python'])
+2020-02-03 00:03:10,861 p=godev u=63116 | TASK [mariadb : Start MariaDB] ***********************************************************************************************************************
+2020-02-03 00:03:11,471 p=godev u=63116 | ok: [mysql-server.lab.example.com]
+2020-02-03 00:03:11,504 p=godev u=63116 | TASK [mariadb : Create DataBase] *********************************************************************************************************************
+2020-02-03 00:03:12,284 p=godev u=63116 | ok: [mysql-server.lab.example.com]
+2020-02-03 00:03:12,314 p=godev u=63116 | TASK [mariadb : Create Users] ************************************************************************************************************************
+2020-02-03 00:03:13,147 p=godev u=63116 | ok: [mysql-server.lab.example.com]
+2020-02-03 00:03:13,162 p=godev u=63116 | TASK [mariadb : Allow MariaDB server through firewalld] **********************************************************************************************
+2020-02-03 00:03:14,065 p=godev u=63116 | [WARNING]: The value 3306 (type int) in a string field was converted to u'3306' (type string). If this does not look like what you expect, quote the
+entire value to ensure it does not change.
+
+2020-02-03 00:03:14,065 p=godev u=63116 | fatal: [mysql-server.lab.example.com]: FAILED! => {"changed": false, "msg": "improper port format (missing protocol?)"}
+2020-02-03 00:03:14,067 p=godev u=63116 | PLAY RECAP *******************************************************************************************************************************************
+2020-02-03 00:03:14,067 p=godev u=63116 | haproxy.lab.example.com    : ok=8    changed=1    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0   
+2020-02-03 00:03:14,067 p=godev u=63116 | mysql-server.lab.example.com : ok=8    changed=0    unreachable=0    failed=1    skipped=0    rescued=0    ignored=0   
+2020-02-03 00:03:14,068 p=godev u=63116 | webapp1.lab.example.com    : ok=8    changed=1    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0   
+2020-02-03 00:03:14,068 p=godev u=63116 | webapp2.lab.example.com    : ok=8    changed=1    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0   
+2020-02-03 00:04:04,357 p=godev u=63680 | ERROR! Syntax Error while loading YAML.
+  did not find expected key
+
+The error appears to be in '/home/godev/ansible/haproxy-lamp/roles/mariadb/tasks/main.yaml': line 38, column 29, but may
+be elsewhere in the file depending on the exact syntax problem.
+
+The offending line appears to be:
+
+  firewalld:
+    port: "{{ mysql_port }}"/tcp
+                            ^ here
+We could be wrong, but this one looks like it might be an issue with
+missing quotes. Always quote template expression brackets when they
+start a value. For instance:
+
+    with_items:
+      - {{ foo }}
+
+Should be written as:
+
+    with_items:
+      - "{{ foo }}"
+
+2020-02-03 00:04:31,667 p=godev u=63762 | PLAY [Init base environment for all hosts] ***********************************************************************************************************
+2020-02-03 00:04:31,684 p=godev u=63762 | TASK [Gathering Facts] *******************************************************************************************************************************
+2020-02-03 00:04:35,648 p=godev u=63762 | ok: [webapp1.lab.example.com]
+2020-02-03 00:04:35,866 p=godev u=63762 | ok: [haproxy.lab.example.com]
+2020-02-03 00:04:35,935 p=godev u=63762 | ok: [mysql-server.lab.example.com]
+2020-02-03 00:04:36,024 p=godev u=63762 | ok: [webapp2.lab.example.com]
+2020-02-03 00:04:36,059 p=godev u=63762 | TASK [base : Copy CentOS-Base.repo to remote hosts] **************************************************************************************************
+2020-02-03 00:04:39,093 p=godev u=63762 | ok: [webapp2.lab.example.com]
+2020-02-03 00:04:39,395 p=godev u=63762 | ok: [mysql-server.lab.example.com]
+2020-02-03 00:04:39,398 p=godev u=63762 | ok: [webapp1.lab.example.com]
+2020-02-03 00:04:39,401 p=godev u=63762 | ok: [haproxy.lab.example.com]
+2020-02-03 00:04:39,417 p=godev u=63762 | TASK [base : Copy epel.repo to remote hosts] *********************************************************************************************************
+2020-02-03 00:04:41,594 p=godev u=63762 | ok: [haproxy.lab.example.com]
+2020-02-03 00:04:42,001 p=godev u=63762 | ok: [mysql-server.lab.example.com]
+2020-02-03 00:04:42,058 p=godev u=63762 | ok: [webapp1.lab.example.com]
+2020-02-03 00:04:42,063 p=godev u=63762 | ok: [webapp2.lab.example.com]
+2020-02-03 00:04:42,073 p=godev u=63762 | PLAY [Install HAProxy] *******************************************************************************************************************************
+2020-02-03 00:04:42,092 p=godev u=63762 | TASK [Gathering Facts] *******************************************************************************************************************************
+2020-02-03 00:04:43,025 p=godev u=63762 | ok: [haproxy.lab.example.com]
+2020-02-03 00:04:43,042 p=godev u=63762 | TASK [haproxy : Install HAProxy] *********************************************************************************************************************
+2020-02-03 00:04:44,093 p=godev u=63762 | ok: [haproxy.lab.example.com] => (item=[u'haproxy'])
+2020-02-03 00:04:44,110 p=godev u=63762 | TASK [haproxy : Copy haproxy.cfg] ********************************************************************************************************************
+2020-02-03 00:04:44,928 p=godev u=63762 | ok: [haproxy.lab.example.com]
+2020-02-03 00:04:44,944 p=godev u=63762 | TASK [haproxy : Start HAProxy] ***********************************************************************************************************************
+2020-02-03 00:04:45,951 p=godev u=63762 | ok: [haproxy.lab.example.com]
+2020-02-03 00:04:45,968 p=godev u=63762 | TASK [haproxy : Allow HAProxy service through firewalld] *********************************************************************************************
+2020-02-03 00:04:46,995 p=godev u=63762 | ok: [haproxy.lab.example.com]
+2020-02-03 00:04:46,999 p=godev u=63762 | PLAY [Install Apache and PHP] ************************************************************************************************************************
+2020-02-03 00:04:47,022 p=godev u=63762 | TASK [Gathering Facts] *******************************************************************************************************************************
+2020-02-03 00:04:48,443 p=godev u=63762 | ok: [webapp1.lab.example.com]
+2020-02-03 00:04:48,498 p=godev u=63762 | ok: [webapp2.lab.example.com]
+2020-02-03 00:04:48,513 p=godev u=63762 | TASK [apache-php : Install Apache and PHP] ***********************************************************************************************************
+2020-02-03 00:04:49,760 p=godev u=63762 | ok: [webapp2.lab.example.com] => (item=[u'httpd', u'php', u'php-mysql', u'libsemanage-python', u'libselinux-python'])
+2020-02-03 00:04:49,765 p=godev u=63762 | ok: [webapp1.lab.example.com] => (item=[u'httpd', u'php', u'php-mysql', u'libsemanage-python', u'libselinux-python'])
+2020-02-03 00:04:49,787 p=godev u=63762 | TASK [apache-php : Copy index.php.j2] ****************************************************************************************************************
+2020-02-03 00:04:51,168 p=godev u=63762 | ok: [webapp1.lab.example.com]
+2020-02-03 00:04:51,225 p=godev u=63762 | ok: [webapp2.lab.example.com]
+2020-02-03 00:04:51,241 p=godev u=63762 | TASK [apache-php : http service state] ***************************************************************************************************************
+2020-02-03 00:04:52,303 p=godev u=63762 | ok: [webapp1.lab.example.com]
+2020-02-03 00:04:52,311 p=godev u=63762 | ok: [webapp2.lab.example.com]
+2020-02-03 00:04:52,333 p=godev u=63762 | TASK [apache-php : Allow Apache service through firewalld] *******************************************************************************************
+2020-02-03 00:04:53,557 p=godev u=63762 | ok: [webapp1.lab.example.com]
+2020-02-03 00:04:53,766 p=godev u=63762 | ok: [webapp2.lab.example.com]
+2020-02-03 00:04:53,770 p=godev u=63762 | PLAY [Install MariaDB] *******************************************************************************************************************************
+2020-02-03 00:04:53,788 p=godev u=63762 | TASK [Gathering Facts] *******************************************************************************************************************************
+2020-02-03 00:04:54,774 p=godev u=63762 | ok: [mysql-server.lab.example.com]
+2020-02-03 00:04:54,792 p=godev u=63762 | TASK [mariadb : Install MariaDB server] **************************************************************************************************************
+2020-02-03 00:04:55,600 p=godev u=63762 | ok: [mysql-server.lab.example.com] => (item=[u'mariadb-server', u'MySQL-python'])
+2020-02-03 00:04:55,618 p=godev u=63762 | TASK [mariadb : Start MariaDB] ***********************************************************************************************************************
+2020-02-03 00:04:56,350 p=godev u=63762 | ok: [mysql-server.lab.example.com]
+2020-02-03 00:04:56,364 p=godev u=63762 | TASK [mariadb : Create DataBase] *********************************************************************************************************************
+2020-02-03 00:04:57,116 p=godev u=63762 | ok: [mysql-server.lab.example.com]
+2020-02-03 00:04:57,132 p=godev u=63762 | TASK [mariadb : Create Users] ************************************************************************************************************************
+2020-02-03 00:04:57,862 p=godev u=63762 | ok: [mysql-server.lab.example.com]
+2020-02-03 00:04:57,878 p=godev u=63762 | TASK [mariadb : Allow MariaDB server through firewalld] **********************************************************************************************
+2020-02-03 00:04:58,803 p=godev u=63762 | changed: [mysql-server.lab.example.com]
+2020-02-03 00:04:58,805 p=godev u=63762 | PLAY RECAP *******************************************************************************************************************************************
+2020-02-03 00:04:58,805 p=godev u=63762 | haproxy.lab.example.com    : ok=8    changed=0    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0   
+2020-02-03 00:04:58,806 p=godev u=63762 | mysql-server.lab.example.com : ok=9    changed=1    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0   
+2020-02-03 00:04:58,806 p=godev u=63762 | webapp1.lab.example.com    : ok=8    changed=0    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0   
+2020-02-03 00:04:58,806 p=godev u=63762 | webapp2.lab.example.com    : ok=8    changed=0    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0   
+2020-02-03 00:22:21,564 p=godev u=65541 | PLAY [Init base environment for all hosts] ***********************************************************************************************************
+2020-02-03 00:22:21,584 p=godev u=65541 | TASK [Gathering Facts] *******************************************************************************************************************************
+2020-02-03 00:22:27,447 p=godev u=65541 | ok: [mysql-server.lab.example.com]
+2020-02-03 00:22:27,666 p=godev u=65541 | ok: [webapp2.lab.example.com]
+2020-02-03 00:22:27,757 p=godev u=65541 | ok: [webapp1.lab.example.com]
+2020-02-03 00:22:28,072 p=godev u=65541 | ok: [haproxy.lab.example.com]
+2020-02-03 00:22:28,092 p=godev u=65541 | TASK [base : Copy CentOS-Base.repo to remote hosts] **************************************************************************************************
+2020-02-03 00:22:32,073 p=godev u=65541 | ok: [mysql-server.lab.example.com]
+2020-02-03 00:22:32,557 p=godev u=65541 | ok: [webapp2.lab.example.com]
+2020-02-03 00:22:32,563 p=godev u=65541 | ok: [haproxy.lab.example.com]
+2020-02-03 00:22:32,577 p=godev u=65541 | ok: [webapp1.lab.example.com]
+2020-02-03 00:22:32,609 p=godev u=65541 | TASK [base : Copy epel.repo to remote hosts] *********************************************************************************************************
+2020-02-03 00:22:35,423 p=godev u=65541 | ok: [haproxy.lab.example.com]
+2020-02-03 00:22:35,979 p=godev u=65541 | ok: [webapp2.lab.example.com]
+2020-02-03 00:22:36,193 p=godev u=65541 | ok: [mysql-server.lab.example.com]
+2020-02-03 00:22:36,208 p=godev u=65541 | ok: [webapp1.lab.example.com]
+2020-02-03 00:22:36,221 p=godev u=65541 | PLAY [Install HAProxy] *******************************************************************************************************************************
+2020-02-03 00:22:36,248 p=godev u=65541 | TASK [Gathering Facts] *******************************************************************************************************************************
+2020-02-03 00:22:37,433 p=godev u=65541 | ok: [haproxy.lab.example.com]
+2020-02-03 00:22:37,458 p=godev u=65541 | TASK [haproxy : Install HAProxy] *********************************************************************************************************************
+2020-02-03 00:22:38,879 p=godev u=65541 | ok: [haproxy.lab.example.com] => (item=[u'haproxy'])
+2020-02-03 00:22:38,916 p=godev u=65541 | TASK [haproxy : Copy haproxy.cfg] ********************************************************************************************************************
+2020-02-03 00:22:40,495 p=godev u=65541 | changed: [haproxy.lab.example.com]
+2020-02-03 00:22:40,526 p=godev u=65541 | TASK [haproxy : Start HAProxy] ***********************************************************************************************************************
+2020-02-03 00:22:41,991 p=godev u=65541 | ok: [haproxy.lab.example.com]
+2020-02-03 00:22:42,008 p=godev u=65541 | TASK [haproxy : Allow HAProxy service through firewalld] *********************************************************************************************
+2020-02-03 00:22:43,492 p=godev u=65541 | ok: [haproxy.lab.example.com]
+2020-02-03 00:22:43,493 p=godev u=65541 | RUNNING HANDLER [haproxy : restart_haproxy] **********************************************************************************************************
+2020-02-03 00:22:44,448 p=godev u=65541 | changed: [haproxy.lab.example.com]
+2020-02-03 00:22:44,452 p=godev u=65541 | PLAY [Install Apache and PHP] ************************************************************************************************************************
+2020-02-03 00:22:44,480 p=godev u=65541 | TASK [Gathering Facts] *******************************************************************************************************************************
+2020-02-03 00:22:49,307 p=godev u=65541 | ok: [webapp1.lab.example.com]
+2020-02-03 00:22:49,373 p=godev u=65541 | ok: [webapp2.lab.example.com]
+2020-02-03 00:22:49,421 p=godev u=65541 | TASK [apache-php : Install Apache and PHP] ***********************************************************************************************************
+2020-02-03 00:22:51,006 p=godev u=65541 | ok: [webapp1.lab.example.com] => (item=[u'httpd', u'php', u'php-mysql', u'libsemanage-python', u'libselinux-python'])
+2020-02-03 00:22:51,177 p=godev u=65541 | ok: [webapp2.lab.example.com] => (item=[u'httpd', u'php', u'php-mysql', u'libsemanage-python', u'libselinux-python'])
+2020-02-03 00:22:51,200 p=godev u=65541 | TASK [apache-php : Copy index.php.j2] ****************************************************************************************************************
+2020-02-03 00:22:53,067 p=godev u=65541 | ok: [webapp1.lab.example.com]
+2020-02-03 00:22:53,089 p=godev u=65541 | ok: [webapp2.lab.example.com]
+2020-02-03 00:22:53,118 p=godev u=65541 | TASK [apache-php : http service state] ***************************************************************************************************************
+2020-02-03 00:22:54,559 p=godev u=65541 | ok: [webapp1.lab.example.com]
+2020-02-03 00:22:54,675 p=godev u=65541 | ok: [webapp2.lab.example.com]
+2020-02-03 00:22:54,710 p=godev u=65541 | TASK [apache-php : Allow Apache service through firewalld] *******************************************************************************************
+2020-02-03 00:22:56,477 p=godev u=65541 | ok: [webapp1.lab.example.com]
+2020-02-03 00:22:56,667 p=godev u=65541 | ok: [webapp2.lab.example.com]
+2020-02-03 00:22:56,677 p=godev u=65541 | PLAY [Install MariaDB] *******************************************************************************************************************************
+2020-02-03 00:22:56,713 p=godev u=65541 | TASK [Gathering Facts] *******************************************************************************************************************************
+2020-02-03 00:22:59,005 p=godev u=65541 | ok: [mysql-server.lab.example.com]
+2020-02-03 00:22:59,025 p=godev u=65541 | TASK [mariadb : Install MariaDB server] **************************************************************************************************************
+2020-02-03 00:23:00,079 p=godev u=65541 | ok: [mysql-server.lab.example.com] => (item=[u'mariadb-server', u'MySQL-python'])
+2020-02-03 00:23:00,120 p=godev u=65541 | TASK [mariadb : Start MariaDB] ***********************************************************************************************************************
+2020-02-03 00:23:01,071 p=godev u=65541 | ok: [mysql-server.lab.example.com]
+2020-02-03 00:23:01,100 p=godev u=65541 | TASK [mariadb : Create DataBase] *********************************************************************************************************************
+2020-02-03 00:23:02,032 p=godev u=65541 | ok: [mysql-server.lab.example.com]
+2020-02-03 00:23:02,052 p=godev u=65541 | TASK [mariadb : Create Users] ************************************************************************************************************************
+2020-02-03 00:23:03,107 p=godev u=65541 | ok: [mysql-server.lab.example.com]
+2020-02-03 00:23:03,138 p=godev u=65541 | TASK [mariadb : Allow MariaDB server through firewalld] **********************************************************************************************
+2020-02-03 00:23:04,433 p=godev u=65541 | ok: [mysql-server.lab.example.com]
+2020-02-03 00:23:04,438 p=godev u=65541 | PLAY RECAP *******************************************************************************************************************************************
+2020-02-03 00:23:04,438 p=godev u=65541 | haproxy.lab.example.com    : ok=9    changed=2    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0   
+2020-02-03 00:23:04,438 p=godev u=65541 | mysql-server.lab.example.com : ok=9    changed=0    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0   
+2020-02-03 00:23:04,439 p=godev u=65541 | webapp1.lab.example.com    : ok=8    changed=0    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0   
+2020-02-03 00:23:04,439 p=godev u=65541 | webapp2.lab.example.com    : ok=8    changed=0    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0   
+2020-02-03 07:16:25,533 p=godev u=92483 | webapp1.lab.example.com | CHANGED | rc=0 >>
+
+
+2020-02-03 07:16:25,777 p=godev u=92483 | webapp2.lab.example.com | CHANGED | rc=0 >>
+
+
+2020-02-03 07:16:26,099 p=godev u=92483 | mysql-server.lab.example.com | CHANGED | rc=0 >>
+
+
+2020-02-03 07:16:26,271 p=godev u=92483 | haproxy.lab.example.com | CHANGED | rc=0 >>
+
+
+2020-02-03 09:04:03,046 p=godev u=99685 | [WARNING]: module firewall not found in: /home/godev/.ansible/plugins/modules:/usr/share/ansible/plugins/modules:/usr/lib/python2.7/site-
+packages/ansible/modules
+
+2020-02-03 09:12:31,746 p=godev u=100400 | webapp1.lab.example.com | UNREACHABLE! => {
+    "changed": false, 
+    "msg": "Failed to connect to the host via ssh: Shared connection to webapp1.lab.example.com closed.", 
+    "unreachable": true
+}
+2020-02-03 09:12:32,393 p=godev u=100400 | haproxy.lab.example.com | UNREACHABLE! => {
+    "changed": false, 
+    "msg": "Failed to connect to the host via ssh: Shared connection to haproxy.lab.example.com closed.", 
+    "unreachable": true
+}
+2020-02-03 09:12:32,852 p=godev u=100400 | mysql-server.lab.example.com | UNREACHABLE! => {
+    "changed": false, 
+    "msg": "Failed to connect to the host via ssh: Shared connection to mysql-server.lab.example.com closed.", 
+    "unreachable": true
+}
+2020-02-03 09:12:33,792 p=godev u=100400 | webapp2.lab.example.com | UNREACHABLE! => {
+    "changed": false, 
+    "msg": "Failed to connect to the host via ssh: Shared connection to webapp2.lab.example.com closed.", 
+    "unreachable": true
+}
+2020-02-03 09:14:47,862 p=godev u=100735 | haproxy.lab.example.com | SUCCESS => {
+    "ansible_facts": {
+        "discovered_interpreter_python": "/usr/bin/python"
+    }, 
+    "changed": false, 
+    "ping": "pong"
+}
+2020-02-03 09:14:47,934 p=godev u=100735 | webapp2.lab.example.com | SUCCESS => {
+    "ansible_facts": {
+        "discovered_interpreter_python": "/usr/bin/python"
+    }, 
+    "changed": false, 
+    "ping": "pong"
+}
+2020-02-03 09:14:47,976 p=godev u=100735 | mysql-server.lab.example.com | SUCCESS => {
+    "ansible_facts": {
+        "discovered_interpreter_python": "/usr/bin/python"
+    }, 
+    "changed": false, 
+    "ping": "pong"
+}
+2020-02-03 09:14:48,049 p=godev u=100735 | webapp1.lab.example.com | SUCCESS => {
+    "ansible_facts": {
+        "discovered_interpreter_python": "/usr/bin/python"
+    }, 
+    "changed": false, 
+    "ping": "pong"
+}
+2020-02-03 09:35:21,179 p=godev u=102329 | PLAY [Init base environment for all hosts] ***********************************************************************************************************
+2020-02-03 09:35:21,198 p=godev u=102329 | TASK [Gathering Facts] *******************************************************************************************************************************
+2020-02-03 09:35:24,339 p=godev u=102329 | ok: [webapp2.lab.example.com]
+2020-02-03 09:35:24,554 p=godev u=102329 | ok: [webapp1.lab.example.com]
+2020-02-03 09:35:24,936 p=godev u=102329 | ok: [haproxy.lab.example.com]
+2020-02-03 09:35:25,102 p=godev u=102329 | ok: [mysql-server.lab.example.com]
+2020-02-03 09:35:25,120 p=godev u=102329 | TASK [base : Copy CentOS-Base.repo to remote hosts] **************************************************************************************************
+2020-02-03 09:35:28,276 p=godev u=102329 | ok: [mysql-server.lab.example.com]
+2020-02-03 09:35:28,376 p=godev u=102329 | ok: [webapp1.lab.example.com]
+2020-02-03 09:35:28,399 p=godev u=102329 | ok: [haproxy.lab.example.com]
+2020-02-03 09:35:28,454 p=godev u=102329 | ok: [webapp2.lab.example.com]
+2020-02-03 09:35:28,472 p=godev u=102329 | TASK [base : Copy epel.repo to remote hosts] *********************************************************************************************************
+2020-02-03 09:35:30,968 p=godev u=102329 | ok: [haproxy.lab.example.com]
+2020-02-03 09:35:31,312 p=godev u=102329 | ok: [mysql-server.lab.example.com]
+2020-02-03 09:35:31,341 p=godev u=102329 | ok: [webapp1.lab.example.com]
+2020-02-03 09:35:31,446 p=godev u=102329 | ok: [webapp2.lab.example.com]
+2020-02-03 09:35:31,452 p=godev u=102329 | PLAY [Install HAProxy] *******************************************************************************************************************************
+2020-02-03 09:35:31,472 p=godev u=102329 | TASK [Gathering Facts] *******************************************************************************************************************************
+2020-02-03 09:35:32,670 p=godev u=102329 | ok: [haproxy.lab.example.com]
+2020-02-03 09:35:32,685 p=godev u=102329 | TASK [haproxy : Install HAProxy] *********************************************************************************************************************
+2020-02-03 09:35:33,739 p=godev u=102329 | ok: [haproxy.lab.example.com] => (item=[u'haproxy'])
+2020-02-03 09:35:33,755 p=godev u=102329 | TASK [haproxy : Copy haproxy.cfg] ********************************************************************************************************************
+2020-02-03 09:35:34,801 p=godev u=102329 | changed: [haproxy.lab.example.com]
+2020-02-03 09:35:34,815 p=godev u=102329 | TASK [haproxy : Start HAProxy] ***********************************************************************************************************************
+2020-02-03 09:35:35,772 p=godev u=102329 | changed: [haproxy.lab.example.com]
+2020-02-03 09:35:35,785 p=godev u=102329 | TASK [haproxy : Allow HAProxy service through firewalld] *********************************************************************************************
+2020-02-03 09:35:36,800 p=godev u=102329 | ok: [haproxy.lab.example.com]
+2020-02-03 09:35:36,801 p=godev u=102329 | RUNNING HANDLER [haproxy : restart_haproxy] **********************************************************************************************************
+2020-02-03 09:35:37,388 p=godev u=102329 | changed: [haproxy.lab.example.com]
+2020-02-03 09:35:37,391 p=godev u=102329 | PLAY [Install Apache and PHP] ************************************************************************************************************************
+2020-02-03 09:35:37,408 p=godev u=102329 | TASK [Gathering Facts] *******************************************************************************************************************************
+2020-02-03 09:35:38,664 p=godev u=102329 | ok: [webapp2.lab.example.com]
+2020-02-03 09:35:38,733 p=godev u=102329 | ok: [webapp1.lab.example.com]
+2020-02-03 09:35:38,754 p=godev u=102329 | TASK [apache-php : Install Apache and PHP] ***********************************************************************************************************
+2020-02-03 09:35:40,211 p=godev u=102329 | ok: [webapp1.lab.example.com] => (item=[u'httpd', u'php', u'php-mysql', u'libsemanage-python', u'libselinux-python'])
+2020-02-03 09:35:40,220 p=godev u=102329 | ok: [webapp2.lab.example.com] => (item=[u'httpd', u'php', u'php-mysql', u'libsemanage-python', u'libselinux-python'])
+2020-02-03 09:35:40,234 p=godev u=102329 | TASK [apache-php : Copy index.php.j2] ****************************************************************************************************************
+2020-02-03 09:35:41,515 p=godev u=102329 | ok: [webapp2.lab.example.com]
+2020-02-03 09:35:41,616 p=godev u=102329 | ok: [webapp1.lab.example.com]
+2020-02-03 09:35:41,630 p=godev u=102329 | TASK [apache-php : http service state] ***************************************************************************************************************
+2020-02-03 09:35:42,586 p=godev u=102329 | ok: [webapp1.lab.example.com]
+2020-02-03 09:35:42,605 p=godev u=102329 | ok: [webapp2.lab.example.com]
+2020-02-03 09:35:42,620 p=godev u=102329 | TASK [apache-php : Allow Apache service through firewalld] *******************************************************************************************
+2020-02-03 09:35:44,541 p=godev u=102329 | changed: [webapp1.lab.example.com]
+2020-02-03 09:35:44,822 p=godev u=102329 | changed: [webapp2.lab.example.com]
+2020-02-03 09:35:44,827 p=godev u=102329 | PLAY [Install MariaDB] *******************************************************************************************************************************
+2020-02-03 09:35:44,844 p=godev u=102329 | TASK [Gathering Facts] *******************************************************************************************************************************
+2020-02-03 09:35:45,662 p=godev u=102329 | ok: [mysql-server.lab.example.com]
+2020-02-03 09:35:45,678 p=godev u=102329 | TASK [mariadb : Install MariaDB server] **************************************************************************************************************
+2020-02-03 09:35:46,501 p=godev u=102329 | ok: [mysql-server.lab.example.com] => (item=[u'mariadb-server', u'MySQL-python'])
+2020-02-03 09:35:46,515 p=godev u=102329 | TASK [mariadb : Start MariaDB] ***********************************************************************************************************************
+2020-02-03 09:35:47,064 p=godev u=102329 | ok: [mysql-server.lab.example.com]
+2020-02-03 09:35:47,078 p=godev u=102329 | TASK [mariadb : Create DataBase] *********************************************************************************************************************
+2020-02-03 09:35:47,788 p=godev u=102329 | ok: [mysql-server.lab.example.com]
+2020-02-03 09:35:47,806 p=godev u=102329 | TASK [mariadb : Create Users] ************************************************************************************************************************
+2020-02-03 09:35:48,507 p=godev u=102329 | ok: [mysql-server.lab.example.com]
+2020-02-03 09:35:48,521 p=godev u=102329 | TASK [mariadb : Allow MariaDB server through firewalld] **********************************************************************************************
+2020-02-03 09:35:49,328 p=godev u=102329 | ok: [mysql-server.lab.example.com]
+2020-02-03 09:35:49,330 p=godev u=102329 | PLAY RECAP *******************************************************************************************************************************************
+2020-02-03 09:35:49,330 p=godev u=102329 | haproxy.lab.example.com    : ok=9    changed=3    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0   
+2020-02-03 09:35:49,330 p=godev u=102329 | mysql-server.lab.example.com : ok=9    changed=0    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0   
+2020-02-03 09:35:49,330 p=godev u=102329 | webapp1.lab.example.com    : ok=8    changed=1    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0   
+2020-02-03 09:35:49,331 p=godev u=102329 | webapp2.lab.example.com    : ok=8    changed=1    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0   
+2020-02-03 09:52:40,414 p=godev u=103986 | PLAY [Init base environment for all hosts] ***********************************************************************************************************
+2020-02-03 09:52:40,430 p=godev u=103986 | TASK [Gathering Facts] *******************************************************************************************************************************
+2020-02-03 09:52:43,911 p=godev u=103986 | ok: [haproxy.lab.example.com]
+2020-02-03 09:52:43,962 p=godev u=103986 | ok: [mysql-server.lab.example.com]
+2020-02-03 09:52:44,318 p=godev u=103986 | ok: [webapp1.lab.example.com]
+2020-02-03 09:52:44,573 p=godev u=103986 | ok: [webapp2.lab.example.com]
+2020-02-03 09:52:44,595 p=godev u=103986 | TASK [base : Copy CentOS-Base.repo to remote hosts] **************************************************************************************************
+2020-02-03 09:52:47,846 p=godev u=103986 | ok: [webapp1.lab.example.com]
+2020-02-03 09:52:47,899 p=godev u=103986 | ok: [mysql-server.lab.example.com]
+2020-02-03 09:52:48,035 p=godev u=103986 | ok: [haproxy.lab.example.com]
+2020-02-03 09:52:48,038 p=godev u=103986 | ok: [webapp2.lab.example.com]
+2020-02-03 09:52:48,059 p=godev u=103986 | TASK [base : Copy epel.repo to remote hosts] *********************************************************************************************************
+2020-02-03 09:52:50,671 p=godev u=103986 | ok: [webapp1.lab.example.com]
+2020-02-03 09:52:50,705 p=godev u=103986 | ok: [haproxy.lab.example.com]
+2020-02-03 09:52:50,706 p=godev u=103986 | ok: [mysql-server.lab.example.com]
+2020-02-03 09:52:50,772 p=godev u=103986 | ok: [webapp2.lab.example.com]
+2020-02-03 09:52:50,781 p=godev u=103986 | PLAY [Install HAProxy] *******************************************************************************************************************************
+2020-02-03 09:52:50,812 p=godev u=103986 | TASK [Gathering Facts] *******************************************************************************************************************************
+2020-02-03 09:52:51,834 p=godev u=103986 | ok: [haproxy.lab.example.com]
+2020-02-03 09:52:51,849 p=godev u=103986 | TASK [haproxy : Install HAProxy] *********************************************************************************************************************
+2020-02-03 09:52:52,882 p=godev u=103986 | ok: [haproxy.lab.example.com] => (item=[u'haproxy'])
+2020-02-03 09:52:52,902 p=godev u=103986 | TASK [haproxy : Copy haproxy.cfg] ********************************************************************************************************************
+2020-02-03 09:52:54,203 p=godev u=103986 | changed: [haproxy.lab.example.com]
+2020-02-03 09:52:54,220 p=godev u=103986 | TASK [haproxy : Start HAProxy] ***********************************************************************************************************************
+2020-02-03 09:52:55,332 p=godev u=103986 | ok: [haproxy.lab.example.com]
+2020-02-03 09:52:55,345 p=godev u=103986 | TASK [haproxy : Allow HAProxy service through firewalld] *********************************************************************************************
+2020-02-03 09:52:56,492 p=godev u=103986 | ok: [haproxy.lab.example.com]
+2020-02-03 09:52:56,494 p=godev u=103986 | RUNNING HANDLER [haproxy : restart_haproxy] **********************************************************************************************************
+2020-02-03 09:52:57,177 p=godev u=103986 | changed: [haproxy.lab.example.com]
+2020-02-03 09:52:57,181 p=godev u=103986 | PLAY [Install Apache and PHP] ************************************************************************************************************************
+2020-02-03 09:52:57,203 p=godev u=103986 | TASK [Gathering Facts] *******************************************************************************************************************************
+2020-02-03 09:52:58,869 p=godev u=103986 | ok: [webapp1.lab.example.com]
+2020-02-03 09:52:58,934 p=godev u=103986 | ok: [webapp2.lab.example.com]
+2020-02-03 09:52:58,950 p=godev u=103986 | TASK [apache-php : Install Apache and PHP] ***********************************************************************************************************
+2020-02-03 09:53:00,269 p=godev u=103986 | ok: [webapp2.lab.example.com] => (item=[u'httpd', u'php', u'php-mysql', u'libsemanage-python', u'libselinux-python'])
+2020-02-03 09:53:00,281 p=godev u=103986 | ok: [webapp1.lab.example.com] => (item=[u'httpd', u'php', u'php-mysql', u'libsemanage-python', u'libselinux-python'])
+2020-02-03 09:53:00,311 p=godev u=103986 | TASK [apache-php : Copy index.php.j2] ****************************************************************************************************************
+2020-02-03 09:53:01,928 p=godev u=103986 | ok: [webapp2.lab.example.com]
+2020-02-03 09:53:01,934 p=godev u=103986 | ok: [webapp1.lab.example.com]
+2020-02-03 09:53:01,958 p=godev u=103986 | TASK [apache-php : http service state] ***************************************************************************************************************
+2020-02-03 09:53:03,245 p=godev u=103986 | ok: [webapp2.lab.example.com]
+2020-02-03 09:53:03,266 p=godev u=103986 | ok: [webapp1.lab.example.com]
+2020-02-03 09:53:03,282 p=godev u=103986 | TASK [apache-php : Allow Apache service through firewalld] *******************************************************************************************
+2020-02-03 09:53:04,767 p=godev u=103986 | ok: [webapp2.lab.example.com]
+2020-02-03 09:53:04,772 p=godev u=103986 | ok: [webapp1.lab.example.com]
+2020-02-03 09:53:04,777 p=godev u=103986 | PLAY [Install MariaDB] *******************************************************************************************************************************
+2020-02-03 09:53:04,799 p=godev u=103986 | TASK [Gathering Facts] *******************************************************************************************************************************
+2020-02-03 09:53:11,206 p=godev u=103986 | ok: [mysql-server.lab.example.com]
+2020-02-03 09:53:11,222 p=godev u=103986 | TASK [mariadb : Install MariaDB server] **************************************************************************************************************
+2020-02-03 09:53:11,906 p=godev u=103986 | ok: [mysql-server.lab.example.com] => (item=[u'mariadb-server', u'MySQL-python'])
+2020-02-03 09:53:11,921 p=godev u=103986 | TASK [mariadb : Start MariaDB] ***********************************************************************************************************************
+2020-02-03 09:53:12,554 p=godev u=103986 | ok: [mysql-server.lab.example.com]
+2020-02-03 09:53:12,569 p=godev u=103986 | TASK [mariadb : Create DataBase] *********************************************************************************************************************
+2020-02-03 09:53:13,311 p=godev u=103986 | ok: [mysql-server.lab.example.com]
+2020-02-03 09:53:13,327 p=godev u=103986 | TASK [mariadb : Create Users] ************************************************************************************************************************
+2020-02-03 09:53:14,165 p=godev u=103986 | ok: [mysql-server.lab.example.com]
+2020-02-03 09:53:14,183 p=godev u=103986 | TASK [mariadb : Allow MariaDB server through firewalld] **********************************************************************************************
+2020-02-03 09:53:15,107 p=godev u=103986 | ok: [mysql-server.lab.example.com]
+2020-02-03 09:53:15,109 p=godev u=103986 | PLAY RECAP *******************************************************************************************************************************************
+2020-02-03 09:53:15,110 p=godev u=103986 | haproxy.lab.example.com    : ok=9    changed=2    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0   
+2020-02-03 09:53:15,110 p=godev u=103986 | mysql-server.lab.example.com : ok=9    changed=0    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0   
+2020-02-03 09:53:15,110 p=godev u=103986 | webapp1.lab.example.com    : ok=8    changed=0    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0   
+2020-02-03 09:53:15,110 p=godev u=103986 | webapp2.lab.example.com    : ok=8    changed=0    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0   
+2020-02-03 09:53:56,510 p=godev u=104530 | PLAY [Init base environment for all hosts] ***********************************************************************************************************
+2020-02-03 09:53:56,548 p=godev u=104530 | TASK [Gathering Facts] *******************************************************************************************************************************
+2020-02-03 09:54:00,536 p=godev u=104530 | ok: [webapp2.lab.example.com]
+2020-02-03 09:54:00,665 p=godev u=104530 | ok: [haproxy.lab.example.com]
+2020-02-03 09:54:00,672 p=godev u=104530 | ok: [mysql-server.lab.example.com]
+2020-02-03 09:54:00,750 p=godev u=104530 | ok: [webapp1.lab.example.com]
+2020-02-03 09:54:00,776 p=godev u=104530 | TASK [base : Copy CentOS-Base.repo to remote hosts] **************************************************************************************************
+2020-02-03 09:54:03,909 p=godev u=104530 | ok: [mysql-server.lab.example.com]
+2020-02-03 09:54:04,044 p=godev u=104530 | ok: [webapp1.lab.example.com]
+2020-02-03 09:54:04,120 p=godev u=104530 | ok: [webapp2.lab.example.com]
+2020-02-03 09:54:04,205 p=godev u=104530 | ok: [haproxy.lab.example.com]
+2020-02-03 09:54:04,221 p=godev u=104530 | TASK [base : Copy epel.repo to remote hosts] *********************************************************************************************************
+2020-02-03 09:54:06,792 p=godev u=104530 | ok: [haproxy.lab.example.com]
+2020-02-03 09:54:06,988 p=godev u=104530 | ok: [webapp2.lab.example.com]
+2020-02-03 09:54:07,161 p=godev u=104530 | ok: [mysql-server.lab.example.com]
+2020-02-03 09:54:07,171 p=godev u=104530 | ok: [webapp1.lab.example.com]
+2020-02-03 09:54:07,180 p=godev u=104530 | PLAY [Install HAProxy] *******************************************************************************************************************************
+2020-02-03 09:54:07,200 p=godev u=104530 | TASK [Gathering Facts] *******************************************************************************************************************************
+2020-02-03 09:54:08,430 p=godev u=104530 | ok: [haproxy.lab.example.com]
+2020-02-03 09:54:08,457 p=godev u=104530 | TASK [haproxy : Install HAProxy] *********************************************************************************************************************
+2020-02-03 09:54:09,569 p=godev u=104530 | ok: [haproxy.lab.example.com] => (item=[u'haproxy'])
+2020-02-03 09:54:09,587 p=godev u=104530 | TASK [haproxy : Copy haproxy.cfg] ********************************************************************************************************************
+2020-02-03 09:54:10,977 p=godev u=104530 | changed: [haproxy.lab.example.com]
+2020-02-03 09:54:10,998 p=godev u=104530 | TASK [haproxy : Start HAProxy] ***********************************************************************************************************************
+2020-02-03 09:54:12,156 p=godev u=104530 | ok: [haproxy.lab.example.com]
+2020-02-03 09:54:12,171 p=godev u=104530 | TASK [haproxy : Allow HAProxy service through firewalld] *********************************************************************************************
+2020-02-03 09:54:13,363 p=godev u=104530 | ok: [haproxy.lab.example.com]
+2020-02-03 09:54:13,364 p=godev u=104530 | RUNNING HANDLER [haproxy : restart_haproxy] **********************************************************************************************************
+2020-02-03 09:54:14,090 p=godev u=104530 | changed: [haproxy.lab.example.com]
+2020-02-03 09:54:14,097 p=godev u=104530 | PLAY [Install Apache and PHP] ************************************************************************************************************************
+2020-02-03 09:54:14,128 p=godev u=104530 | TASK [Gathering Facts] *******************************************************************************************************************************
+2020-02-03 09:54:15,659 p=godev u=104530 | ok: [webapp2.lab.example.com]
+2020-02-03 09:54:15,874 p=godev u=104530 | ok: [webapp1.lab.example.com]
+2020-02-03 09:54:15,894 p=godev u=104530 | TASK [apache-php : Install Apache and PHP] ***********************************************************************************************************
+2020-02-03 09:54:17,245 p=godev u=104530 | ok: [webapp1.lab.example.com] => (item=[u'httpd', u'php', u'php-mysql', u'libsemanage-python', u'libselinux-python'])
+2020-02-03 09:54:17,261 p=godev u=104530 | ok: [webapp2.lab.example.com] => (item=[u'httpd', u'php', u'php-mysql', u'libsemanage-python', u'libselinux-python'])
+2020-02-03 09:54:17,283 p=godev u=104530 | TASK [apache-php : Copy index.php.j2] ****************************************************************************************************************
+2020-02-03 09:54:18,796 p=godev u=104530 | ok: [webapp2.lab.example.com]
+2020-02-03 09:54:18,891 p=godev u=104530 | ok: [webapp1.lab.example.com]
+2020-02-03 09:54:18,926 p=godev u=104530 | TASK [apache-php : http service state] ***************************************************************************************************************
+2020-02-03 09:54:20,301 p=godev u=104530 | ok: [webapp1.lab.example.com]
+2020-02-03 09:54:20,315 p=godev u=104530 | ok: [webapp2.lab.example.com]
+2020-02-03 09:54:20,338 p=godev u=104530 | TASK [apache-php : Allow Apache service through firewalld] *******************************************************************************************
+2020-02-03 09:54:21,860 p=godev u=104530 | ok: [webapp1.lab.example.com]
+2020-02-03 09:54:21,897 p=godev u=104530 | ok: [webapp2.lab.example.com]
+2020-02-03 09:54:21,908 p=godev u=104530 | PLAY [Install MariaDB] *******************************************************************************************************************************
+2020-02-03 09:54:21,942 p=godev u=104530 | TASK [Gathering Facts] *******************************************************************************************************************************
+2020-02-03 09:54:22,931 p=godev u=104530 | ok: [mysql-server.lab.example.com]
+2020-02-03 09:54:22,952 p=godev u=104530 | TASK [mariadb : Install MariaDB server] **************************************************************************************************************
+2020-02-03 09:54:23,742 p=godev u=104530 | ok: [mysql-server.lab.example.com] => (item=[u'mariadb-server', u'MySQL-python'])
+2020-02-03 09:54:23,789 p=godev u=104530 | TASK [mariadb : Start MariaDB] ***********************************************************************************************************************
+2020-02-03 09:54:24,428 p=godev u=104530 | ok: [mysql-server.lab.example.com]
+2020-02-03 09:54:24,441 p=godev u=104530 | TASK [mariadb : Create DataBase] *********************************************************************************************************************
+2020-02-03 09:54:25,201 p=godev u=104530 | ok: [mysql-server.lab.example.com]
+2020-02-03 09:54:25,216 p=godev u=104530 | TASK [mariadb : Create Users] ************************************************************************************************************************
+2020-02-03 09:54:26,030 p=godev u=104530 | ok: [mysql-server.lab.example.com]
+2020-02-03 09:54:26,052 p=godev u=104530 | TASK [mariadb : Allow MariaDB server through firewalld] **********************************************************************************************
+2020-02-03 09:54:26,874 p=godev u=104530 | ok: [mysql-server.lab.example.com]
+2020-02-03 09:54:26,876 p=godev u=104530 | PLAY RECAP *******************************************************************************************************************************************
+2020-02-03 09:54:26,876 p=godev u=104530 | haproxy.lab.example.com    : ok=9    changed=2    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0   
+2020-02-03 09:54:26,876 p=godev u=104530 | mysql-server.lab.example.com : ok=9    changed=0    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0   
+2020-02-03 09:54:26,877 p=godev u=104530 | webapp1.lab.example.com    : ok=8    changed=0    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0   
+2020-02-03 09:54:26,877 p=godev u=104530 | webapp2.lab.example.com    : ok=8    changed=0    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0   
+2020-02-03 09:54:57,283 p=godev u=105031 | PLAY [Init base environment for all hosts] ***********************************************************************************************************
+2020-02-03 09:54:57,297 p=godev u=105031 | TASK [Gathering Facts] *******************************************************************************************************************************
+2020-02-03 09:55:00,998 p=godev u=105031 | ok: [webapp1.lab.example.com]
+2020-02-03 09:55:01,171 p=godev u=105031 | ok: [haproxy.lab.example.com]
+2020-02-03 09:55:01,299 p=godev u=105031 | ok: [webapp2.lab.example.com]
+2020-02-03 09:55:01,439 p=godev u=105031 | ok: [mysql-server.lab.example.com]
+2020-02-03 09:55:01,493 p=godev u=105031 | TASK [base : Copy CentOS-Base.repo to remote hosts] **************************************************************************************************
+2020-02-03 09:55:05,501 p=godev u=105031 | ok: [webapp2.lab.example.com]
+2020-02-03 09:55:05,725 p=godev u=105031 | ok: [haproxy.lab.example.com]
+2020-02-03 09:55:05,854 p=godev u=105031 | ok: [mysql-server.lab.example.com]
+2020-02-03 09:55:05,857 p=godev u=105031 | ok: [webapp1.lab.example.com]
+2020-02-03 09:55:05,875 p=godev u=105031 | TASK [base : Copy epel.repo to remote hosts] *********************************************************************************************************
+2020-02-03 09:55:08,234 p=godev u=105031 | ok: [haproxy.lab.example.com]
+2020-02-03 09:55:08,590 p=godev u=105031 | ok: [mysql-server.lab.example.com]
+2020-02-03 09:55:08,629 p=godev u=105031 | ok: [webapp1.lab.example.com]
+2020-02-03 09:55:08,695 p=godev u=105031 | ok: [webapp2.lab.example.com]
+2020-02-03 09:55:08,702 p=godev u=105031 | PLAY [Install HAProxy] *******************************************************************************************************************************
+2020-02-03 09:55:08,726 p=godev u=105031 | TASK [Gathering Facts] *******************************************************************************************************************************
+2020-02-03 09:55:09,704 p=godev u=105031 | ok: [haproxy.lab.example.com]
+2020-02-03 09:55:09,732 p=godev u=105031 | TASK [haproxy : Install HAProxy] *********************************************************************************************************************
+2020-02-03 09:55:10,806 p=godev u=105031 | ok: [haproxy.lab.example.com] => (item=[u'haproxy'])
+2020-02-03 09:55:10,823 p=godev u=105031 | TASK [haproxy : Copy haproxy.cfg] ********************************************************************************************************************
+2020-02-03 09:55:11,996 p=godev u=105031 | changed: [haproxy.lab.example.com]
+2020-02-03 09:55:12,031 p=godev u=105031 | TASK [haproxy : Start HAProxy] ***********************************************************************************************************************
+2020-02-03 09:55:13,169 p=godev u=105031 | ok: [haproxy.lab.example.com]
+2020-02-03 09:55:13,206 p=godev u=105031 | TASK [haproxy : Allow HAProxy service through firewalld] *********************************************************************************************
+2020-02-03 09:55:14,326 p=godev u=105031 | ok: [haproxy.lab.example.com]
+2020-02-03 09:55:14,327 p=godev u=105031 | RUNNING HANDLER [haproxy : restart_haproxy] **********************************************************************************************************
+2020-02-03 09:55:14,949 p=godev u=105031 | changed: [haproxy.lab.example.com]
+2020-02-03 09:55:14,953 p=godev u=105031 | PLAY [Install Apache and PHP] ************************************************************************************************************************
+2020-02-03 09:55:14,970 p=godev u=105031 | TASK [Gathering Facts] *******************************************************************************************************************************
+2020-02-03 09:55:16,425 p=godev u=105031 | ok: [webapp2.lab.example.com]
+2020-02-03 09:55:16,693 p=godev u=105031 | ok: [webapp1.lab.example.com]
+2020-02-03 09:55:16,709 p=godev u=105031 | TASK [apache-php : Install Apache and PHP] ***********************************************************************************************************
+2020-02-03 09:55:17,834 p=godev u=105031 | ok: [webapp1.lab.example.com] => (item=[u'httpd', u'php', u'php-mysql', u'libsemanage-python', u'libselinux-python'])
+2020-02-03 09:55:17,924 p=godev u=105031 | ok: [webapp2.lab.example.com] => (item=[u'httpd', u'php', u'php-mysql', u'libsemanage-python', u'libselinux-python'])
+2020-02-03 09:55:17,939 p=godev u=105031 | TASK [apache-php : Copy index.php.j2] ****************************************************************************************************************
+2020-02-03 09:55:19,341 p=godev u=105031 | ok: [webapp1.lab.example.com]
+2020-02-03 09:55:19,388 p=godev u=105031 | ok: [webapp2.lab.example.com]
+2020-02-03 09:55:19,404 p=godev u=105031 | TASK [apache-php : http service state] ***************************************************************************************************************
+2020-02-03 09:55:20,438 p=godev u=105031 | ok: [webapp2.lab.example.com]
+2020-02-03 09:55:20,448 p=godev u=105031 | ok: [webapp1.lab.example.com]
+2020-02-03 09:55:20,467 p=godev u=105031 | TASK [apache-php : Allow Apache service through firewalld] *******************************************************************************************
+2020-02-03 09:55:21,890 p=godev u=105031 | ok: [webapp1.lab.example.com]
+2020-02-03 09:55:21,950 p=godev u=105031 | ok: [webapp2.lab.example.com]
+2020-02-03 09:55:21,956 p=godev u=105031 | PLAY [Install MariaDB] *******************************************************************************************************************************
+2020-02-03 09:55:21,983 p=godev u=105031 | TASK [Gathering Facts] *******************************************************************************************************************************
+2020-02-03 09:55:22,963 p=godev u=105031 | ok: [mysql-server.lab.example.com]
+2020-02-03 09:55:22,983 p=godev u=105031 | TASK [mariadb : Install MariaDB server] **************************************************************************************************************
+2020-02-03 09:55:23,904 p=godev u=105031 | ok: [mysql-server.lab.example.com] => (item=[u'mariadb-server', u'MySQL-python'])
+2020-02-03 09:55:23,925 p=godev u=105031 | TASK [mariadb : Start MariaDB] ***********************************************************************************************************************
+2020-02-03 09:55:24,751 p=godev u=105031 | ok: [mysql-server.lab.example.com]
+2020-02-03 09:55:24,770 p=godev u=105031 | TASK [mariadb : Create DataBase] *********************************************************************************************************************
+2020-02-03 09:55:25,659 p=godev u=105031 | ok: [mysql-server.lab.example.com]
+2020-02-03 09:55:25,677 p=godev u=105031 | TASK [mariadb : Create Users] ************************************************************************************************************************
+2020-02-03 09:55:26,716 p=godev u=105031 | ok: [mysql-server.lab.example.com]
+2020-02-03 09:55:26,739 p=godev u=105031 | TASK [mariadb : Allow MariaDB server through firewalld] **********************************************************************************************
+2020-02-03 09:55:27,808 p=godev u=105031 | ok: [mysql-server.lab.example.com]
+2020-02-03 09:55:27,810 p=godev u=105031 | PLAY RECAP *******************************************************************************************************************************************
+2020-02-03 09:55:27,811 p=godev u=105031 | haproxy.lab.example.com    : ok=9    changed=2    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0   
+2020-02-03 09:55:27,811 p=godev u=105031 | mysql-server.lab.example.com : ok=9    changed=0    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0   
+2020-02-03 09:55:27,811 p=godev u=105031 | webapp1.lab.example.com    : ok=8    changed=0    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0   
+2020-02-03 09:55:27,811 p=godev u=105031 | webapp2.lab.example.com    : ok=8    changed=0    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0   
+2020-02-03 09:58:09,945 p=godev u=105706 | PLAY [Init base environment for all hosts] ***********************************************************************************************************
+2020-02-03 09:58:09,961 p=godev u=105706 | TASK [Gathering Facts] *******************************************************************************************************************************
+2020-02-03 09:58:13,865 p=godev u=105706 | ok: [mysql-server.lab.example.com]
+2020-02-03 09:58:13,953 p=godev u=105706 | ok: [webapp2.lab.example.com]
+2020-02-03 09:58:14,257 p=godev u=105706 | ok: [haproxy.lab.example.com]
+2020-02-03 09:58:14,400 p=godev u=105706 | ok: [webapp1.lab.example.com]
+2020-02-03 09:58:14,421 p=godev u=105706 | TASK [base : Copy CentOS-Base.repo to remote hosts] **************************************************************************************************
+2020-02-03 09:58:17,069 p=godev u=105706 | ok: [webapp1.lab.example.com]
+2020-02-03 09:58:17,199 p=godev u=105706 | ok: [webapp2.lab.example.com]
+2020-02-03 09:58:17,291 p=godev u=105706 | ok: [haproxy.lab.example.com]
+2020-02-03 09:58:17,409 p=godev u=105706 | ok: [mysql-server.lab.example.com]
+2020-02-03 09:58:17,427 p=godev u=105706 | TASK [base : Copy epel.repo to remote hosts] *********************************************************************************************************
+2020-02-03 09:58:19,558 p=godev u=105706 | ok: [mysql-server.lab.example.com]
+2020-02-03 09:58:19,866 p=godev u=105706 | ok: [webapp1.lab.example.com]
+2020-02-03 09:58:19,935 p=godev u=105706 | ok: [haproxy.lab.example.com]
+2020-02-03 09:58:20,040 p=godev u=105706 | ok: [webapp2.lab.example.com]
+2020-02-03 09:58:20,045 p=godev u=105706 | PLAY [Install HAProxy] *******************************************************************************************************************************
+2020-02-03 09:58:20,063 p=godev u=105706 | TASK [Gathering Facts] *******************************************************************************************************************************
+2020-02-03 09:58:20,946 p=godev u=105706 | ok: [haproxy.lab.example.com]
+2020-02-03 09:58:20,960 p=godev u=105706 | TASK [haproxy : Install HAProxy] *********************************************************************************************************************
+2020-02-03 09:58:21,903 p=godev u=105706 | ok: [haproxy.lab.example.com] => (item=[u'haproxy'])
+2020-02-03 09:58:21,924 p=godev u=105706 | TASK [haproxy : Copy haproxy.cfg] ********************************************************************************************************************
+2020-02-03 09:58:23,000 p=godev u=105706 | changed: [haproxy.lab.example.com]
+2020-02-03 09:58:23,031 p=godev u=105706 | TASK [haproxy : Start HAProxy] ***********************************************************************************************************************
+2020-02-03 09:58:24,014 p=godev u=105706 | ok: [haproxy.lab.example.com]
+2020-02-03 09:58:24,046 p=godev u=105706 | TASK [haproxy : Allow HAProxy service through firewalld] *********************************************************************************************
+2020-02-03 09:58:24,996 p=godev u=105706 | ok: [haproxy.lab.example.com]
+2020-02-03 09:58:24,998 p=godev u=105706 | RUNNING HANDLER [haproxy : restart_haproxy] **********************************************************************************************************
+2020-02-03 09:58:25,614 p=godev u=105706 | changed: [haproxy.lab.example.com]
+2020-02-03 09:58:25,618 p=godev u=105706 | PLAY [Install Apache and PHP] ************************************************************************************************************************
+2020-02-03 09:58:25,637 p=godev u=105706 | TASK [Gathering Facts] *******************************************************************************************************************************
+2020-02-03 09:58:26,901 p=godev u=105706 | ok: [webapp1.lab.example.com]
+2020-02-03 09:58:26,937 p=godev u=105706 | ok: [webapp2.lab.example.com]
+2020-02-03 09:58:26,950 p=godev u=105706 | TASK [apache-php : Install Apache and PHP] ***********************************************************************************************************
+2020-02-03 09:58:28,140 p=godev u=105706 | ok: [webapp1.lab.example.com] => (item=[u'httpd', u'php', u'php-mysql', u'libsemanage-python', u'libselinux-python'])
+2020-02-03 09:58:28,144 p=godev u=105706 | ok: [webapp2.lab.example.com] => (item=[u'httpd', u'php', u'php-mysql', u'libsemanage-python', u'libselinux-python'])
+2020-02-03 09:58:28,162 p=godev u=105706 | TASK [apache-php : Copy index.php.j2] ****************************************************************************************************************
+2020-02-03 09:58:29,500 p=godev u=105706 | ok: [webapp2.lab.example.com]
+2020-02-03 09:58:29,515 p=godev u=105706 | ok: [webapp1.lab.example.com]
+2020-02-03 09:58:29,538 p=godev u=105706 | TASK [apache-php : http service state] ***************************************************************************************************************
+2020-02-03 09:58:30,528 p=godev u=105706 | ok: [webapp2.lab.example.com]
+2020-02-03 09:58:30,565 p=godev u=105706 | ok: [webapp1.lab.example.com]
+2020-02-03 09:58:30,579 p=godev u=105706 | TASK [apache-php : Allow Apache service through firewalld] *******************************************************************************************
+2020-02-03 09:58:31,698 p=godev u=105706 | ok: [webapp2.lab.example.com]
+2020-02-03 09:58:31,787 p=godev u=105706 | ok: [webapp1.lab.example.com]
+2020-02-03 09:58:31,792 p=godev u=105706 | PLAY [Install MariaDB] *******************************************************************************************************************************
+2020-02-03 09:58:31,812 p=godev u=105706 | TASK [Gathering Facts] *******************************************************************************************************************************
+2020-02-03 09:58:32,641 p=godev u=105706 | ok: [mysql-server.lab.example.com]
+2020-02-03 09:58:32,657 p=godev u=105706 | TASK [mariadb : Install MariaDB server] **************************************************************************************************************
+2020-02-03 09:58:33,316 p=godev u=105706 | ok: [mysql-server.lab.example.com] => (item=[u'mariadb-server', u'MySQL-python'])
+2020-02-03 09:58:33,332 p=godev u=105706 | TASK [mariadb : Start MariaDB] ***********************************************************************************************************************
+2020-02-03 09:58:33,899 p=godev u=105706 | ok: [mysql-server.lab.example.com]
+2020-02-03 09:58:33,912 p=godev u=105706 | TASK [mariadb : Create DataBase] *********************************************************************************************************************
+2020-02-03 09:58:34,597 p=godev u=105706 | ok: [mysql-server.lab.example.com]
+2020-02-03 09:58:34,611 p=godev u=105706 | TASK [mariadb : Create Users] ************************************************************************************************************************
+2020-02-03 09:58:35,320 p=godev u=105706 | ok: [mysql-server.lab.example.com]
+2020-02-03 09:58:35,337 p=godev u=105706 | TASK [mariadb : Allow MariaDB server through firewalld] **********************************************************************************************
+2020-02-03 09:58:36,131 p=godev u=105706 | ok: [mysql-server.lab.example.com]
+2020-02-03 09:58:36,133 p=godev u=105706 | PLAY RECAP *******************************************************************************************************************************************
+2020-02-03 09:58:36,133 p=godev u=105706 | haproxy.lab.example.com    : ok=9    changed=2    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0   
+2020-02-03 09:58:36,133 p=godev u=105706 | mysql-server.lab.example.com : ok=9    changed=0    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0   
+2020-02-03 09:58:36,134 p=godev u=105706 | webapp1.lab.example.com    : ok=8    changed=0    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0   
+2020-02-03 09:58:36,134 p=godev u=105706 | webapp2.lab.example.com    : ok=8    changed=0    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0   
+2020-02-03 11:12:50,026 p=godev u=111433 | PLAY [Init base environment for all hosts] ***********************************************************************************************************
+2020-02-03 11:12:50,042 p=godev u=111433 | TASK [Gathering Facts] *******************************************************************************************************************************
+2020-02-03 11:12:53,693 p=godev u=111433 | ok: [webapp1.lab.example.com]
+2020-02-03 11:12:54,656 p=godev u=111433 | ok: [webapp2.lab.example.com]
+2020-02-03 11:12:54,670 p=godev u=111433 | ok: [haproxy.lab.example.com]
+2020-02-03 11:12:54,754 p=godev u=111433 | ok: [mysql-server.lab.example.com]
+2020-02-03 11:12:54,790 p=godev u=111433 | TASK [base : Copy CentOS-Base.repo to remote hosts] **************************************************************************************************
+2020-02-03 11:12:58,211 p=godev u=111433 | ok: [haproxy.lab.example.com]
+2020-02-03 11:12:58,446 p=godev u=111433 | ok: [mysql-server.lab.example.com]
+2020-02-03 11:12:58,487 p=godev u=111433 | ok: [webapp2.lab.example.com]
+2020-02-03 11:12:58,525 p=godev u=111433 | ok: [webapp1.lab.example.com]
+2020-02-03 11:12:58,542 p=godev u=111433 | TASK [base : Copy epel.repo to remote hosts] *********************************************************************************************************
+2020-02-03 11:13:00,730 p=godev u=111433 | ok: [haproxy.lab.example.com]
+2020-02-03 11:13:00,868 p=godev u=111433 | ok: [webapp2.lab.example.com]
+2020-02-03 11:13:00,983 p=godev u=111433 | ok: [mysql-server.lab.example.com]
+2020-02-03 11:13:00,984 p=godev u=111433 | ok: [webapp1.lab.example.com]
+2020-02-03 11:13:00,995 p=godev u=111433 | PLAY [Install HAProxy] *******************************************************************************************************************************
+2020-02-03 11:13:01,030 p=godev u=111433 | TASK [Gathering Facts] *******************************************************************************************************************************
+2020-02-03 11:13:02,034 p=godev u=111433 | ok: [haproxy.lab.example.com]
+2020-02-03 11:13:02,052 p=godev u=111433 | TASK [haproxy : Install HAProxy] *********************************************************************************************************************
+2020-02-03 11:13:02,944 p=godev u=111433 | ok: [haproxy.lab.example.com] => (item=[u'haproxy'])
+2020-02-03 11:13:02,959 p=godev u=111433 | TASK [haproxy : Copy haproxy.cfg] ********************************************************************************************************************
+2020-02-03 11:13:03,715 p=godev u=111433 | ok: [haproxy.lab.example.com]
+2020-02-03 11:13:03,731 p=godev u=111433 | TASK [haproxy : Start HAProxy] ***********************************************************************************************************************
+2020-02-03 11:13:04,722 p=godev u=111433 | ok: [haproxy.lab.example.com]
+2020-02-03 11:13:04,736 p=godev u=111433 | TASK [haproxy : Allow HAProxy service through firewalld] *********************************************************************************************
+2020-02-03 11:13:05,769 p=godev u=111433 | ok: [haproxy.lab.example.com]
+2020-02-03 11:13:05,773 p=godev u=111433 | PLAY [Install Apache and PHP] ************************************************************************************************************************
+2020-02-03 11:13:05,790 p=godev u=111433 | TASK [Gathering Facts] *******************************************************************************************************************************
+2020-02-03 11:13:07,087 p=godev u=111433 | ok: [webapp2.lab.example.com]
+2020-02-03 11:13:07,278 p=godev u=111433 | ok: [webapp1.lab.example.com]
+2020-02-03 11:13:07,292 p=godev u=111433 | TASK [apache-php : Install Apache and PHP] ***********************************************************************************************************
+2020-02-03 11:13:08,398 p=godev u=111433 | ok: [webapp1.lab.example.com] => (item=[u'httpd', u'php', u'php-mysql', u'libsemanage-python', u'libselinux-python'])
+2020-02-03 11:13:08,499 p=godev u=111433 | ok: [webapp2.lab.example.com] => (item=[u'httpd', u'php', u'php-mysql', u'libsemanage-python', u'libselinux-python'])
+2020-02-03 11:13:08,515 p=godev u=111433 | TASK [apache-php : Copy index.php.j2] ****************************************************************************************************************
+2020-02-03 11:13:10,196 p=godev u=111433 | changed: [webapp2.lab.example.com]
+2020-02-03 11:13:10,205 p=godev u=111433 | changed: [webapp1.lab.example.com]
+2020-02-03 11:13:10,224 p=godev u=111433 | TASK [apache-php : Apache service status] ************************************************************************************************************
+2020-02-03 11:13:11,222 p=godev u=111433 | ok: [webapp1.lab.example.com]
+2020-02-03 11:13:11,245 p=godev u=111433 | ok: [webapp2.lab.example.com]
+2020-02-03 11:13:11,260 p=godev u=111433 | TASK [apache-php : Allow Apache service through firewalld] *******************************************************************************************
+2020-02-03 11:13:12,489 p=godev u=111433 | ok: [webapp2.lab.example.com]
+2020-02-03 11:13:12,560 p=godev u=111433 | ok: [webapp1.lab.example.com]
+2020-02-03 11:13:12,567 p=godev u=111433 | PLAY [Install MariaDB] *******************************************************************************************************************************
+2020-02-03 11:13:12,596 p=godev u=111433 | TASK [Gathering Facts] *******************************************************************************************************************************
+2020-02-03 11:13:13,429 p=godev u=111433 | ok: [mysql-server.lab.example.com]
+2020-02-03 11:13:13,444 p=godev u=111433 | TASK [mariadb : Install MariaDB server] **************************************************************************************************************
+2020-02-03 11:13:14,145 p=godev u=111433 | ok: [mysql-server.lab.example.com] => (item=[u'mariadb-server', u'MySQL-python'])
+2020-02-03 11:13:14,161 p=godev u=111433 | TASK [mariadb : Start MariaDB] ***********************************************************************************************************************
+2020-02-03 11:13:14,744 p=godev u=111433 | ok: [mysql-server.lab.example.com]
+2020-02-03 11:13:14,757 p=godev u=111433 | TASK [mariadb : Create DataBase] *********************************************************************************************************************
+2020-02-03 11:13:15,427 p=godev u=111433 | ok: [mysql-server.lab.example.com]
+2020-02-03 11:13:15,444 p=godev u=111433 | TASK [mariadb : Create Users] ************************************************************************************************************************
+2020-02-03 11:13:16,135 p=godev u=111433 | ok: [mysql-server.lab.example.com]
+2020-02-03 11:13:16,150 p=godev u=111433 | TASK [mariadb : Allow MariaDB server through firewalld] **********************************************************************************************
+2020-02-03 11:13:16,946 p=godev u=111433 | ok: [mysql-server.lab.example.com]
+2020-02-03 11:13:16,948 p=godev u=111433 | PLAY RECAP *******************************************************************************************************************************************
+2020-02-03 11:13:16,949 p=godev u=111433 | haproxy.lab.example.com    : ok=8    changed=0    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0   
+2020-02-03 11:13:16,949 p=godev u=111433 | mysql-server.lab.example.com : ok=9    changed=0    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0   
+2020-02-03 11:13:16,949 p=godev u=111433 | webapp1.lab.example.com    : ok=8    changed=1    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0   
+2020-02-03 11:13:16,949 p=godev u=111433 | webapp2.lab.example.com    : ok=8    changed=1    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0   
+2020-02-03 11:17:43,341 p=godev u=112353 | PLAY [Init base environment for all hosts] ***********************************************************************************************************
+2020-02-03 11:17:43,357 p=godev u=112353 | TASK [Gathering Facts] *******************************************************************************************************************************
+2020-02-03 11:17:46,357 p=godev u=112353 | ok: [webapp1.lab.example.com]
+2020-02-03 11:17:46,778 p=godev u=112353 | ok: [mysql-server.lab.example.com]
+2020-02-03 11:17:46,953 p=godev u=112353 | ok: [haproxy.lab.example.com]
+2020-02-03 11:17:47,076 p=godev u=112353 | ok: [webapp2.lab.example.com]
+2020-02-03 11:17:47,095 p=godev u=112353 | TASK [base : Copy CentOS-Base.repo to remote hosts] **************************************************************************************************
+2020-02-03 11:17:49,569 p=godev u=112353 | ok: [webapp1.lab.example.com]
+2020-02-03 11:17:49,785 p=godev u=112353 | ok: [webapp2.lab.example.com]
+2020-02-03 11:17:49,818 p=godev u=112353 | ok: [haproxy.lab.example.com]
+2020-02-03 11:17:49,926 p=godev u=112353 | ok: [mysql-server.lab.example.com]
+2020-02-03 11:17:49,947 p=godev u=112353 | TASK [base : Copy epel.repo to remote hosts] *********************************************************************************************************
+2020-02-03 11:17:52,067 p=godev u=112353 | ok: [mysql-server.lab.example.com]
+2020-02-03 11:17:52,332 p=godev u=112353 | ok: [webapp2.lab.example.com]
+2020-02-03 11:17:52,405 p=godev u=112353 | ok: [webapp1.lab.example.com]
+2020-02-03 11:17:52,463 p=godev u=112353 | ok: [haproxy.lab.example.com]
+2020-02-03 11:17:52,468 p=godev u=112353 | PLAY [Install HAProxy] *******************************************************************************************************************************
+2020-02-03 11:17:52,493 p=godev u=112353 | TASK [Gathering Facts] *******************************************************************************************************************************
+2020-02-03 11:17:53,464 p=godev u=112353 | ok: [haproxy.lab.example.com]
+2020-02-03 11:17:53,481 p=godev u=112353 | TASK [haproxy : Install HAProxy] *********************************************************************************************************************
+2020-02-03 11:17:54,405 p=godev u=112353 | ok: [haproxy.lab.example.com] => (item=[u'haproxy'])
+2020-02-03 11:17:54,420 p=godev u=112353 | TASK [haproxy : Copy haproxy.cfg] ********************************************************************************************************************
+2020-02-03 11:17:55,194 p=godev u=112353 | ok: [haproxy.lab.example.com]
+2020-02-03 11:17:55,210 p=godev u=112353 | TASK [haproxy : Start HAProxy] ***********************************************************************************************************************
+2020-02-03 11:17:56,196 p=godev u=112353 | ok: [haproxy.lab.example.com]
+2020-02-03 11:17:56,210 p=godev u=112353 | TASK [haproxy : Allow HAProxy service through firewalld] *********************************************************************************************
+2020-02-03 11:17:57,205 p=godev u=112353 | ok: [haproxy.lab.example.com]
+2020-02-03 11:17:57,209 p=godev u=112353 | PLAY [Install Apache and PHP] ************************************************************************************************************************
+2020-02-03 11:17:57,229 p=godev u=112353 | TASK [Gathering Facts] *******************************************************************************************************************************
+2020-02-03 11:17:58,652 p=godev u=112353 | ok: [webapp2.lab.example.com]
+2020-02-03 11:17:58,658 p=godev u=112353 | ok: [webapp1.lab.example.com]
+2020-02-03 11:17:58,671 p=godev u=112353 | TASK [apache-php : Install Apache and PHP] ***********************************************************************************************************
+2020-02-03 11:17:59,807 p=godev u=112353 | ok: [webapp2.lab.example.com] => (item=[u'httpd', u'php', u'php-mysql', u'libsemanage-python', u'libselinux-python'])
+2020-02-03 11:17:59,827 p=godev u=112353 | ok: [webapp1.lab.example.com] => (item=[u'httpd', u'php', u'php-mysql', u'libsemanage-python', u'libselinux-python'])
+2020-02-03 11:17:59,841 p=godev u=112353 | TASK [apache-php : Copy index.php.j2] ****************************************************************************************************************
+2020-02-03 11:18:01,228 p=godev u=112353 | ok: [webapp2.lab.example.com]
+2020-02-03 11:18:01,273 p=godev u=112353 | ok: [webapp1.lab.example.com]
+2020-02-03 11:18:01,288 p=godev u=112353 | TASK [apache-php : Apache service status] ************************************************************************************************************
+2020-02-03 11:18:02,269 p=godev u=112353 | ok: [webapp2.lab.example.com]
+2020-02-03 11:18:02,279 p=godev u=112353 | ok: [webapp1.lab.example.com]
+2020-02-03 11:18:02,294 p=godev u=112353 | TASK [apache-php : Allow Apache service through firewalld] *******************************************************************************************
+2020-02-03 11:18:03,504 p=godev u=112353 | ok: [webapp1.lab.example.com]
+2020-02-03 11:18:03,516 p=godev u=112353 | ok: [webapp2.lab.example.com]
+2020-02-03 11:18:03,523 p=godev u=112353 | PLAY [Install MariaDB] *******************************************************************************************************************************
+2020-02-03 11:18:03,541 p=godev u=112353 | TASK [Gathering Facts] *******************************************************************************************************************************
+2020-02-03 11:18:04,453 p=godev u=112353 | ok: [mysql-server.lab.example.com]
+2020-02-03 11:18:04,467 p=godev u=112353 | TASK [mariadb : Install MariaDB server] **************************************************************************************************************
+2020-02-03 11:18:05,116 p=godev u=112353 | ok: [mysql-server.lab.example.com] => (item=[u'mariadb-server', u'MySQL-python'])
+2020-02-03 11:18:05,131 p=godev u=112353 | TASK [mariadb : Start MariaDB] ***********************************************************************************************************************
+2020-02-03 11:18:05,703 p=godev u=112353 | ok: [mysql-server.lab.example.com]
+2020-02-03 11:18:05,719 p=godev u=112353 | TASK [mariadb : Create DataBase] *********************************************************************************************************************
+2020-02-03 11:18:06,387 p=godev u=112353 | ok: [mysql-server.lab.example.com]
+2020-02-03 11:18:06,401 p=godev u=112353 | TASK [mariadb : Create Users] ************************************************************************************************************************
+2020-02-03 11:18:07,103 p=godev u=112353 | ok: [mysql-server.lab.example.com]
+2020-02-03 11:18:07,117 p=godev u=112353 | TASK [mariadb : Allow MariaDB server through firewalld] **********************************************************************************************
+2020-02-03 11:18:07,917 p=godev u=112353 | ok: [mysql-server.lab.example.com]
+2020-02-03 11:18:07,919 p=godev u=112353 | PLAY RECAP *******************************************************************************************************************************************
+2020-02-03 11:18:07,919 p=godev u=112353 | haproxy.lab.example.com    : ok=8    changed=0    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0   
+2020-02-03 11:18:07,919 p=godev u=112353 | mysql-server.lab.example.com : ok=9    changed=0    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0   
+2020-02-03 11:18:07,919 p=godev u=112353 | webapp1.lab.example.com    : ok=8    changed=0    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0   
+2020-02-03 11:18:07,920 p=godev u=112353 | webapp2.lab.example.com    : ok=8    changed=0    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0   
+2020-02-03 14:16:13,721 p=godev u=125582 | PLAY [Init base environment for all hosts] ***********************************************************************************************************
+2020-02-03 14:16:13,742 p=godev u=125582 | TASK [Gathering Facts] *******************************************************************************************************************************
+2020-02-03 14:16:18,195 p=godev u=125582 | ok: [mysql-server.lab.example.com]
+2020-02-03 14:16:18,416 p=godev u=125582 | ok: [webapp2.lab.example.com]
+2020-02-03 14:16:18,588 p=godev u=125582 | ok: [haproxy.lab.example.com]
+2020-02-03 14:16:18,613 p=godev u=125582 | ok: [webapp1.lab.example.com]
+2020-02-03 14:16:18,630 p=godev u=125582 | TASK [base : Copy CentOS-Base.repo to remote hosts] **************************************************************************************************
+2020-02-03 14:16:21,409 p=godev u=125582 | ok: [haproxy.lab.example.com]
+2020-02-03 14:16:21,429 p=godev u=125582 | ok: [webapp1.lab.example.com]
+2020-02-03 14:16:21,584 p=godev u=125582 | ok: [webapp2.lab.example.com]
+2020-02-03 14:16:21,597 p=godev u=125582 | ok: [mysql-server.lab.example.com]
+2020-02-03 14:16:21,612 p=godev u=125582 | TASK [base : Copy epel.repo to remote hosts] *********************************************************************************************************
+2020-02-03 14:16:23,846 p=godev u=125582 | ok: [mysql-server.lab.example.com]
+2020-02-03 14:16:24,169 p=godev u=125582 | ok: [webapp1.lab.example.com]
+2020-02-03 14:16:24,245 p=godev u=125582 | ok: [haproxy.lab.example.com]
+2020-02-03 14:16:24,353 p=godev u=125582 | ok: [webapp2.lab.example.com]
+2020-02-03 14:16:24,367 p=godev u=125582 | PLAY [Install HAProxy] *******************************************************************************************************************************
+2020-02-03 14:16:24,394 p=godev u=125582 | TASK [Gathering Facts] *******************************************************************************************************************************
+2020-02-03 14:16:25,463 p=godev u=125582 | ok: [haproxy.lab.example.com]
+2020-02-03 14:16:25,479 p=godev u=125582 | TASK [haproxy : Install HAProxy] *********************************************************************************************************************
+2020-02-03 14:16:26,506 p=godev u=125582 | ok: [haproxy.lab.example.com] => (item=[u'haproxy'])
+2020-02-03 14:16:26,525 p=godev u=125582 | TASK [haproxy : Copy haproxy.cfg] ********************************************************************************************************************
+2020-02-03 14:16:27,208 p=godev u=125582 | changed: [haproxy.lab.example.com]
+2020-02-03 14:16:27,227 p=godev u=125582 | TASK [haproxy : Start HAProxy] ***********************************************************************************************************************
+2020-02-03 14:16:28,265 p=godev u=125582 | ok: [haproxy.lab.example.com]
+2020-02-03 14:16:28,290 p=godev u=125582 | TASK [haproxy : Allow HAProxy service through firewalld] *********************************************************************************************
+2020-02-03 14:16:29,410 p=godev u=125582 | ok: [haproxy.lab.example.com]
+2020-02-03 14:16:29,411 p=godev u=125582 | RUNNING HANDLER [haproxy : restart_haproxy] **********************************************************************************************************
+2020-02-03 14:16:30,046 p=godev u=125582 | changed: [haproxy.lab.example.com]
+2020-02-03 14:16:30,051 p=godev u=125582 | PLAY [Install Apache and PHP] ************************************************************************************************************************
+2020-02-03 14:16:30,072 p=godev u=125582 | TASK [Gathering Facts] *******************************************************************************************************************************
+2020-02-03 14:16:31,984 p=godev u=125582 | ok: [webapp2.lab.example.com]
+2020-02-03 14:16:32,120 p=godev u=125582 | ok: [webapp1.lab.example.com]
+2020-02-03 14:16:32,140 p=godev u=125582 | TASK [apache-php : Install Apache and PHP] ***********************************************************************************************************
+2020-02-03 14:16:33,384 p=godev u=125582 | ok: [webapp1.lab.example.com] => (item=[u'httpd', u'php', u'php-mysql', u'libsemanage-python', u'libselinux-python'])
+2020-02-03 14:16:33,388 p=godev u=125582 | ok: [webapp2.lab.example.com] => (item=[u'httpd', u'php', u'php-mysql', u'libsemanage-python', u'libselinux-python'])
+2020-02-03 14:16:33,406 p=godev u=125582 | TASK [apache-php : Copy index.php.j2] ****************************************************************************************************************
+2020-02-03 14:16:34,930 p=godev u=125582 | ok: [webapp2.lab.example.com]
+2020-02-03 14:16:34,977 p=godev u=125582 | ok: [webapp1.lab.example.com]
+2020-02-03 14:16:35,000 p=godev u=125582 | TASK [apache-php : Apache service status] ************************************************************************************************************
+2020-02-03 14:16:35,982 p=godev u=125582 | ok: [webapp1.lab.example.com]
+2020-02-03 14:16:36,076 p=godev u=125582 | ok: [webapp2.lab.example.com]
+2020-02-03 14:16:36,095 p=godev u=125582 | TASK [apache-php : Allow Apache service through firewalld] *******************************************************************************************
+2020-02-03 14:16:37,423 p=godev u=125582 | ok: [webapp1.lab.example.com]
+2020-02-03 14:16:37,548 p=godev u=125582 | ok: [webapp2.lab.example.com]
+2020-02-03 14:16:37,556 p=godev u=125582 | PLAY [Install MariaDB] *******************************************************************************************************************************
+2020-02-03 14:16:37,584 p=godev u=125582 | TASK [Gathering Facts] *******************************************************************************************************************************
+2020-02-03 14:16:38,617 p=godev u=125582 | ok: [mysql-server.lab.example.com]
+2020-02-03 14:16:38,632 p=godev u=125582 | TASK [mariadb : Install MariaDB server] **************************************************************************************************************
+2020-02-03 14:16:39,396 p=godev u=125582 | ok: [mysql-server.lab.example.com] => (item=[u'mariadb-server', u'MySQL-python'])
+2020-02-03 14:16:39,412 p=godev u=125582 | TASK [mariadb : Start MariaDB] ***********************************************************************************************************************
+2020-02-03 14:16:40,068 p=godev u=125582 | ok: [mysql-server.lab.example.com]
+2020-02-03 14:16:40,082 p=godev u=125582 | TASK [mariadb : Create DataBase] *********************************************************************************************************************
+2020-02-03 14:16:40,786 p=godev u=125582 | ok: [mysql-server.lab.example.com]
+2020-02-03 14:16:40,801 p=godev u=125582 | TASK [mariadb : Create Users] ************************************************************************************************************************
+2020-02-03 14:16:41,504 p=godev u=125582 | ok: [mysql-server.lab.example.com]
+2020-02-03 14:16:41,519 p=godev u=125582 | TASK [mariadb : Allow MariaDB server through firewalld] **********************************************************************************************
+2020-02-03 14:16:42,351 p=godev u=125582 | ok: [mysql-server.lab.example.com]
+2020-02-03 14:16:42,352 p=godev u=125582 | PLAY RECAP *******************************************************************************************************************************************
+2020-02-03 14:16:42,353 p=godev u=125582 | haproxy.lab.example.com    : ok=9    changed=2    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0   
+2020-02-03 14:16:42,353 p=godev u=125582 | mysql-server.lab.example.com : ok=9    changed=0    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0   
+2020-02-03 14:16:42,353 p=godev u=125582 | webapp1.lab.example.com    : ok=8    changed=0    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0   
+2020-02-03 14:16:42,353 p=godev u=125582 | webapp2.lab.example.com    : ok=8    changed=0    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0   
+2020-02-03 14:21:48,531 p=godev u=126494 | PLAY [Init base environment for all hosts] ***********************************************************************************************************
+2020-02-03 14:21:48,546 p=godev u=126494 | TASK [Gathering Facts] *******************************************************************************************************************************
+2020-02-03 14:21:51,832 p=godev u=126494 | ok: [haproxy.lab.example.com]
+2020-02-03 14:21:52,336 p=godev u=126494 | ok: [webapp1.lab.example.com]
+2020-02-03 14:21:52,431 p=godev u=126494 | ok: [webapp2.lab.example.com]
+2020-02-03 14:21:52,436 p=godev u=126494 | ok: [mysql-server.lab.example.com]
+2020-02-03 14:21:52,453 p=godev u=126494 | TASK [base : Copy CentOS-Base.repo to remote hosts] **************************************************************************************************
+2020-02-03 14:21:55,052 p=godev u=126494 | ok: [webapp1.lab.example.com]
+2020-02-03 14:21:55,244 p=godev u=126494 | ok: [mysql-server.lab.example.com]
+2020-02-03 14:21:55,440 p=godev u=126494 | ok: [haproxy.lab.example.com]
+2020-02-03 14:21:55,449 p=godev u=126494 | ok: [webapp2.lab.example.com]
+2020-02-03 14:21:55,470 p=godev u=126494 | TASK [base : Copy epel.repo to remote hosts] *********************************************************************************************************
+2020-02-03 14:21:57,547 p=godev u=126494 | ok: [webapp1.lab.example.com]
+2020-02-03 14:21:58,014 p=godev u=126494 | ok: [webapp2.lab.example.com]
+2020-02-03 14:21:58,077 p=godev u=126494 | ok: [haproxy.lab.example.com]
+2020-02-03 14:21:58,120 p=godev u=126494 | ok: [mysql-server.lab.example.com]
+2020-02-03 14:21:58,135 p=godev u=126494 | PLAY [Install HAProxy] *******************************************************************************************************************************
+2020-02-03 14:21:58,166 p=godev u=126494 | TASK [Gathering Facts] *******************************************************************************************************************************
+2020-02-03 14:21:59,062 p=godev u=126494 | ok: [haproxy.lab.example.com]
+2020-02-03 14:21:59,077 p=godev u=126494 | TASK [haproxy : Install HAProxy] *********************************************************************************************************************
+2020-02-03 14:21:59,124 p=godev u=126696 | [DEPRECATION WARNING]: Invoking "yum" only once while using a loop via squash_actions is deprecated. Instead of using a loop to supply multiple items
+ and specifying `name: "{{ item }}"`, please use `name: ['haproxy']` and remove the loop. This feature will be removed in version 2.11. Deprecation 
+warnings can be disabled by setting deprecation_warnings=False in ansible.cfg.
+2020-02-03 14:22:00,083 p=godev u=126494 | ok: [haproxy.lab.example.com] => (item=[u'haproxy'])
+2020-02-03 14:22:00,099 p=godev u=126494 | TASK [haproxy : Copy haproxy.cfg] ********************************************************************************************************************
+2020-02-03 14:22:01,262 p=godev u=126494 | changed: [haproxy.lab.example.com]
+2020-02-03 14:22:01,278 p=godev u=126494 | TASK [haproxy : Start HAProxy] ***********************************************************************************************************************
+2020-02-03 14:22:02,333 p=godev u=126494 | ok: [haproxy.lab.example.com]
+2020-02-03 14:22:02,348 p=godev u=126494 | TASK [haproxy : Allow HAProxy service through firewalld] *********************************************************************************************
+2020-02-03 14:22:03,411 p=godev u=126494 | ok: [haproxy.lab.example.com]
+2020-02-03 14:22:03,412 p=godev u=126494 | RUNNING HANDLER [haproxy : restart_haproxy] **********************************************************************************************************
+2020-02-03 14:22:04,081 p=godev u=126494 | changed: [haproxy.lab.example.com]
+2020-02-03 14:22:04,086 p=godev u=126494 | PLAY [Install Apache and PHP] ************************************************************************************************************************
+2020-02-03 14:22:04,114 p=godev u=126494 | TASK [Gathering Facts] *******************************************************************************************************************************
+2020-02-03 14:22:05,466 p=godev u=126494 | ok: [webapp2.lab.example.com]
+2020-02-03 14:22:05,636 p=godev u=126494 | ok: [webapp1.lab.example.com]
+2020-02-03 14:22:05,653 p=godev u=126494 | TASK [apache-php : Install Apache and PHP] ***********************************************************************************************************
+2020-02-03 14:22:05,710 p=godev u=126773 | [DEPRECATION WARNING]: Invoking "yum" only once while using a loop via squash_actions is deprecated. Instead of using a loop to supply multiple items
+ and specifying `name: "{{ item }}"`, please use `name: ['httpd', 'php', 'php-mysql', 'libsemanage-python', 'libselinux-python']` and remove the 
+loop. This feature will be removed in version 2.11. Deprecation warnings can be disabled by setting deprecation_warnings=False in ansible.cfg.
+2020-02-03 14:22:05,729 p=godev u=126774 | [DEPRECATION WARNING]: Invoking "yum" only once while using a loop via squash_actions is deprecated. Instead of using a loop to supply multiple items
+ and specifying `name: "{{ item }}"`, please use `name: ['httpd', 'php', 'php-mysql', 'libsemanage-python', 'libselinux-python']` and remove the 
+loop. This feature will be removed in version 2.11. Deprecation warnings can be disabled by setting deprecation_warnings=False in ansible.cfg.
+2020-02-03 14:22:06,866 p=godev u=126494 | ok: [webapp1.lab.example.com] => (item=[u'httpd', u'php', u'php-mysql', u'libsemanage-python', u'libselinux-python'])
+2020-02-03 14:22:06,890 p=godev u=126494 | ok: [webapp2.lab.example.com] => (item=[u'httpd', u'php', u'php-mysql', u'libsemanage-python', u'libselinux-python'])
+2020-02-03 14:22:06,910 p=godev u=126494 | TASK [apache-php : Copy index.php.j2] ****************************************************************************************************************
+2020-02-03 14:22:08,437 p=godev u=126494 | ok: [webapp2.lab.example.com]
+2020-02-03 14:22:08,445 p=godev u=126494 | ok: [webapp1.lab.example.com]
+2020-02-03 14:22:08,475 p=godev u=126494 | TASK [apache-php : Apache service status] ************************************************************************************************************
+2020-02-03 14:22:09,560 p=godev u=126494 | ok: [webapp1.lab.example.com]
+2020-02-03 14:22:09,673 p=godev u=126494 | ok: [webapp2.lab.example.com]
+2020-02-03 14:22:09,692 p=godev u=126494 | TASK [apache-php : Allow Apache service through firewalld] *******************************************************************************************
+2020-02-03 14:22:10,844 p=godev u=126494 | ok: [webapp1.lab.example.com]
+2020-02-03 14:22:10,886 p=godev u=126494 | ok: [webapp2.lab.example.com]
+2020-02-03 14:22:10,895 p=godev u=126494 | PLAY [Install MariaDB] *******************************************************************************************************************************
+2020-02-03 14:22:10,925 p=godev u=126494 | TASK [Gathering Facts] *******************************************************************************************************************************
+2020-02-03 14:22:11,826 p=godev u=126494 | ok: [mysql-server.lab.example.com]
+2020-02-03 14:22:11,842 p=godev u=126494 | TASK [mariadb : Install MariaDB server] **************************************************************************************************************
+2020-02-03 14:22:11,893 p=godev u=126869 | [DEPRECATION WARNING]: Invoking "yum" only once while using a loop via squash_actions is deprecated. Instead of using a loop to supply multiple items
+ and specifying `name: "{{ item }}"`, please use `name: ['mariadb-server', 'MySQL-python']` and remove the loop. This feature will be removed in 
+version 2.11. Deprecation warnings can be disabled by setting deprecation_warnings=False in ansible.cfg.
+2020-02-03 14:22:12,528 p=godev u=126494 | ok: [mysql-server.lab.example.com] => (item=[u'mariadb-server', u'MySQL-python'])
+2020-02-03 14:22:12,544 p=godev u=126494 | TASK [mariadb : Start MariaDB] ***********************************************************************************************************************
+2020-02-03 14:22:13,133 p=godev u=126494 | ok: [mysql-server.lab.example.com]
+2020-02-03 14:22:13,150 p=godev u=126494 | TASK [mariadb : Create DataBase] *********************************************************************************************************************
+2020-02-03 14:22:14,196 p=godev u=126494 | ok: [mysql-server.lab.example.com]
+2020-02-03 14:22:14,228 p=godev u=126494 | TASK [mariadb : Create Users] ************************************************************************************************************************
+2020-02-03 14:22:15,271 p=godev u=126494 | ok: [mysql-server.lab.example.com]
+2020-02-03 14:22:15,294 p=godev u=126494 | TASK [mariadb : Allow MariaDB server through firewalld] **********************************************************************************************
+2020-02-03 14:22:16,363 p=godev u=126494 | ok: [mysql-server.lab.example.com]
+2020-02-03 14:22:16,366 p=godev u=126494 | PLAY RECAP *******************************************************************************************************************************************
+2020-02-03 14:22:16,366 p=godev u=126494 | haproxy.lab.example.com    : ok=9    changed=2    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0   
+2020-02-03 14:22:16,366 p=godev u=126494 | mysql-server.lab.example.com : ok=9    changed=0    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0   
+2020-02-03 14:22:16,367 p=godev u=126494 | webapp1.lab.example.com    : ok=8    changed=0    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0   
+2020-02-03 14:22:16,367 p=godev u=126494 | webapp2.lab.example.com    : ok=8    changed=0    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0   
+2020-02-03 15:15:23,007 p=godev u=130923 | webapp1.lab.example.com | UNREACHABLE! => {
+    "changed": false, 
+    "msg": "Failed to connect to the host via ssh: Shared connection to webapp1.lab.example.com closed.", 
+    "unreachable": true
+}
+2020-02-03 15:15:23,242 p=godev u=130923 | mysql-server.lab.example.com | UNREACHABLE! => {
+    "changed": false, 
+    "msg": "Failed to connect to the host via ssh: Shared connection to mysql-server.lab.example.com closed.", 
+    "unreachable": true
+}
+2020-02-03 15:15:23,360 p=godev u=130923 | webapp2.lab.example.com | UNREACHABLE! => {
+    "changed": false, 
+    "msg": "Failed to connect to the host via ssh: Shared connection to webapp2.lab.example.com closed.", 
+    "unreachable": true
+}
+2020-02-03 15:15:23,399 p=godev u=130923 | haproxy.lab.example.com | UNREACHABLE! => {
+    "changed": false, 
+    "msg": "Failed to connect to the host via ssh: Shared connection to haproxy.lab.example.com closed.", 
+    "unreachable": true
+}

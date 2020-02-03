@@ -1,0 +1,17 @@
+---
+- name: Copy CentOS-Base.repo to remote hosts
+  copy:
+    src: /etc/yum.repos.d/CentOS-Base.repo
+    dest: /etc/yum.repos.d/CentOS-Base.repo
+    owner: root
+    group: root
+    mode: '0644'
+
+- name: Copy epel.repo to remote hosts
+  copy: 
+    src: /etc/yum.repos.d/epel.repo
+    dest: /etc/yum.repos.d/epel.repo
+    owner: root  
+    group: root
+    mode: '0644'
+...

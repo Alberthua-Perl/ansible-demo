@@ -1,0 +1,4 @@
+---
+mode: http
+balance: roundrobin
+...
