@@ -1,0 +1,10 @@
+{
+  "package": {
+    "web_package": "httpd",
+    "db_package": "mariadb-server"
+  },
+  "users": {
+    "user1": "joe",
+    "user2": "jane"
+  }
+}

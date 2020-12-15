@@ -1,0 +1,9 @@
+- name: Installs the httpd package
+  yum:
+    name: httpd
+    state: latest
+
+- name: Starts the httpd service
+  service:
+    name: httpd
+    state: started
