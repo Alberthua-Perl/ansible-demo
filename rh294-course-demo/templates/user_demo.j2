@@ -1,0 +1,5 @@
+{# for statement #}
+{{ ansible_managed }}
+{% for myuser in users if not myuser == "root" %}
+  User number {{ loop.index }} - {{ myuser }}
+{% endfor %}
