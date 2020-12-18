@@ -69,7 +69,7 @@
 
 - name: Post synchronize ssh public key
   hosts: localhost
-  gather_facts:
+  gather_facts: no
   vars:
     home: "{{ lookup('env', 'HOME') }}"
     dir_path: "{{ home }}/sync-sshkey/group_vars"
