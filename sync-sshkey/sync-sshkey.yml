@@ -1,0 +1,86 @@
+---
+# Synchronize user ssh public key to multiple hosts automatically
+# not through bash script.
+# Before running this playbook, you should change `group_name',
+# `dir_path', `ssh_password' variable.
+
+- name: Prepare for ssh public key
+  hosts: localhost
+  gather_facts: no
+  vars:
+    group_name:
+      - control
+      - nodes
+    # according to groups in inventory to change group_name
+    home: "{{ lookup('env', 'HOME') }}"
+    dir_path: "{{ home }}/sync-sshkey/group_vars"
+    ssh_password: ""
+    # specfied ssh password
+    default_password: redhat
+
+  tasks:
+    - name: Verify ssh public key file
+      command: "ls -l {{ home }}/.ssh/id_rsa.pub"
+      ignore_errors: yes
+      register: pub_result
+
+    - name: Generate ssh keypair
+      command: ssh-keygen -t rsa -P "" -f {{ home }}/.ssh/id_rsa
+      # no prompt to generate ssh keypair
+      when: pub_result.rc != 0
+
+    - name: Create group_vars dir
+      file:
+        path: "{{ dir_path }}"
+        state: directory
+        mode: '0755'
+
+    - name: Create group_vars file
+      file: 
+        path: "{{ dir_path }}/{{ item }}"
+        state: touch
+        # create file if not exists
+        mode: '0644'
+      loop: "{{ group_name }}"
+
+    - name: Insert ssh password to group_vars file
+      lineinfile:
+        path: "{{ dir_path }}/{{ item }}"
+        line: "ansible_ssh_pass: {{ ssh_password | default(default_password, True) }}"
+      loop: "{{ group_name }}"
+
+- name: Transfer remote user ssh public key
+  hosts: all
+  gather_facts: no
+
+  tasks:
+    - name: Synchronize ssh public key
+      authorized_key:
+        user: "{{ remote_user }}"
+        # The username on the remote host whose authorized_keys file will be modified.
+        state: present
+        key: "{{ public_key }}"
+      vars:
+        remote_user: devops
+        home: "{{ lookup('env', 'HOME') }}"
+        # current $HOME on control node
+        public_key: "{{ lookup('file', '{{ home }}/.ssh/id_rsa.pub') }}"
+        # variable could be used as parameter of lookup function.
+
+- name: Post synchronize ssh public key
+  hosts: localhost
+  gather_facts:
+  vars:
+    home: "{{ lookup('env', 'HOME') }}"
+    dir_path: "{{ home }}/sync-sshkey/group_vars"
+
+  tasks:
+    - name: Clear password in group_vars
+      lineinfile:
+        path: "{{ dir_path }}/{{ item }}"
+        regexp: '^ansible_ssh_pass'
+        line: ''
+      loop: "{{ query('lines', 'ls {{ dir_path }}') }}"
+      # return a list
+      # variable could be used as parameter of lookup function.
+
