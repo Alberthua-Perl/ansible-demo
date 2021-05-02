@@ -1,0 +1,11 @@
+default menu.c32
+# prompt 10
+timeout 600
+
+menu title ========== CentOS 7.4 PXE Boot Menu ==========
+label linux
+menu label Install Customize CentOS 7.4 x86_64
+menu default
+
+kernel centos7.4/vmlinuz
+append initrd=centos7.4/initrd.img inst.repo=http://10.25.0.10/centos7.4-server ks=http://10.25.0.10/ks-centos7.4.cfg

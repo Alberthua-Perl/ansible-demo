@@ -1,0 +1,189 @@
+---
+# Deploy PXE server on all-in-one node included dhcp-server,
+# tftp-server, httpd-server and pxe boot programme.
+# Before using the playbook, maybe replace some arguments!
+# The playbook depends on RH294v8.0 course environment.
+#
+# Created by hualongfeiyyy@163.com on 2021-05-02.
+# 
+# Please verify following demands before running this playbook:
+#  1. scp centos7.4-server-x86_64.iso to root@servera:~
+#  2. set servera second NIC bridged on privbr0
+#  3. publish devops user ssh pubkey:
+#     $ ansible pxeservers -k -m authorized_key \
+#       -a "user=devops state=present key={{ lookup('file', '/home/devops/.ssh/id_rsa.pub') }}"
+# 
+# Note:
+#  Kickstart file define 30GiB disk, so you should use >= 30GiB disk
+#  when create new virtual machine.
+
+- name: Provision servera infra
+  hosts: pxeservers
+  vars:
+    network_connections:
+      - name: Wired Connection 2
+        type: ethernet
+        interface_name: enp2s0
+        autoconnect: yes
+        ip:
+          address:
+            - 10.25.0.10/24
+    selinux_state: permissive
+
+  pre_tasks:
+    - name: Install rhel-system-roles package
+      yum:
+        name: rhel-system-roles
+        state: present
+
+  roles:
+    - rhel-system-roles.network
+    - rhel-system-roles.selinux        
+  # Configure ip address for the second NIC of servera
+  # Set SELinux mode to access httpd
+
+- name: Deploy all-in-one PXE server - DHCP server
+  hosts: pxeservers
+  vars:
+    dhcp_listen_nic: enp2s0
+    # specified dhcp listening nic
+
+  tasks:
+    - name: Install DHCP server to support PXE
+      yum:
+        name: dhcp-server
+        state: present
+
+    - name: Backup DHCP server configure file
+      shell: mv /etc/dhcp/dhcpd.conf /etc/dhcp/dhcpd.conf.bak
+      
+    - name: Transfer DHCP server configure file
+      copy:
+        src: /home/devops/deploy-pxe-server/dhcpd.conf
+        dest: /etc/dhcp/
+        owner: root
+        group: root
+        mode: '0644'
+
+    - name: Syntax check for DHCP configure
+      shell: /usr/sbin/dhcpd -t
+      register: dhcp_syntax
+
+    - name: Specified listen NIC interface
+      lineinfile:
+        path: /etc/sysconfig/dhcpd
+        line: "DHCPDARGS={{ dhcp_listen_nic }}"
+
+    - name: Start DHCP server
+      service:
+        name: dhcpd
+        state: started
+      when: dhcp_syntax.rc == 0
+
+    - name: Allow DHCP service access
+      firewalld:
+        service: dhcp
+        permanent: yes
+        state: enabled
+        immediate: true
+
+- name: Deploy all-in-one PXE server - Tftp server
+  hosts: pxeservers
+
+  tasks:
+    - name: Install tftp-server and syslinux
+      yum:
+        name:
+          - tftp-server
+          - syslinux
+        state: present
+
+    - name: Configure tftp-server
+      copy:
+        src: /home/devops/deploy-pxe-server/tftp
+        dest: /etc/xinetd.d/tftp
+        owner: root
+        group: root
+        mode: '0644'
+
+    - name: Start tftp-server service
+      service:
+        name: tftp
+        state: started
+
+    - name: Allow Tftp service access
+      firewalld:
+        service: tftp
+        permanent: yes
+        state: enabled
+        immediate: true
+
+- name: Deploy all-in-one PXE server - Apache httpd server
+  hosts: pxeservers
+
+  tasks:
+    - name: Install apache httpd server
+      yum:
+        name: httpd
+        state: present
+
+    - name: Copy httpd configure file
+      copy:
+        src: /home/devops/deploy-pxe-server/pxe-server.conf
+        dest: /etc/httpd/conf.d/
+        owner: apache
+        group: apache
+        mode: '0644'
+
+    - name: Copy pxe kickstart file
+      copy:
+        src: /home/devops/deploy-pxe-server/ks-centos7.4.cfg
+        dest: /var/www/html/
+        mode: '0644'
+
+    - name: Create CentOS 7.x http shared directory
+      file:
+        path: /var/www/html/centos7.4-server
+        state: directory
+        mode: '0755'
+
+    - name: Configure CentOS 7.x persistent mount
+      lineinfile:
+        path: /etc/fstab
+        line: /root/centos7.4-server-x86_64.iso  /var/www/html/centos7.4-server  iso9660  defaults  0 0
+
+    - name: Mount local CentOS 7.x iso
+      shell: mount -a
+
+    - name: Start Apache httpd service
+      service:
+        name: httpd
+        state: started
+        enabled: yes
+
+    - name: Allow Apache httpd service access
+      firewalld:
+        service: http
+        permanent: yes
+        state: enabled
+        immediate: yes
+
+- name: Deploy PXE boot programme
+  hosts: pxeservers
+  vars:
+    pxe_boot_dir: /var/lib/tftpboot
+    # pxe boot dir definied by /etc/xinetd.d/tftp
+
+  tasks:
+    - name: Copy pxe boot file and firectory
+      shell: >
+        cp -rf /usr/share/syslinux/{diag,dosutil,ldlinux.c32,libutil.c32,menu.c32,pxelinux.0} {{ pxe_boot_dir }} &&
+        mkdir {{ pxe_boot_dir }}/{centos7.4,pxelinux.cfg} && 
+        cp /var/www/html/centos7.4-server/images/pxeboot/{vmlinuz,initrd.img} {{ pxe_boot_dir }}/centos7.4
+      # Just copy necessary PXE boot menu to targeted directory.
+
+    - name: Copy pxe definied file
+      copy:
+        src: /home/devops/deploy-pxe-server/default
+        dest: "{{ pxe_boot_dir }}/pxelinux.cfg"
+
