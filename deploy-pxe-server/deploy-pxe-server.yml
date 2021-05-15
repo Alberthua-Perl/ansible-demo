@@ -10,12 +10,14 @@
 #  1. scp centos7.4-server-x86_64.iso to root@servera:~
 #  2. set servera second NIC bridged on privbr0
 #  3. publish devops user ssh pubkey:
-#     $ ansible pxeservers -k -m authorized_key \
+#     $ ansible all -k -m authorized_key \
 #       -a "user=devops state=present key={{ lookup('file', '/home/devops/.ssh/id_rsa.pub') }}"
+#  4. install rhel-system-roles package on workstation node
 # 
 # Note:
-#  Kickstart file define 30GiB disk, so you should use >= 30GiB disk
-#  when create new virtual machine.
+#  1. Kickstart file define 30GiB disk, so you should use >= 30GiB disk
+#     when create new virtual machine.
+#  2. Please run this playbook on devops@workstation.
 
 - name: Provision servera infra
   hosts: pxeservers
@@ -29,12 +31,6 @@
           address:
             - 10.25.0.10/24
     selinux_state: permissive
-
-  pre_tasks:
-    - name: Install rhel-system-roles package
-      yum:
-        name: rhel-system-roles
-        state: present
 
   roles:
     - rhel-system-roles.network
