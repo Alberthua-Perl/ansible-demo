@@ -1,2 +1,5 @@
+[control]
+workstation.lab.example.com
+
 [pxeservers]
-servera
+servera.lab.example.com
