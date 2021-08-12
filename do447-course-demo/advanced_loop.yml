@@ -1,0 +1,118 @@
+---
+- name: Test advanced loop
+  hosts: localhost
+  become: false
+  gather_facts: no
+  vars:
+    # list_of_list
+    app_a_tmp_files:
+      - files/app_a_tmp_file1.txt
+      - files/app_a_tmp_file2.txt
+      - files/app_a_tmp_file3.txt
+    app_b_tmp_files:
+      - files/app_b_tmp_file1.txt
+      - files/app_b_tmp_file2.txt
+      - files/app_b_tmp_file3.txt
+    app_c_tmp_files:
+      - files/app_c_tmp_file1.txt
+      - files/app_c_tmp_file2.txt
+      - files/app_c_tmp_file3.txt
+    # dict_of_list  
+    users_list:
+      - name: bob
+        gender: male
+        hobby:
+          - Skateboard
+          - Videogame
+      - name: alice
+        gender: female
+        hobby:
+          - Music
+    # dict_of_dict      
+    users_dict:
+      demo1:
+        name: Demo user 1
+        mail: demo1@example.com
+      demo2:
+        name: Demo user 2
+        mail: demo2@example.com
+      demo3:
+        name: Demo user 3
+        mail: demo3@example.com
+
+  tasks:
+    ## loop + flatten filter equal to with_items 
+    ## loop not equal to with_items in list_in_list
+    ## loop equal to with_list in the case.
+    - name: Generage test files
+      command: bash prepare_test_files.sh
+
+    - name: Remove build files through with_items
+      file:
+        path: "{{ item }}"
+        state: absent
+      with_items:
+        - "{{ app_a_tmp_files }}"
+        - "{{ app_b_tmp_files }}"
+        - "{{ app_c_tmp_files }}"
+
+    - name: Regenerate test files
+      command: bash prepare_test_files.sh
+          
+    - name: Remove build files through loop
+      file:
+        path: "{{ item }}"
+        state: absent
+      loop: "{{ list_of_lists | flatten(levels=1) }}"
+      vars:
+        list_of_lists:
+          - "{{ app_a_tmp_files }}"
+          - "{{ app_b_tmp_files }}"
+          - "{{ app_c_tmp_files }}"
+
+
+    ## loop + subelements filter equal to with_subelements
+    - name: Test complex data structure through with_subelements
+      debug:
+        msg: "{{ item.0.name }}'s hobby is {{ item.1 }}"
+      with_subelements:
+        - "{{ users_list }}"
+        - hobby
+
+    - name: Test complex data structure through loop
+      debug:
+        msg: "{{ item.0.name }}'s hobby is {{ item.1 }}"
+      loop: "{{ users_list | subelements('hobby') }}"  
+          
+
+    ## loop + dict2items filter equal to with_dict
+    - name: Verify users key and value through with_dict
+      debug:
+        msg: >
+          Users dictionary's key is {{ item.key }} and 
+          value is {{ item.value.name }} and 
+          user's mail is {{ item.value.mail }}
+      with_dict: "{{ users_dict }}"
+
+    - name: Verify users key and value through loop
+      debug:
+        msg: >
+          Users dictionary's key is {{ item.key }} and
+          value is {{ item.value.name }} and
+          user's mail is {{ item.value.mail }}
+      loop: "{{ users_dict | dict2items }}"
+
+    
+    ## loop + query + fileglob plug-in equal to with_fileglob
+    - name: Test fileglob lookup plugin through loop
+      debug:
+        msg: Bash file is {{ item }}
+      loop: "{{ query('fileglob', '~/.bash*') }}"
+
+    - name: Test fileglob lookup plugin through with_fileglob
+      debug:
+        msg: Bash file is {{ item }}
+      with_fileglob:
+        - "~/.bash*"
+        
+        

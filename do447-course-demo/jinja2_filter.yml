@@ -1,0 +1,143 @@
+---
+- name: Test Jinja2 expression filters
+  hosts: servera.lab.example.com
+  gather_facts: yes
+
+  tasks:
+    ## default filter
+    - name: Install web server package
+      yum:
+        name: "{{ package | default(webserver, True) }}"
+        state: present
+      become: true
+      vars:
+        package: ~
+        # Undefined variable could be defined as null, ~, '', "".
+        webserver: httpd
+
+    - name: Ensure user jonfoo exists.
+      user:
+        name: jonfoo
+        group: "{{ supplementary_groups['jonfoo'] | default(omit) }}"
+      become: true
+      vars:
+        supplementary_groups:
+          jonfoo: devops
+
+
+    ## capitalize, lower, upper, string, random, shuffle filter    
+    - name: Output variable value of filter
+      debug:
+        msg: >
+          The capitalize myname is {{ myname | capitalize }}
+          and lower myname is {{ myname | lower }}
+          and upper myname is {{ myname | upper }}
+          and the number mynumber is {{ mynumber | string }}
+          and random number of list is "{{ [2, 4, 6, 8, 10, 12] | random }}"
+          and another list is "{{ [5, 9, 13, 27] | shuffle }}"
+      vars:    
+        myname: albertHua
+        mynumber: 447
+
+      # shuffle filter could be used without list filter.
+      # reverse filter should be used with list filter.
+
+
+    ## int, round, sum filter
+    - name: Operate number calculate
+      debug:
+        msg: >
+          The result is {{ ( ansible_facts['date_time']['hour'] | int ) + 1 }}
+          and int result is {{ 46.892 | round | int }}
+          and sum result is {{ [2, 4, 6, 8, 10, 12] | sum }}
+
+
+    ## unique, sort, length, first, last, reverse, list, flatten filter
+    ## difference, union, intersect filter
+    # union, intersect and difference filter operate set object.           
+    - name: Test multiple filters for list
+      assert:
+        that:
+          - "{{ [1, 4, 2, 2] | unique | sort }} is eq( [1, 2, 4] )"
+          - "{{ [2, 4, 6, 8, 10, 12] | length }} is eq( 6 )"
+          - "{{ [2, 4, 6, 8, 10, 12] | first }} is eq( 2 )"
+          - "{{ [2, 4, 6, 8, 10, 12] | last }} is eq( 12 )"
+          - "{{ [2, 4, 6, 8, 10] | reverse | list }} is eq( [10, 8, 6, 4, 2] )"
+          - "{{ [4, 8, 10, 6, 2] | sort }} is eq( [2, 4, 6, 8, 10] )"
+          - "{{ [2, [4, [6, 8]], 10] | flatten }} is eq( [2, 4, 6, 8, 10] )"
+          - "{{ [2, 4, 6, 8, 10] | difference([2, 4, 6, 16]) }} is eq( [8, 10] )"
+          - "{{ [2, 4, 6] | union([10, 16]) }} is eq( [2, 4, 6, 10, 16] )"
+          - "{{ [2, 4, 6] | intersect([4, 12, 19]) }} is eq( [4] )"
+
+
+    ## combine, dict2items, items2dict filter
+    - name: Test multiple filters for dictionary
+      assert:
+        that:
+          - "{{ {'A':1, 'B':2} | combine({'B':4, 'C':5}) }} is eq( expected )"
+          - "{{ characters_dict | dict2items }} is eq( characters_items )"
+          - "{{ characters_items | items2dict }} is eq( characters_dict )" 
+      vars:
+        expected:
+          A: 1
+          B: 4
+          C: 5
+        characters_dict:
+          Douglas: Human
+          Marvin: Robot
+          Arthur: Human
+        characters_items:
+          - key: Douglas
+            value: Human
+          - key: Marvin
+            value: Robot
+          - key: Arthur
+            value: Human
+
+
+    ## quote, replace, regex_search, regex_replace filter
+    - name: Put quotes around 'my_string'
+      shell: echo {{ my_string | quote }}
+      vars:
+        my_string: "Hello DO447"
+      register: quote_result  
+
+    - name: Output my_string variable    
+      debug:
+        msg: Quote result is {{ quote_result.stdout }}
+
+    - name: Test results of regex search and search-and-replace
+      assert:
+        that:
+          - "'{{ 'marvin, arthur' | replace('ar', '**') }}' is eq( 'm**vin, **thur' )"
+          - "'{{ 'marvin, arthur' | regex_search('ar\\S*r') }}' is eq( 'arthur' )"
+          - "'{{ 'arthur up' | regex_replace('ar(\\S*)r','\\1mb') }}' is eq( 'thumb up' )"
+
+
+    ## json_query, to_json, to_yaml filter
+    - name: Get the 'name' elements from the list of dictionaries in 'hosts'
+      assert:
+        that:
+          - "{{ hosts | json_query('[*].name') }} is eq( ['bastion', 'classroom'] )"
+      vars:
+        hosts:
+          - name: bastion
+            ip:
+              - 172.25.250.254
+              - 172.25.252.1
+          - name: classroom
+            ip:
+              - 172.25.252.254
+
+    - name: Convert between JSON and YAML format
+      assert:
+        that:
+          - "'{{ hosts | to_json }}' is eq( hosts_json )"
+      vars:
+        hosts:
+          - name: bastion
+            ip:
+              - 172.25.250.254
+              - 172.25.252.1
+        hosts_json: '[{"name": "bastion", "ip": ["172.25.250.254", "172.25.252.1"]}]'
+

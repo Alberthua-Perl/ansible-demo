@@ -1,0 +1,30 @@
+---
+- name: Testing the listen directive
+  hosts: localhost
+  gather_facts: no
+  become: false
+
+  tasks:
+    - debug:
+        msg: Trigerring the handlers
+      notify: My handlers
+      changed_when: true
+
+  handlers:
+    # Listening to the "My handlers" event
+    - name: Listening to a notification
+      debug:
+        msg: First handler was notified
+      listen: My handlers
+
+    # As an example, this handler is also triggered because
+    # its name matches the notification, but no two handlers
+    # can have the same name.
+    - name: My handlers
+      debug:
+        msg: Second handler was notified
+
+    - name: Subcribe a notification
+      debug:
+        msg: Third handler was notified
+      listen: My handlers

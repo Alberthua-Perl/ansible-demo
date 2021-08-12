@@ -1,0 +1,6 @@
+---
+user:
+  - name: Joe
+    password: redhat
+  - name: John
+    password: RedHat

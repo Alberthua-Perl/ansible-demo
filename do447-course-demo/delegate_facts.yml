@@ -1,0 +1,39 @@
+---
+- name: Test delegation tasks
+  hosts: servera.lab.example.com
+
+  tasks:
+    - name: Get system information
+      command: uname -a
+      register: server
+
+    - name: Display servera system information
+      debug:
+        msg: "{{ server }}"
+
+    - name: Get system information
+      command: uname -a
+      delegate_to: localhost
+      register: local
+
+    - name: Display localhost system information
+      debug:
+        msg: "{{ local }}"
+
+- name: Test delegation facts
+  hosts: localhost
+  gather_facts: no
+
+  tasks:
+    - name: Set a fact in delegated task on servera
+      set_fact:
+        myfact: Where am I set?
+      delegate_to: servera.lab.example.com
+      delegate_facts: true
+
+    - name: Display the facts from servera.lab.example.com
+      debug:
+        msg: "{{ hostvars['servera.lab.example.com']['myfact'] }}"
+      # use magic variable to verify delegation fact
+
+

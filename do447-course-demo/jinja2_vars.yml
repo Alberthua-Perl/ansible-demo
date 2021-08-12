@@ -1,0 +1,25 @@
+---
+- name: Test Jinja2 variables
+  hosts: localhost
+  gather_facts: no
+  become: false
+  vars:
+    my_list:
+      - Douglas
+      - Marvin
+      - Arthur
+    my_dict:
+      Douglas: Human
+      Marvin: Robot
+      Arthur: Human
+  
+  tasks:
+    - name: Confirm that the second list element is "Marvin"
+      assert:
+        that:
+          - my_list[1] == 'Marvin'
+
+    - name: Confirm "Marvin" vaule of hash
+      assert:
+        that:
+          - my_dict['Marvin'] == 'Robot'

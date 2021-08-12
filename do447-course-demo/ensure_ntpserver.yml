@@ -1,0 +1,26 @@
+---
+- name: Ensure current NTP server
+  hosts: all
+  become: false
+  gather_facts: no
+  serial: 2
+
+  tasks:
+    - name: Capture current NTP server
+      shell: chronyc sources -v | grep -E '^\^'
+      register: ntpserver_result
+
+    - debug:
+        var: ntpserver_result.stdout_lines
+
+    - debug:
+        msg: First host in play is {{ ansible_play_hosts[0] }}
+
+    - name: Report batch process on managed hosts
+      shell: "echo {{ inventory_hostname }} -- {{ batch_nodes }} >> /tmp/batch_nodes.txt"
+      run_once: yes
+      # Just run once on the first node of batch, ignore other nodes.
+      delegate_to: workstation.lab.example.com
+      vars:
+        batch_nodes: "{{ ansible_play_batch | join(' ') }}"
+      # ansible_play_batch variable is list included batch managed hosts.  

@@ -1,0 +1,33 @@
+---
+- name: Setup httpd service
+  hosts: all
+  order: reverse_sorted
+
+  tasks:
+    - name: Notify start of process
+      debug:
+        msg: Beginning httpd setup
+
+    - block:
+        - name: Ensure httpd packages are installed
+          yum:
+            name:
+              - httpd
+              - php
+              - git
+              - php-mysqlnd
+            state: present
+
+        - name: Ensure SELinux allows httpd connection to a remote database
+          seboolean:
+            name: httpd_can_network_connect_db
+            state: true
+            persistent: true
+
+        - name: Ensure httpd service is started and enabled
+          service:
+            name: httpd
+            state: started
+            enabled: true
+      tags:
+        - webserver
