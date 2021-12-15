@@ -77,13 +77,13 @@
   
   kubeamd init master node failure, and report node not found. Because all `pause` infra images haven't been tagged `k8s.io/pause:3.5`, `kubelet` on master node can't create `sanbox`.
   
-  ![](C:\Users\DELL\Desktop\kubeadm-init-master-error-1.jpg)
+  ![](https://github.com/Alberthua-Perl/tech-docs/blob/master/images/kubeadm-init-master-error-1.jpg)
   
-  ![](C:\Users\DELL\Desktop\kubeadm-init-master-error-2.jpg)
+  ![](https://github.com/Alberthua-Perl/tech-docs/blob/master/images/kubeadm-init-master-error-2.jpg)
 
 - `register` variable in playbook can't be use between different plays.
   
-  ![](C:\Users\DELL\Desktop\register-var-used-between-two-plays-error.jpg)
+  ![](https://github.com/Alberthua-Perl/tech-docs/blob/master/images/register-var-used-between-two-plays-error.jpg)
 
 ##### Usage:
 
@@ -97,11 +97,11 @@ $ ./kani
 
 - project directory structure:
   
-  ![](C:\Users\DELL\Desktop\kani-structure.jpg)
+  ![](https://github.com/Alberthua-Perl/tech-docs/blob/master/images/kani-structure.jpg)
 
 - Kubernetes cluster status in the project as following:
   
-  ![](C:\Users\DELL\Desktop\kubernetes-cluster-status.jpg)
+  ![](https://github.com/Alberthua-Perl/tech-docs/blob/master/images/kubernetes-cluster-status.jpg)
 
 ##### References:
 
