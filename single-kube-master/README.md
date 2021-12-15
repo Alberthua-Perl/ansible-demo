@@ -98,6 +98,8 @@ $ ./kani
 - project directory structure:
   
   ![](https://github.com/Alberthua-Perl/tech-docs/blob/master/images/kani-structure.jpg)
+  
+> Because of GitHub uploading limit, cri-containerd-cni-1.5.5-linux-amd64.tar.gz can be downloaded use [link](https://pan.baidu.com/s/1ytxDjSN0u5Tewy5rcEGWNQ), password is apdl
 
 - Kubernetes cluster status in the project as following:
   
