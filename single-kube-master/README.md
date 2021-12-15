@@ -104,6 +104,12 @@ $ ./kani
 - Kubernetes cluster status in the project as following:
   
   ![](https://github.com/Alberthua-Perl/tech-docs/blob/master/images/kubernetes-cluster-status.jpg)
+  
+- Destroy Kubernetes cluster and re-install cluster, so you can run following command:
+  
+  ```bash
+  $ ansible-playbook destroy-kube-cluster.yml
+  ```  
 
 ##### References:
 
