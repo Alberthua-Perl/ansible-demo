@@ -1,0 +1,86 @@
+---
+- name: Prepare to install containerd high-level runtime
+  hosts: all
+  gather_facts: false
+
+  tasks:
+    - name: Deliver cri-containerd-cni-1.5.5 tgz package
+      copy:
+        src: files/containerd/cri-containerd-cni-1.5.5-linux-amd64.tar.gz
+        dest: /tmp
+        owner: root
+        group: root
+      # Because containerd depends on runc and containernetworking-plugins,
+      # the package includes binary runc and containerd cni plugin.
+      # So unarchive package under /, you can use tools directly.
+
+    - name: Unarchive cri-containerd-cni tgz package
+      unarchive:
+        src: /tmp/cri-containerd-cni-1.5.5-linux-amd64.tar.gz
+        dest: /
+        remote_src: yes
+        # remote_src define remote managed nodes src path
+
+- name: Install and configure containerd high-level runtime
+  hosts: all
+  gather_facts: false
+  vars:
+    prefix_cli: /usr/local/bin
+
+  tasks:
+    - name: Create containerd config directory /etc/containerd
+      file:
+        path: /etc/containerd
+        state: directory
+
+    - name: Copy containerd config file to all nodes
+      copy:
+        src: files/containerd/config.toml
+        dest: /etc/containerd
+      # /etc/containerd/config.toml on all nodes modified by hualf
+      # SystemdCgroup and registry mirror modified
+    
+    - name: Daemon reload containerd.service
+      command: systemctl daemon-reload
+
+    - name: Start containerd service on all nodes
+      service:
+        name: containerd
+        state: started
+        enabled: yes
+
+    - name: Test containerd command
+      command: "{{ prefix_cli }}/ctr version && {{ prefix_cli }}/crictl version"
+      register: containerd_cli_result
+
+    - name: Debug containerd CLI result
+      debug:
+        var: containerd_cli_result
+
+- name: Prepare Kubernetes base elements
+  hosts: all
+  gather_facts: false
+  vars_files:
+    - vars/all.yml
+
+  tasks:
+    - name: Install kubeadm kubelet and kubectl
+      yum:
+        name:
+          - "{{ desire_kubeadm }}"
+          - "{{ desire_kubelet }}"
+          - "{{ desire_kubectl }}"
+        state: present
+        enablerepo: kubernetes
+      register: package_result
+
+    - name: Verify install kube base packages result
+      debug:
+        msg: "[INFO] All Kubernetes v{{ kube_version }} core elements install successfully!"
+      when: package_result.rc == 0
+
+    - name: Enable kubelet service
+      service:
+        name: kubelet
+        enabled: yes
+...

@@ -1,0 +1,134 @@
+---
+- name: Prepare base images and provision containerd cni
+  hosts: all
+  gather_facts: false
+  vars_files:
+    - vars/all.yml
+
+  tasks:
+    - name: Create pull container images script
+      file:
+        path: /tmp/provision-container-imgs.sh
+        state: touch
+        owner: root
+        group: root
+        mode: '0755'
+    
+    - name: Insert containerd cli
+      blockinfile:
+        path: /tmp/provision-container-imgs.sh
+        block: |
+          #!/bin/bash
+          ### prepare k8s.gcr.io/pause:3.5
+          /usr/local/bin/ctr -n k8s.io image pull {{ src_pause_img }}
+          /usr/local/bin/ctr -n k8s.io image tag {{ src_pause_img }} {{ tgt_pause_img }}
+          /usr/local/bin/ctr -n k8s.io image rm {{ src_pause_img }}
+          # Must change pause infra image tag, or 'kubeadm init' execute failure as to create sandbox failure.
+          ### prepare registry.aliyuncs.com/k8sxio/coredns:v1.8.4
+          /usr/local/bin/ctr -n k8s.io image pull {{ src_coredns_img }}
+          /usr/local/bin/ctr -n k8s.io image tag {{ src_coredns_img }} {{ tgt_coredns_img }}
+          /usr/local/bin/ctr -n k8s.io image rm {{ src_coredns_img }}
+          # Pull coredns image manually as to 'kubeadm config images pull' execute failure.
+          ### prepare registry.aliyuncs.com/k8sxio/kube-proxy:v1.22.1
+          /usr/local/bin/ctr -n k8s.io image pull {{ tgt_proxy_img }}
+        # pause, coredns and kube-proxy container images used to run base containers on all nodes
+    
+    - name: Excute container images script
+      command: bash /tmp/provision-container-imgs.sh
+
+    - name: Remove containerd cni conflist
+      file:
+        path: /etc/cni/net.d/10-containerd-net.conflist
+        state: absent
+      # ** IMPORTANT ** 
+      # Must remove containerd conflist, because if you will use flannel, calico or 
+      # other cni, all pods will use containerd network definied when kubernetes deployed.
+      # So all pods conflict with other cni.
+        
+- name: "Init Kubernetes v{{ kube_version }} master nodes"       
+  hosts: masters
+  gather_facts: false
+  vars_files:
+    - vars/all.yml
+
+  tasks:
+    - name: Prepare Kubernetes core images
+      command: >
+        kubeadm config images pull 
+          --kubernetes-version {{ kube_version }} --image-repository {{ image_registry }}
+      ignore_errors: yes
+      # As to coredns pulled failed, the task will exit.
+      # But according previous play coredns has been pulled, so ignore errors.
+      
+    - name: Get Kubernetes core images
+      shell: /usr/local/bin/ctr -n k8s.io i ls | awk '{print $1}' | egrep -v 'REF|\@|sha'
+      register: image_list
+
+    - name: Show Kubernetes core images on master nodes
+      debug:
+        var: image_list
+      
+    - name: Synchronize kubeadm conf file
+      copy:
+        src: files/kubeadm-conf.yml
+        dest: /tmp/kubeadm-conf.yml
+        owner: root
+        group: root
+        mode: '0644'
+  
+    - name: Init kubernetes master single node
+      shell: kubeadm init --config /tmp/kubeadm-conf.yml > /tmp/kubeadm-init.log
+      register: kubeadm_init_result
+  
+    - name: Get kubeadm init result
+      debug:
+        msg: Init Kubenetes master nodes successfully!
+      when: kubeadm_init_result.rc == 0  
+
+    - name: Copy kubeconfig file to user
+      shell: >
+        mkdir {{ item.prefix }}/.kube && 
+        cp -i /etc/kubernetes/admin.conf {{ item.prefix }}/.kube/config &&
+        chown "{{ item.user }}":"{{ item.user }}" {{ item.prefix }}/.kube/config
+      loop:
+        - user: root
+          prefix: /root
+        - user: "{{ operator_user }}"
+          prefix: /home/{{ operator_user }}
+
+    - name: Format kubeadm-init.log to kubeadm join command
+      shell: tail -n2 /tmp/kubeadm-init.log > /tmp/kubeadm-join-nodes.sh
+
+    - name: Fetch kubeadm join script to localhost
+      fetch:
+        src: /tmp/kubeadm-join-nodes.sh
+        dest: /tmp/kubeadm-join-nodes
+
+- name: "Join Kubernetes v{{ kube_version }} worker nodes"
+  hosts: nodes
+  gather_facts: false
+  vars_files:
+    - vars/all.yml
+
+  tasks:
+    - name: Synchronize kubeadm join command
+      copy:
+        src: /tmp/kubeadm-join-nodes
+        dest: /root
+
+    - name: Execute kubeadm join command on worker nodes
+      command: bash /root/kubeadm-join-nodes/{{ kube_master_node }}/tmp/kubeadm-join-nodes.sh
+
+- name: Apply Calico CNI for Kubernetes cluster
+  hosts: masters
+  gather_facts: false
+
+  tasks:
+    - name: Copy calico v3.21 yaml file
+      copy:
+        src: files/calico-v3.21.yml
+        dest: /root/calico-v3.21.yml
+
+    - name: Use calico v3.21 cni
+      command: kubectl apply -f /root/calico-v3.21.yml
+...

@@ -1,0 +1,46 @@
+---
+# please according to actual environment to configure gateway and nic
+# gateway and nic should be connected to internet.
+gateway: 192.168.110.1
+nic: eth0
+
+# rhel-system-roles variables
+timesync_ntp_provider: chrony
+timesync_ntp_servers:
+  - hostname: ntp1.aliyun.com
+    iburst: yes 
+  - hostname: ntp2.aliyun.com
+    iburst: yes 
+  - hostname: cn.pool.ntp.org
+    iburst: yes 
+selinux_policy: targeted
+selinux_state: disabled
+
+operator_user: godev
+# remote_user in ansible.cfg is the same user as operator_user.
+yum_repo_files:
+  - files/repos/docker-ce.repo
+  - files/repos/kubernetes.repo
+kernel_module_files:
+  - /etc/sysctl.d/k8s.conf
+  - /etc/sysconfig/modules/ipvs.modules
+
+# define Kubernetes core elements version
+kube_version: 1.22.1
+desire_kubeadm: kubeadm-1.22.1-0
+desire_kubelet: kubelet-1.22.1-0
+desire_kubectl: kubectl-1.22.1-0
+
+# define container image registry
+# according to Kubernetes version to choose following images
+image_registry: registry.aliyuncs.com/k8sxio
+src_pause_img: registry.aliyuncs.com/k8sxio/pause:3.5
+tgt_pause_img: k8s.gcr.io/pause:3.5
+src_coredns_img: docker.io/coredns/coredns:1.8.4
+tgt_coredns_img: registry.aliyuncs.com/k8sxio/coredns:v1.8.4
+tgt_proxy_img: registry.aliyuncs.com/k8sxio/kube-proxy:v1.22.1
+
+# define Kubernetes master hostname which is the same as in ansible inventory
+# change the value when you have other hostname
+kube_master_node: kube-master0
+

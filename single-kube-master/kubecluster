@@ -1,0 +1,7 @@
+[masters]
+kube-master0
+
+[nodes]
+kube-node0
+kube-node1
+kube-node2

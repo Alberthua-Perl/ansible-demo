@@ -1,0 +1,121 @@
+---
+# first install rhel-system-roles package on control node
+- name: Provision Kubernetes cluster nodes status
+  hosts: all
+  vars_files:
+    - vars/all.yml
+
+  pre_tasks:
+    - name: Configure gateway for all nodes
+      command: ip route add default via {{ gateway }} dev {{ nic }}
+      ignore_errors: yes
+
+  roles:
+    - role: rhel-system-roles.selinux
+    - role: rhel-system-roles.timesync
+
+  tasks:
+    - name: Configure {{ operator_user }} user PS1 env var
+      blockinfile:
+        path: /home/{{ operator_user }}/.bashrc
+        block: |
+          ### Define colorful PS1 prompt variable ###
+          export PS1='☸️  \033[1;36m\u@\h\033[0m:\033[1;33m\w\033[0m\033[1;36m$ \033[0m'
+          export PATH=$PATH:/usr/local/bin:/usr/local/sbin
+
+    - name: Change .bashrc file permission
+      file:
+        path: /home/{{ operator_user }}/.bashrc
+        owner: "{{ operator_user }}"
+        group: "{{ operator_user }}"
+
+    - name: Add yum repository file for docker-ce and kubernetes
+      copy:
+        src: "{{ item }}"
+        dest: /etc/yum.repos.d/
+        owner: root
+        group: root
+      loop: "{{ yum_repo_files }}"
+
+    - name: Disable swap space
+      command: swapoff -a
+ 
+    - name: Comment swap space in /etc/fstab
+      lineinfile:
+        path: /etc/fstab
+        regexp: swap
+        line: '^/dev/'
+
+    - name: Deliver /etc/hosts file to all kube nodes
+      template:
+        src: hosts.j2
+        dest: /etc/hosts
+        owner: root
+        group: root
+
+    - name: Stop firewalld service
+      service:
+        name: firewalld
+        state: stopped
+        enabled: no
+
+    # enable bridge call iptables in FORWARD chain
+    - name: Probe kernel module needed by Kubernetes
+      modprobe:
+        name: br_netfilter
+        state: present
+
+    - name: Create Kubernetes kernel arguements file
+      file:
+        path: "{{ item }}"
+        owner: root
+        group: root
+        state: touch
+      loop: "{{ kernel_module_files }}"
+
+    - name: Configure bridge and swap kernel arguements for netfilter
+      blockinfile:
+        path: /etc/sysctl.d/k8s.conf
+        block: |
+          net.bridge.bridge-nf-call-iptables = 1
+          net.bridge.bridge-nf-call-ip6tables = 1
+          net.ipv4.ip_forward = 1
+          vm.swappiness = 0
+
+    - name: Active Kubernetes kernel arguements
+      command: sysctl -p /etc/sysctl.d/k8s.conf
+
+    # verify ipvs kernel module enable after os boot
+    - name: Configure ipvs kernel module
+      blockinfile:
+        path: /etc/sysconfig/modules/ipvs.modules
+        block: |
+          #!/bin/bash
+          modprobe -- ip_vs
+          modprobe -- ip_vs_rr
+          modprobe -- ip_vs_wrr
+          modprobe -- ip_vs_sh
+          modprobe -- nf_conntrack
+          
+    - name: Chmod permission /etc/sysconfig/modules/ipvs.modules
+      file:
+        path: /etc/sysconfig/modules/ipvs.modules
+        owner: root
+        group: root
+        mode: '0755'
+
+    - name: Active ipvs kernel module
+      shell: bash /etc/sysconfig/modules/ipvs.modules && lsmod | grep -e ip_vs -e nf_conntrack
+      register: module_result
+
+    - name: Verify ipvs kernel module status
+      debug:
+        var: module_result
+
+    - name: Install ipset and ipvsadm packages
+      yum:
+        name:
+          - ipset-7.1-1.el7.x86_64
+          - ipvsadm-1.27-8.el7.x86_64
+        state: latest
+...        
