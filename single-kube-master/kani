@@ -1,6 +1,0 @@
-#!/bin/bash
-
-ansible-playbook 10-general-prepare-kube.yml
-ansible-playbook 20-deploy-containerd-kube-base.yml
-ansible-playbook 30-deploy-kube-cluster.yml
-
