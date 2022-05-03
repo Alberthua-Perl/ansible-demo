@@ -6,3 +6,6 @@ servera.lab.example.com
 serverb.lab.example.com
 serverc.lab.example.com
 serverd.lab.example.com
+
+[gitlab_node]
+gitlab.lab.example.com

@@ -1,0 +1,28 @@
+---
+# Before run this playbook, please ensure gitlab.lab.example.com
+# node is running.
+- name: Test uri module to connect gitlab api v4
+  hosts: localhost
+  vars:
+    my_private_token: TSFAyjsPszz5ggxQ3joB
+    # token created for connect gitlab node
+    # token in gitlab-customized-access-token.txt
+  
+  tasks:
+    - name: Use GitLab API to get user data
+      uri:
+        url: http://gitlab.lab.example.com/api/v4/users/
+        method: GET
+        headers:
+          Private-Token: "{{ my_private_token }}"
+        return_content: yes
+      register: gitlab_api_result
+
+    - name: Pring gitlab_api_result variable
+      debug:
+        var: gitlab_api_result
+
+    - name: Print user names
+      debug:
+        msg: A valid username is "{{ item.username }}"
+      loop: "{{ gitlab_api_result.json }}"
