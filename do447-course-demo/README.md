@@ -1,4 +1,4 @@
-# do447-course-demo
+# DO447 Course Demo
 
 Demo ansible configuration file and playbooks for DO447 course of Red Hat Ansible Tower.
 
