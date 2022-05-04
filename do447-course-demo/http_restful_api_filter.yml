@@ -1,0 +1,12 @@
+---
+- name: Use http or restful api filter
+  hosts: localhost
+  vars:
+    entity_name: Test spaces
+
+  tasks:
+    - name: Output urlencode result
+      debug:
+        msg: >
+          Format url "http://example.com?name={{ entity_name | urlencode }}" or 
+          "http://example.com?name={{ entity_name }}"
