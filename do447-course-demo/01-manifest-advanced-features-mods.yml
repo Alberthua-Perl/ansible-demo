@@ -24,6 +24,7 @@ directives:
 
 modules:  
   system:
+    - systemd
     - shell
     - command
     - raw
