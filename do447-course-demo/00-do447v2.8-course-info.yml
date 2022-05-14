@@ -3,6 +3,7 @@ ansible_variable_priority:
 # ansible 变量优先级从高到低排列
   - command_line:
       - -e <key>=<value> option in ansible-playbook command
+
   - play_level:
       - vars directive under include_tasks module
         ### Example:
@@ -11,6 +12,7 @@ ansible_variable_priority:
         #     include_tasks: <task_file>.yml
         #     vars:
         #       service: httpd
+
       - vars directive under include_role module
         ### Example:
         # tasks:
@@ -19,8 +21,11 @@ ansible_variable_priority:
         #       name: apache-web
         #     vars:
         #       service: httpd
+
       - register variable or set_fact module to setup <key>=<valve>
+      
       - include_vars module
+
       - vars directive under one of tasks
         ### Example:
         # tasks:
@@ -30,20 +35,25 @@ ansible_variable_priority:
         #       state: present
         #     vars:
         #       package: skopeo
+               
       - vars directive under block
+      
       - directly definied variables under roles
         ### Example:
         # tasks:
         #   - role: lb-haproxy
         #     lbmethod: roundrobin
         #     # 上述变量可直接覆盖 lb-haproxy 角色的 vars 目录中所定义的同名变量
+      
       - vars directive under roles
         ### Example:
         # tasks:
         #   - role: lb-haproxy
         #     vars:
         #       lbmethod: roundrobin
+      
       - <role_name>/vars/ subdirectory in role
+      
       - vars_files directive under play level
         ### Example:
         # ---
@@ -51,6 +61,7 @@ ansible_variable_priority:
         #   hosts: localhost
         #   vars_files:
         #     - vars/secfile1
+      
       - vars directive under play level
         ### Example:
         # ---
@@ -58,6 +69,7 @@ ansible_variable_priority:
         #   hosts: localhost
         #   vars:
         #     username: tommy
+  
   - host_vars and group_vars:
       - ansible_facts
       - "playbook 同级目录的 host_vars 子目录中定义的主机变量"
@@ -66,4 +78,6 @@ ansible_variable_priority:
       - "playbook 同级目录的 group_vars 子目录中定义的组变量"
       - "inventory 目录中的 group_vars 子目录中定义的组变量"
       - "inventory 文件中定义的组变量"
+  
   - <role_name>/defaults/ subdirectory in role
+...
