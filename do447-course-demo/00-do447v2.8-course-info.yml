@@ -1,19 +1,28 @@
 ---
 ansible_variable_priority:
-# 变量优先级从高到低排列
-  - command_line: 
-      - 'ansible-playbook -e <key>=<value> <playbook_name> 中 -e 选项所定义的变量'
-  - task_level:
-      - "vars 指令为 include_tasks 模块定义的变量"
+# ansible 变量优先级从高到低排列
+  - command_line:
+      - -e <key>=<value> option in ansible-playbook command
+  - play_level:
+      - vars directive under include_tasks module
         ### Example:
         # tasks:
-        #   - name: test vars under include_tasks module
-        #     include_tasks: /path/to/<tasks_file>.yml
+        #   - name: test vars directive under include_tasks module
+        #     include_tasks: <task_file>.yml
         #     vars:
         #       service: httpd
-      - "register 注册变量或 set_fact 模块设置的变量"
-      - "include_vars 模块"
-      - "task 中 vars 指令定义的变量"
+      - vars directive under include_role module
+        ### Example:
+        # tasks:
+        #   - name: vars directive under include_role module
+        #     include_role:
+        #       name: apache-web
+        #     vars:
+        #       service: httpd
+      - register variable or set_fact module to setup <key>=<valve>
+      - include_vars module
+      - vars directive under one of tasks
+        ### Example:
         # tasks:
         #   - name: install container-tools {{ package }}
         #     yum:
@@ -21,30 +30,34 @@ ansible_variable_priority:
         #       state: present
         #     vars:
         #       package: skopeo
-      - "play 中 role 使用时在其下方直接定义的变量"
+      - vars directive under block
+      - directly definied variables under roles
+        ### Example:
         # tasks:
         #   - role: lb-haproxy
         #     lbmethod: roundrobin
-        #     # 上述变量可直接覆盖 lb-haproxy 角色的 vars/ 目录中所定义的同名变量
-      - "play 中 role 使用时在其下方以 vars 指令定义的变量"
+        #     # 上述变量可直接覆盖 lb-haproxy 角色的 vars 目录中所定义的同名变量
+      - vars directive under roles
+        ### Example:
         # tasks:
         #   - role: lb-haproxy
         #     vars:
         #       lbmethod: roundrobin
-      - "角色的 vars/ 目录中所定义的变量"
-  - play_level_vars:
-      - "play 中 vars_file 指令所指定的变量文件"
+      - <role_name>/vars/ subdirectory in role
+      - vars_files directive under play level
+        ### Example:
         # ---
-        # - name: test variable priority
+        # - name: test vars_files directive under play level
         #   hosts: localhost
-        #   vars_file:
+        #   vars_files:
         #     - vars/secfile1
-      - "play 中 vars 指令定义的变量"
+      - vars directive under play level
+        ### Example:
         # ---
-        # - name: test variable priority
+        # - name: test vars directive under play level
         #   hosts: localhost
         #   vars:
-        #     username: appuser1
+        #     username: tommy
   - host_vars and group_vars:
       - ansible_facts
       - "playbook 同级目录的 host_vars 子目录中定义的主机变量"
@@ -53,4 +66,4 @@ ansible_variable_priority:
       - "playbook 同级目录的 group_vars 子目录中定义的组变量"
       - "inventory 目录中的 group_vars 子目录中定义的组变量"
       - "inventory 文件中定义的组变量"
-  - "角色的 defaults/ 目录中所定义的变量"
+  - <role_name>/defaults/ subdirectory in role

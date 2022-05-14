@@ -12,4 +12,6 @@
       include_role:
       # import_role:
         name: motd
+      vars:
+        system_owner: tommy@host.example.com
       when: ansible_facts['architecture'] == "x86_64"
