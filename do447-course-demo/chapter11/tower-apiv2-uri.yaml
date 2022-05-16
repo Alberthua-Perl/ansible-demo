@@ -1,0 +1,22 @@
+---
+- name: Tower API
+  hosts: localhost
+  become: false
+
+  vars:
+    tower_user: admin
+    tower_pass: redhat
+    tower_host: tower.lab.example.com
+    tower_job: TEST%20webservers%20setup
+
+  tasks:
+    - name: Launch a new Job
+      uri:
+        url: https://{{ tower_host }}/api/v2/job_templates/{{ tower_job }}/launch/
+        method: POST
+        validate_certs: no
+        return_content: yes
+        user: "{{ tower_user }}"
+        password: "{{ tower_pass }}"
+        force_basic_auth: yes
+        status_code: 201

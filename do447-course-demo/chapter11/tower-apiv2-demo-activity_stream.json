@@ -1,0 +1,845 @@
+{
+   "previous" : null,
+   "count" : 198,
+   "next" : "/api/v2/activity_stream/?page=2",
+   "results" : [
+      {
+         "operation" : "create",
+         "type" : "activity_stream",
+         "changes" : {
+            "description" : "",
+            "name" : "Machine",
+            "id" : 1,
+            "kind" : "ssh",
+            "injectors" : "{}",
+            "inputs" : "{}"
+         },
+         "related" : {
+            "credential_type" : [
+               "/api/v2/credential_types/1/"
+            ]
+         },
+         "summary_fields" : {
+            "credential_type" : [
+               {
+                  "description" : "",
+                  "managed_by_tower" : true,
+                  "id" : 1,
+                  "name" : "Machine",
+                  "kind" : "ssh"
+               }
+            ]
+         },
+         "object1" : "credential_type",
+         "timestamp" : "2021-08-28T15:53:54.276829Z",
+         "url" : "/api/v2/activity_stream/1/",
+         "id" : 1,
+         "object_association" : "",
+         "object2" : ""
+      },
+      {
+         "summary_fields" : {
+            "credential_type" : [
+               {
+                  "kind" : "scm",
+                  "id" : 2,
+                  "name" : "Source Control",
+                  "description" : "",
+                  "managed_by_tower" : true
+               }
+            ]
+         },
+         "timestamp" : "2021-08-28T15:53:54.285052Z",
+         "object1" : "credential_type",
+         "url" : "/api/v2/activity_stream/2/",
+         "id" : 2,
+         "object_association" : "",
+         "object2" : "",
+         "operation" : "create",
+         "type" : "activity_stream",
+         "changes" : {
+            "kind" : "scm",
+            "inputs" : "{}",
+            "injectors" : "{}",
+            "description" : "",
+            "id" : 2,
+            "name" : "Source Control"
+         },
+         "related" : {
+            "credential_type" : [
+               "/api/v2/credential_types/2/"
+            ]
+         }
+      },
+      {
+         "url" : "/api/v2/activity_stream/3/",
+         "object1" : "credential_type",
+         "timestamp" : "2021-08-28T15:53:54.289792Z",
+         "summary_fields" : {
+            "credential_type" : [
+               {
+                  "managed_by_tower" : true,
+                  "description" : "",
+                  "id" : 3,
+                  "name" : "Vault",
+                  "kind" : "vault"
+               }
+            ]
+         },
+         "object_association" : "",
+         "object2" : "",
+         "id" : 3,
+         "type" : "activity_stream",
+         "operation" : "create",
+         "related" : {
+            "credential_type" : [
+               "/api/v2/credential_types/3/"
+            ]
+         },
+         "changes" : {
+            "kind" : "vault",
+            "inputs" : "{}",
+            "injectors" : "{}",
+            "description" : "",
+            "id" : 3,
+            "name" : "Vault"
+         }
+      },
+      {
+         "type" : "activity_stream",
+         "operation" : "create",
+         "related" : {
+            "credential_type" : [
+               "/api/v2/credential_types/4/"
+            ]
+         },
+         "changes" : {
+            "description" : "",
+            "name" : "Network",
+            "id" : 4,
+            "kind" : "net",
+            "injectors" : "{}",
+            "inputs" : "{}"
+         },
+         "url" : "/api/v2/activity_stream/4/",
+         "object1" : "credential_type",
+         "timestamp" : "2021-08-28T15:53:54.294256Z",
+         "summary_fields" : {
+            "credential_type" : [
+               {
+                  "kind" : "net",
+                  "name" : "Network",
+                  "id" : 4,
+                  "managed_by_tower" : true,
+                  "description" : ""
+               }
+            ]
+         },
+         "object_association" : "",
+         "object2" : "",
+         "id" : 4
+      },
+      {
+         "operation" : "create",
+         "type" : "activity_stream",
+         "related" : {
+            "credential_type" : [
+               "/api/v2/credential_types/5/"
+            ]
+         },
+         "changes" : {
+            "kind" : "cloud",
+            "inputs" : "{}",
+            "injectors" : "{}",
+            "description" : "",
+            "id" : 5,
+            "name" : "Amazon Web Services"
+         },
+         "summary_fields" : {
+            "credential_type" : [
+               {
+                  "kind" : "cloud",
+                  "name" : "Amazon Web Services",
+                  "id" : 5,
+                  "description" : "",
+                  "managed_by_tower" : true
+               }
+            ]
+         },
+         "url" : "/api/v2/activity_stream/5/",
+         "object1" : "credential_type",
+         "timestamp" : "2021-08-28T15:53:54.298719Z",
+         "id" : 5,
+         "object_association" : "",
+         "object2" : ""
+      },
+      {
+         "id" : 6,
+         "object_association" : "",
+         "object2" : "",
+         "summary_fields" : {
+            "credential_type" : [
+               {
+                  "description" : "",
+                  "managed_by_tower" : true,
+                  "id" : 6,
+                  "name" : "OpenStack",
+                  "kind" : "cloud"
+               }
+            ]
+         },
+         "url" : "/api/v2/activity_stream/6/",
+         "object1" : "credential_type",
+         "timestamp" : "2021-08-28T15:53:54.303264Z",
+         "related" : {
+            "credential_type" : [
+               "/api/v2/credential_types/6/"
+            ]
+         },
+         "changes" : {
+            "description" : "",
+            "id" : 6,
+            "name" : "OpenStack",
+            "kind" : "cloud",
+            "inputs" : "{}",
+            "injectors" : "{}"
+         },
+         "operation" : "create",
+         "type" : "activity_stream"
+      },
+      {
+         "id" : 7,
+         "object2" : "",
+         "object_association" : "",
+         "summary_fields" : {
+            "credential_type" : [
+               {
+                  "kind" : "cloud",
+                  "managed_by_tower" : true,
+                  "description" : "",
+                  "id" : 7,
+                  "name" : "VMware vCenter"
+               }
+            ]
+         },
+         "url" : "/api/v2/activity_stream/7/",
+         "timestamp" : "2021-08-28T15:53:54.307683Z",
+         "object1" : "credential_type",
+         "related" : {
+            "credential_type" : [
+               "/api/v2/credential_types/7/"
+            ]
+         },
+         "changes" : {
+            "description" : "",
+            "id" : 7,
+            "name" : "VMware vCenter",
+            "kind" : "cloud",
+            "inputs" : "{}",
+            "injectors" : "{}"
+         },
+         "operation" : "create",
+         "type" : "activity_stream"
+      },
+      {
+         "url" : "/api/v2/activity_stream/8/",
+         "object1" : "credential_type",
+         "timestamp" : "2021-08-28T15:53:54.312198Z",
+         "summary_fields" : {
+            "credential_type" : [
+               {
+                  "kind" : "cloud",
+                  "name" : "Red Hat Satellite 6",
+                  "id" : 8,
+                  "managed_by_tower" : true,
+                  "description" : ""
+               }
+            ]
+         },
+         "object2" : "",
+         "object_association" : "",
+         "id" : 8,
+         "type" : "activity_stream",
+         "operation" : "create",
+         "related" : {
+            "credential_type" : [
+               "/api/v2/credential_types/8/"
+            ]
+         },
+         "changes" : {
+            "description" : "",
+            "name" : "Red Hat Satellite 6",
+            "id" : 8,
+            "kind" : "cloud",
+            "injectors" : "{}",
+            "inputs" : "{}"
+         }
+      },
+      {
+         "operation" : "create",
+         "type" : "activity_stream",
+         "related" : {
+            "credential_type" : [
+               "/api/v2/credential_types/9/"
+            ]
+         },
+         "changes" : {
+            "kind" : "cloud",
+            "injectors" : "{}",
+            "inputs" : "{}",
+            "description" : "",
+            "name" : "Red Hat CloudForms",
+            "id" : 9
+         },
+         "summary_fields" : {
+            "credential_type" : [
+               {
+                  "kind" : "cloud",
+                  "name" : "Red Hat CloudForms",
+                  "id" : 9,
+                  "managed_by_tower" : true,
+                  "description" : ""
+               }
+            ]
+         },
+         "url" : "/api/v2/activity_stream/9/",
+         "object1" : "credential_type",
+         "timestamp" : "2021-08-28T15:53:54.316662Z",
+         "id" : 9,
+         "object2" : "",
+         "object_association" : ""
+      },
+      {
+         "url" : "/api/v2/activity_stream/10/",
+         "object1" : "credential_type",
+         "timestamp" : "2021-08-28T15:53:54.321517Z",
+         "summary_fields" : {
+            "credential_type" : [
+               {
+                  "description" : "",
+                  "managed_by_tower" : true,
+                  "id" : 10,
+                  "name" : "Google Compute Engine",
+                  "kind" : "cloud"
+               }
+            ]
+         },
+         "object2" : "",
+         "object_association" : "",
+         "id" : 10,
+         "type" : "activity_stream",
+         "operation" : "create",
+         "related" : {
+            "credential_type" : [
+               "/api/v2/credential_types/10/"
+            ]
+         },
+         "changes" : {
+            "inputs" : "{}",
+            "injectors" : "{}",
+            "kind" : "cloud",
+            "id" : 10,
+            "name" : "Google Compute Engine",
+            "description" : ""
+         }
+      },
+      {
+         "url" : "/api/v2/activity_stream/11/",
+         "timestamp" : "2021-08-28T15:53:54.326099Z",
+         "object1" : "credential_type",
+         "summary_fields" : {
+            "credential_type" : [
+               {
+                  "kind" : "cloud",
+                  "description" : "",
+                  "managed_by_tower" : true,
+                  "id" : 11,
+                  "name" : "Microsoft Azure Resource Manager"
+               }
+            ]
+         },
+         "object2" : "",
+         "object_association" : "",
+         "id" : 11,
+         "type" : "activity_stream",
+         "operation" : "create",
+         "related" : {
+            "credential_type" : [
+               "/api/v2/credential_types/11/"
+            ]
+         },
+         "changes" : {
+            "description" : "",
+            "name" : "Microsoft Azure Resource Manager",
+            "id" : 11,
+            "kind" : "cloud",
+            "injectors" : "{}",
+            "inputs" : "{}"
+         }
+      },
+      {
+         "object_association" : "",
+         "object2" : "",
+         "id" : 12,
+         "timestamp" : "2021-08-28T15:53:54.330583Z",
+         "object1" : "credential_type",
+         "url" : "/api/v2/activity_stream/12/",
+         "summary_fields" : {
+            "credential_type" : [
+               {
+                  "kind" : "insights",
+                  "description" : "",
+                  "managed_by_tower" : true,
+                  "id" : 12,
+                  "name" : "Insights"
+               }
+            ]
+         },
+         "changes" : {
+            "kind" : "insights",
+            "inputs" : "{}",
+            "injectors" : "{}",
+            "description" : "",
+            "id" : 12,
+            "name" : "Insights"
+         },
+         "related" : {
+            "credential_type" : [
+               "/api/v2/credential_types/12/"
+            ]
+         },
+         "type" : "activity_stream",
+         "operation" : "create"
+      },
+      {
+         "object_association" : "",
+         "object2" : "",
+         "id" : 13,
+         "url" : "/api/v2/activity_stream/13/",
+         "timestamp" : "2021-08-28T15:53:54.335346Z",
+         "object1" : "credential_type",
+         "summary_fields" : {
+            "credential_type" : [
+               {
+                  "name" : "Red Hat Virtualization",
+                  "id" : 13,
+                  "managed_by_tower" : true,
+                  "description" : "",
+                  "kind" : "cloud"
+               }
+            ]
+         },
+         "related" : {
+            "credential_type" : [
+               "/api/v2/credential_types/13/"
+            ]
+         },
+         "changes" : {
+            "description" : "",
+            "id" : 13,
+            "name" : "Red Hat Virtualization",
+            "kind" : "cloud",
+            "inputs" : "{}",
+            "injectors" : "{}"
+         },
+         "type" : "activity_stream",
+         "operation" : "create"
+      },
+      {
+         "object2" : "",
+         "object_association" : "",
+         "id" : 14,
+         "url" : "/api/v2/activity_stream/14/",
+         "object1" : "credential_type",
+         "timestamp" : "2021-08-28T15:53:54.339872Z",
+         "summary_fields" : {
+            "credential_type" : [
+               {
+                  "kind" : "cloud",
+                  "managed_by_tower" : true,
+                  "description" : "",
+                  "id" : 14,
+                  "name" : "Ansible Tower"
+               }
+            ]
+         },
+         "related" : {
+            "credential_type" : [
+               "/api/v2/credential_types/14/"
+            ]
+         },
+         "changes" : {
+            "id" : 14,
+            "name" : "Ansible Tower",
+            "description" : "",
+            "inputs" : "{}",
+            "injectors" : "{}",
+            "kind" : "cloud"
+         },
+         "type" : "activity_stream",
+         "operation" : "create"
+      },
+      {
+         "operation" : "create",
+         "type" : "activity_stream",
+         "changes" : {
+            "injectors" : "{}",
+            "inputs" : "{}",
+            "kind" : "external",
+            "name" : "CyberArk AIM Secret Lookup",
+            "id" : 15,
+            "description" : ""
+         },
+         "related" : {
+            "credential_type" : [
+               "/api/v2/credential_types/15/"
+            ]
+         },
+         "summary_fields" : {
+            "credential_type" : [
+               {
+                  "name" : "CyberArk AIM Secret Lookup",
+                  "id" : 15,
+                  "managed_by_tower" : true,
+                  "description" : "",
+                  "kind" : "external"
+               }
+            ]
+         },
+         "object1" : "credential_type",
+         "timestamp" : "2021-08-28T15:53:54.344356Z",
+         "url" : "/api/v2/activity_stream/15/",
+         "id" : 15,
+         "object_association" : "",
+         "object2" : ""
+      },
+      {
+         "type" : "activity_stream",
+         "operation" : "create",
+         "changes" : {
+            "injectors" : "{}",
+            "inputs" : "{}",
+            "kind" : "external",
+            "name" : "Microsoft Azure Key Vault",
+            "id" : 16,
+            "description" : ""
+         },
+         "related" : {
+            "credential_type" : [
+               "/api/v2/credential_types/16/"
+            ]
+         },
+         "timestamp" : "2021-08-28T15:53:54.349234Z",
+         "object1" : "credential_type",
+         "url" : "/api/v2/activity_stream/16/",
+         "summary_fields" : {
+            "credential_type" : [
+               {
+                  "description" : "",
+                  "managed_by_tower" : true,
+                  "id" : 16,
+                  "name" : "Microsoft Azure Key Vault",
+                  "kind" : "external"
+               }
+            ]
+         },
+         "object_association" : "",
+         "object2" : "",
+         "id" : 16
+      },
+      {
+         "related" : {
+            "credential_type" : [
+               "/api/v2/credential_types/17/"
+            ]
+         },
+         "changes" : {
+            "description" : "",
+            "name" : "CyberArk Conjur Secret Lookup",
+            "id" : 17,
+            "kind" : "external",
+            "injectors" : "{}",
+            "inputs" : "{}"
+         },
+         "type" : "activity_stream",
+         "operation" : "create",
+         "object_association" : "",
+         "object2" : "",
+         "id" : 17,
+         "url" : "/api/v2/activity_stream/17/",
+         "timestamp" : "2021-08-28T15:53:54.353836Z",
+         "object1" : "credential_type",
+         "summary_fields" : {
+            "credential_type" : [
+               {
+                  "name" : "CyberArk Conjur Secret Lookup",
+                  "id" : 17,
+                  "managed_by_tower" : true,
+                  "description" : "",
+                  "kind" : "external"
+               }
+            ]
+         }
+      },
+      {
+         "type" : "activity_stream",
+         "operation" : "create",
+         "related" : {
+            "credential_type" : [
+               "/api/v2/credential_types/18/"
+            ]
+         },
+         "changes" : {
+            "id" : 18,
+            "name" : "HashiCorp Vault Secret Lookup",
+            "description" : "",
+            "inputs" : "{}",
+            "injectors" : "{}",
+            "kind" : "external"
+         },
+         "url" : "/api/v2/activity_stream/18/",
+         "object1" : "credential_type",
+         "timestamp" : "2021-08-28T15:53:54.358394Z",
+         "summary_fields" : {
+            "credential_type" : [
+               {
+                  "id" : 18,
+                  "name" : "HashiCorp Vault Secret Lookup",
+                  "managed_by_tower" : true,
+                  "description" : "",
+                  "kind" : "external"
+               }
+            ]
+         },
+         "object_association" : "",
+         "object2" : "",
+         "id" : 18
+      },
+      {
+         "operation" : "create",
+         "type" : "activity_stream",
+         "changes" : {
+            "name" : "HashiCorp Vault Signed SSH",
+            "id" : 19,
+            "description" : "",
+            "injectors" : "{}",
+            "inputs" : "{}",
+            "kind" : "external"
+         },
+         "related" : {
+            "credential_type" : [
+               "/api/v2/credential_types/19/"
+            ]
+         },
+         "summary_fields" : {
+            "credential_type" : [
+               {
+                  "description" : "",
+                  "managed_by_tower" : true,
+                  "id" : 19,
+                  "name" : "HashiCorp Vault Signed SSH",
+                  "kind" : "external"
+               }
+            ]
+         },
+         "timestamp" : "2021-08-28T15:53:54.362929Z",
+         "object1" : "credential_type",
+         "url" : "/api/v2/activity_stream/19/",
+         "id" : 19,
+         "object2" : "",
+         "object_association" : ""
+      },
+      {
+         "object2" : "",
+         "object_association" : "",
+         "id" : 20,
+         "url" : "/api/v2/activity_stream/20/",
+         "timestamp" : "2021-08-28T15:53:55.311800Z",
+         "object1" : "credential_type",
+         "summary_fields" : {
+            "credential_type" : [
+               {
+                  "description" : "",
+                  "managed_by_tower" : true,
+                  "name" : "Machine",
+                  "id" : 1,
+                  "kind" : "ssh"
+               }
+            ]
+         },
+         "related" : {
+            "credential_type" : [
+               "/api/v2/credential_types/1/"
+            ]
+         },
+         "changes" : {
+            "inputs" : [
+               "{\"fields\": [{\"id\": \"username\", \"label\": \"Username\", \"type\": \"string\"}, {\"id\": \"password\", \"label\": \"Password\", \"type\": \"string\", \"secret\": true, \"ask_at_runtime\": true}, {\"id\": \"ssh_key_data\", \"label\": \"SSH Private Key\", \"type\": \"string\", \"format\": \"ssh_private_key\", \"secret\": true, \"multiline\": true}, {\"id\": \"ssh_public_key_data\", \"label\": \"Signed SSH Certificate\", \"type\": \"string\", \"multiline\": true, \"secret\": true}, {\"id\": \"ssh_key_unlock\", \"label\": \"Private Key Passphrase\", \"type\": \"string\", \"secret\": true, \"ask_at_runtime\": true}, {\"id\": \"become_method\", \"label\": \"Privilege Escalation Method\", \"type\": \"string\", \"help_text\": \"Specify a method for \\\"become\\\" operations. This is equivalent to specifying the --become-method Ansible parameter.\"}, {\"id\": \"become_username\", \"label\": \"Privilege Escalation Username\", \"type\": \"string\"}, {\"id\": \"become_password\", \"label\": \"Privilege Escalation Password\", \"type\": \"string\", \"secret\": true, \"ask_at_runtime\": true}], \"dependencies\": {\"ssh_key_unlock\": [\"ssh_key_data\"]}}",
+               "{}"
+            ]
+         },
+         "type" : "activity_stream",
+         "operation" : "update"
+      },
+      {
+         "id" : 21,
+         "object2" : "",
+         "object_association" : "",
+         "summary_fields" : {
+            "credential_type" : [
+               {
+                  "kind" : "scm",
+                  "id" : 2,
+                  "name" : "Source Control",
+                  "description" : "",
+                  "managed_by_tower" : true
+               }
+            ]
+         },
+         "timestamp" : "2021-08-28T15:53:55.318667Z",
+         "object1" : "credential_type",
+         "url" : "/api/v2/activity_stream/21/",
+         "changes" : {
+            "inputs" : [
+               "{\"fields\": [{\"id\": \"username\", \"label\": \"Username\", \"type\": \"string\"}, {\"id\": \"password\", \"label\": \"Password\", \"type\": \"string\", \"secret\": true}, {\"id\": \"ssh_key_data\", \"label\": \"SCM Private Key\", \"type\": \"string\", \"format\": \"ssh_private_key\", \"secret\": true, \"multiline\": true}, {\"id\": \"ssh_key_unlock\", \"label\": \"Private Key Passphrase\", \"type\": \"string\", \"secret\": true}], \"dependencies\": {\"ssh_key_unlock\": [\"ssh_key_data\"]}}",
+               "{}"
+            ]
+         },
+         "related" : {
+            "credential_type" : [
+               "/api/v2/credential_types/2/"
+            ]
+         },
+         "operation" : "update",
+         "type" : "activity_stream"
+      },
+      {
+         "changes" : {
+            "inputs" : [
+               "{\"fields\": [{\"id\": \"vault_password\", \"label\": \"Vault Password\", \"type\": \"string\", \"secret\": true, \"ask_at_runtime\": true}, {\"id\": \"vault_id\", \"label\": \"Vault Identifier\", \"type\": \"string\", \"format\": \"vault_id\", \"help_text\": \"Specify an (optional) Vault ID. This is equivalent to specifying the --vault-id Ansible parameter for providing multiple Vault passwords.  Note: this feature only works in Ansible 2.4+.\"}], \"required\": [\"vault_password\"]}",
+               "{}"
+            ]
+         },
+         "related" : {
+            "credential_type" : [
+               "/api/v2/credential_types/3/"
+            ]
+         },
+         "operation" : "update",
+         "type" : "activity_stream",
+         "id" : 22,
+         "object_association" : "",
+         "object2" : "",
+         "summary_fields" : {
+            "credential_type" : [
+               {
+                  "description" : "",
+                  "managed_by_tower" : true,
+                  "id" : 3,
+                  "name" : "Vault",
+                  "kind" : "vault"
+               }
+            ]
+         },
+         "timestamp" : "2021-08-28T15:53:55.323658Z",
+         "object1" : "credential_type",
+         "url" : "/api/v2/activity_stream/22/"
+      },
+      {
+         "changes" : {
+            "inputs" : [
+               "{\"fields\": [{\"id\": \"username\", \"label\": \"Username\", \"type\": \"string\"}, {\"id\": \"password\", \"label\": \"Password\", \"type\": \"string\", \"secret\": true}, {\"id\": \"ssh_key_data\", \"label\": \"SSH Private Key\", \"type\": \"string\", \"format\": \"ssh_private_key\", \"secret\": true, \"multiline\": true}, {\"id\": \"ssh_key_unlock\", \"label\": \"Private Key Passphrase\", \"type\": \"string\", \"secret\": true}, {\"id\": \"authorize\", \"label\": \"Authorize\", \"type\": \"boolean\"}, {\"id\": \"authorize_password\", \"label\": \"Authorize Password\", \"type\": \"string\", \"secret\": true}], \"dependencies\": {\"ssh_key_unlock\": [\"ssh_key_data\"], \"authorize_password\": [\"authorize\"]}, \"required\": [\"username\"]}",
+               "{}"
+            ]
+         },
+         "related" : {
+            "credential_type" : [
+               "/api/v2/credential_types/4/"
+            ]
+         },
+         "operation" : "update",
+         "type" : "activity_stream",
+         "id" : 23,
+         "object2" : "",
+         "object_association" : "",
+         "summary_fields" : {
+            "credential_type" : [
+               {
+                  "managed_by_tower" : true,
+                  "description" : "",
+                  "name" : "Network",
+                  "id" : 4,
+                  "kind" : "net"
+               }
+            ]
+         },
+         "timestamp" : "2021-08-28T15:53:55.328392Z",
+         "object1" : "credential_type",
+         "url" : "/api/v2/activity_stream/23/"
+      },
+      {
+         "summary_fields" : {
+            "credential_type" : [
+               {
+                  "kind" : "cloud",
+                  "managed_by_tower" : true,
+                  "description" : "",
+                  "name" : "Amazon Web Services",
+                  "id" : 5
+               }
+            ]
+         },
+         "object1" : "credential_type",
+         "timestamp" : "2021-08-28T15:53:55.333280Z",
+         "url" : "/api/v2/activity_stream/24/",
+         "id" : 24,
+         "object2" : "",
+         "object_association" : "",
+         "operation" : "update",
+         "type" : "activity_stream",
+         "changes" : {
+            "inputs" : [
+               "{\"fields\": [{\"id\": \"username\", \"label\": \"Access Key\", \"type\": \"string\"}, {\"id\": \"password\", \"label\": \"Secret Key\", \"type\": \"string\", \"secret\": true}, {\"id\": \"security_token\", \"label\": \"STS Token\", \"type\": \"string\", \"secret\": true, \"help_text\": \"Security Token Service (STS) is a web service that enables you to request temporary, limited-privilege credentials for AWS Identity and Access Management (IAM) users.\"}], \"required\": [\"username\", \"password\"]}",
+               "{}"
+            ]
+         },
+         "related" : {
+            "credential_type" : [
+               "/api/v2/credential_types/5/"
+            ]
+         }
+      },
+      {
+         "summary_fields" : {
+            "credential_type" : [
+               {
+                  "managed_by_tower" : true,
+                  "description" : "",
+                  "id" : 6,
+                  "name" : "OpenStack",
+                  "kind" : "cloud"
+               }
+            ]
+         },
+         "url" : "/api/v2/activity_stream/25/",
+         "object1" : "credential_type",
+         "timestamp" : "2021-08-28T15:53:55.337973Z",
+         "id" : 25,
+         "object_association" : "",
+         "object2" : "",
+         "operation" : "update",
+         "type" : "activity_stream",
+         "related" : {
+            "credential_type" : [
+               "/api/v2/credential_types/6/"
+            ]
+         },
+         "changes" : {
+            "inputs" : [
+               "{\"fields\": [{\"id\": \"username\", \"label\": \"Username\", \"type\": \"string\"}, {\"id\": \"password\", \"label\": \"Password (API Key)\", \"type\": \"string\", \"secret\": true}, {\"id\": \"host\", \"label\": \"Host (Authentication URL)\", \"type\": \"string\", \"help_text\": \"The host to authenticate with.  For example, https://openstack.business.com/v2.0/\"}, {\"id\": \"project\", \"label\": \"Project (Tenant Name)\", \"type\": \"string\"}, {\"id\": \"domain\", \"label\": \"Domain Name\", \"type\": \"string\", \"help_text\": \"OpenStack domains define administrative boundaries. It is only needed for Keystone v3 authentication URLs. Refer to Ansible Tower documentation for common scenarios.\"}, {\"id\": \"verify_ssl\", \"label\": \"Verify SSL\", \"type\": \"boolean\", \"default\": true}], \"required\": [\"username\", \"password\", \"host\", \"project\"]}",
+               "{}"
+            ]
+         }
+      }
+   ]
+}
