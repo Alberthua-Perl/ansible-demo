@@ -1,6 +1,8 @@
 ---
 # Before run this playbook, please ensure gitlab.lab.example.com
 # node is running.
+# gitlab.lab.example.com is NOT in DO447v2.8 course environment 
+# which is customized node!
 - name: Test uri module to connect gitlab api v4
   hosts: localhost
   vars:
