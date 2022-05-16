@@ -1,0 +1,36 @@
+---
+- name: Tower API
+  hosts: localhost
+  gather_facts: false
+
+  vars:
+    tower_user: admin
+    tower_pass: redhat
+    tower_host: tower.lab.example.com
+    template_name: PROD webservers setup
+
+  tasks:
+    - name: Get the token
+      uri:
+        url: "https://{{ tower_host }}/api/v2/users/1/personal_tokens/"
+        method: POST
+        validate_certs: false
+        return_content: true
+        user: "{{ tower_user }}"
+        password: "{{ tower_pass }}"
+        force_basic_auth: true
+        # regular authentication
+        status_code: 201
+      register: response
+
+    - name: Use the token
+      uri:
+        url: "https://{{ tower_host }}/api/v2/job_templates/{{ template_name | urlencode }}/launch/"
+        method: POST
+        validate_certs: false
+        return_content: true
+        status_code: 201
+        headers:
+          Authorization: "Bearer {{ response['json']['token'] }}"
+          Content-Type: "application/json"
+      register: launch
