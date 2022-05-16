@@ -1,6 +1,7 @@
 ---
 - name: Test meta module to verify multiple handlers
-  hosts: servera.lab.example.com
+  hosts: webservers
+  order: reverse_sorted
   become: true
 
   tasks:
@@ -13,13 +14,14 @@
         packages:
           - httpd
           - mariadb-server
-      notify:
-        - Restart apache web server
-        - Restart mariadb database
+      notify: restart-srv
       changed_when: true  
 
-    - name: Use meta module to flush handlers
-      meta: flush_handlers
+      # 执行 handlers 的方式：
+      #   方法 1：notify 指令中定义的名称必须与 handlers 中定义的名称相同
+      #   方法 2：使用 meta 模块时，notify 指令使用的名称必须与 handlers 中的保持一致，
+      #           并且将强制刷新上一个任务中 notify 指令的通知列表。
+      #   方法 3：使用 handlers 中的 listen 指令订阅 notify 指令的通知。
 
   handlers:
     - name: Restart apache web server
@@ -27,8 +29,10 @@
         name: httpd
         state: restarted
         enabled: yes
+      listen: restart-srv 
     - name: Restart mariadb database
       service:
         name: mariadb
         state: restarted
         enabled: yes
+      listen: restart-srv  

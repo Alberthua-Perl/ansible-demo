@@ -1203,3 +1203,39 @@ The offending line appears to be:
 2022-05-15 17:07:06,807 p=8775 u=devops |  Perform task: TASK: Ensure user jonfoo exists. (N)o/(y)es/(c)ontinue: *******************************************************************************
 2022-05-15 17:07:09,085 p=8775 u=devops |   [ERROR]: User interrupted execution
 
+2022-05-16 14:48:42,448 p=24627 u=devops |  PLAY [Test meta module to verify multiple handlers] ***************************************************************************************************************************************
+2022-05-16 14:48:42,454 p=24627 u=devops |  TASK [Gathering Facts] ********************************************************************************************************************************************************************
+2022-05-16 14:48:44,000 p=24627 u=devops |  ok: [servera.lab.example.com]
+2022-05-16 14:48:44,044 p=24627 u=devops |  ok: [serverb.lab.example.com]
+2022-05-16 14:48:44,058 p=24627 u=devops |  TASK [Install several packages] ***********************************************************************************************************************************************************
+2022-05-16 14:48:45,265 p=24627 u=devops |  changed: [servera.lab.example.com] => (item=httpd)
+2022-05-16 14:48:45,322 p=24627 u=devops |  changed: [serverb.lab.example.com] => (item=httpd)
+2022-05-16 14:48:46,108 p=24627 u=devops |  changed: [servera.lab.example.com] => (item=mariadb-server)
+2022-05-16 14:48:46,161 p=24627 u=devops |  changed: [serverb.lab.example.com] => (item=mariadb-server)
+2022-05-16 14:48:46,162 p=24627 u=devops |  RUNNING HANDLER [Restart apache web server] ***********************************************************************************************************************************************
+2022-05-16 14:48:47,978 p=24627 u=devops |  changed: [servera.lab.example.com]
+2022-05-16 14:48:48,006 p=24627 u=devops |  changed: [serverb.lab.example.com]
+2022-05-16 14:48:48,006 p=24627 u=devops |  RUNNING HANDLER [Restart mariadb database] ************************************************************************************************************************************************
+2022-05-16 14:48:50,410 p=24627 u=devops |  changed: [serverb.lab.example.com]
+2022-05-16 14:48:50,530 p=24627 u=devops |  changed: [servera.lab.example.com]
+2022-05-16 14:48:50,533 p=24627 u=devops |  PLAY RECAP ********************************************************************************************************************************************************************************
+2022-05-16 14:48:50,533 p=24627 u=devops |  servera.lab.example.com    : ok=4    changed=3    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0   
+2022-05-16 14:48:50,533 p=24627 u=devops |  serverb.lab.example.com    : ok=4    changed=3    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0   
+2022-05-16 15:25:07,046 p=26797 u=devops |  PLAY [Test meta module to verify multiple handlers] ***************************************************************************************************************************************
+2022-05-16 15:25:07,052 p=26797 u=devops |  TASK [Gathering Facts] ********************************************************************************************************************************************************************
+2022-05-16 15:25:08,445 p=26797 u=devops |  ok: [serverb.lab.example.com]
+2022-05-16 15:25:08,452 p=26797 u=devops |  ok: [servera.lab.example.com]
+2022-05-16 15:25:08,464 p=26797 u=devops |  TASK [Install several packages] ***********************************************************************************************************************************************************
+2022-05-16 15:25:09,635 p=26797 u=devops |  changed: [servera.lab.example.com] => (item=httpd)
+2022-05-16 15:25:09,689 p=26797 u=devops |  changed: [serverb.lab.example.com] => (item=httpd)
+2022-05-16 15:25:10,503 p=26797 u=devops |  changed: [servera.lab.example.com] => (item=mariadb-server)
+2022-05-16 15:25:10,578 p=26797 u=devops |  changed: [serverb.lab.example.com] => (item=mariadb-server)
+2022-05-16 15:25:10,579 p=26797 u=devops |  RUNNING HANDLER [Restart apache web server] ***********************************************************************************************************************************************
+2022-05-16 15:25:12,304 p=26797 u=devops |  changed: [servera.lab.example.com]
+2022-05-16 15:25:12,311 p=26797 u=devops |  changed: [serverb.lab.example.com]
+2022-05-16 15:25:12,311 p=26797 u=devops |  RUNNING HANDLER [Restart mariadb database] ************************************************************************************************************************************************
+2022-05-16 15:25:13,831 p=26797 u=devops |  changed: [servera.lab.example.com]
+2022-05-16 15:25:14,752 p=26797 u=devops |  changed: [serverb.lab.example.com]
+2022-05-16 15:25:14,753 p=26797 u=devops |  PLAY RECAP ********************************************************************************************************************************************************************************
+2022-05-16 15:25:14,754 p=26797 u=devops |  servera.lab.example.com    : ok=4    changed=3    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0   
+2022-05-16 15:25:14,754 p=26797 u=devops |  serverb.lab.example.com    : ok=4    changed=3    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0   
