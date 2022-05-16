@@ -1,5 +1,5 @@
 ---
-- name: Deploy web services
+- name: Deploy apache web services
   hosts: webservers
   become: false
   tasks:

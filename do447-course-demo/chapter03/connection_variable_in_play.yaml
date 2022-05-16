@@ -1,10 +1,10 @@
 ---
-- name: Example play using connection variables
+- name: Example play using connection variable
   hosts: webservers
   become: false
   vars:
     ansible_become: true
-    # Priority of connection variable is higher than become in play level.
+    # ansible 连接变量的优先级比 play 级别的 become 指令高。
   tasks:
     - name: Verify current username
       debug:
