@@ -1,0 +1,34 @@
+---
+- name: Test meta module to verify multiple handlers
+  hosts: servera.lab.example.com
+  become: true
+
+  tasks:
+    - name: Install several packages
+      yum:
+        name: "{{ item }}"
+        state: present
+      loop: "{{ packages }}"
+      vars:
+        packages:
+          - httpd
+          - mariadb-server
+      notify:
+        - Restart apache web server
+        - Restart mariadb database
+      changed_when: true  
+
+    - name: Use meta module to flush handlers
+      meta: flush_handlers
+
+  handlers:
+    - name: Restart apache web server
+      service:
+        name: httpd
+        state: restarted
+        enabled: yes
+    - name: Restart mariadb database
+      service:
+        name: mariadb
+        state: restarted
+        enabled: yes

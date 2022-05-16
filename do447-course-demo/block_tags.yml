@@ -1,6 +1,6 @@
 ---
 - name: Setup httpd service
-  hosts: all
+  hosts: managed_nodes
   order: reverse_sorted
 
   tasks:

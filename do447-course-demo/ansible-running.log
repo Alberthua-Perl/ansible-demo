@@ -1,0 +1,1205 @@
+2022-05-15 11:02:04,792 p=21827 u=devops |  serverb.lab.example.com | CHANGED | rc=0 >>
+uid=0(root) gid=0(root) groups=0(root) context=unconfined_u:unconfined_r:unconfined_t:s0-s0:c0.c1023
+
+2022-05-15 11:02:04,810 p=21827 u=devops |  servera.lab.example.com | CHANGED | rc=0 >>
+uid=0(root) gid=0(root) groups=0(root) context=unconfined_u:unconfined_r:unconfined_t:s0-s0:c0.c1023
+
+2022-05-15 11:02:50,876 p=21944 u=devops |  PLAY [Become the user "manager"] *********************************************************************************************************************
+2022-05-15 11:02:50,882 p=21944 u=devops |  TASK [Gathering Facts] *******************************************************************************************************************************
+2022-05-15 11:02:51,734 p=21944 u=devops |  ok: [serverb.lab.example.com]
+2022-05-15 11:02:51,800 p=21944 u=devops |  ok: [servera.lab.example.com]
+2022-05-15 11:02:51,812 p=21944 u=devops |  TASK [Show the user used by this play] ***************************************************************************************************************
+2022-05-15 11:02:51,829 p=21944 u=devops |  ok: [servera.lab.example.com] => {
+    "ansible_user_id": "root"
+}
+2022-05-15 11:02:51,838 p=21944 u=devops |  ok: [serverb.lab.example.com] => {
+    "ansible_user_id": "root"
+}
+2022-05-15 11:02:51,841 p=21944 u=devops |  PLAY [Do not use privilege escalation] ***************************************************************************************************************
+2022-05-15 11:02:51,853 p=21944 u=devops |  TASK [Gathering Facts] *******************************************************************************************************************************
+2022-05-15 11:02:52,303 p=21944 u=devops |  ok: [servera.lab.example.com]
+2022-05-15 11:02:52,312 p=21944 u=devops |  ok: [serverb.lab.example.com]
+2022-05-15 11:02:52,322 p=21944 u=devops |  TASK [Show the user used by this play] ***************************************************************************************************************
+2022-05-15 11:02:52,338 p=21944 u=devops |  ok: [servera.lab.example.com] => {
+    "ansible_user_id": "devops"
+}
+2022-05-15 11:02:52,346 p=21944 u=devops |  ok: [serverb.lab.example.com] => {
+    "ansible_user_id": "devops"
+}
+2022-05-15 11:02:52,349 p=21944 u=devops |  PLAY [Use privilege escalation based on defaults] ****************************************************************************************************
+2022-05-15 11:02:52,360 p=21944 u=devops |  TASK [Gathering Facts] *******************************************************************************************************************************
+2022-05-15 11:02:52,870 p=21944 u=devops |  ok: [servera.lab.example.com]
+2022-05-15 11:02:52,875 p=21944 u=devops |  ok: [serverb.lab.example.com]
+2022-05-15 11:02:52,886 p=21944 u=devops |  TASK [Show the user used by this play] ***************************************************************************************************************
+2022-05-15 11:02:52,902 p=21944 u=devops |  ok: [servera.lab.example.com] => {
+    "ansible_user_id": "root"
+}
+2022-05-15 11:02:52,911 p=21944 u=devops |  ok: [serverb.lab.example.com] => {
+    "ansible_user_id": "root"
+}
+2022-05-15 11:02:52,913 p=21944 u=devops |  PLAY RECAP *******************************************************************************************************************************************
+2022-05-15 11:02:52,913 p=21944 u=devops |  servera.lab.example.com    : ok=6    changed=0    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0   
+2022-05-15 11:02:52,913 p=21944 u=devops |  serverb.lab.example.com    : ok=6    changed=0    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0   
+2022-05-15 11:10:42,231 p=22944 u=devops |  PLAY [Play with two tasks, one uses privilege escalation] ********************************************************************************************
+2022-05-15 11:10:42,237 p=22944 u=devops |  TASK [Gathering Facts] *******************************************************************************************************************************
+2022-05-15 11:10:43,970 p=22944 u=devops |  ok: [serverb.lab.example.com]
+2022-05-15 11:10:44,196 p=22944 u=devops |  ok: [servera.lab.example.com]
+2022-05-15 11:10:44,199 p=22944 u=devops |  ok: [serverc.lab.example.com]
+2022-05-15 11:10:44,203 p=22944 u=devops |  ok: [workstation.lab.example.com]
+2022-05-15 11:10:44,220 p=22944 u=devops |  ok: [serverd.lab.example.com]
+2022-05-15 11:10:45,071 p=22944 u=devops |  ok: [servere.lab.example.com]
+2022-05-15 11:10:45,100 p=22944 u=devops |  ok: [serverf.lab.example.com]
+2022-05-15 11:10:45,633 p=22944 u=devops |  ok: [gitlab.lab.example.com]
+2022-05-15 11:10:45,648 p=22944 u=devops |  TASK [This task needs privileges] ********************************************************************************************************************
+2022-05-15 11:11:00,264 p=22944 u=devops |  changed: [serverc.lab.example.com]
+2022-05-15 11:11:01,784 p=22944 u=devops |  changed: [servera.lab.example.com]
+2022-05-15 11:11:01,814 p=22944 u=devops |  changed: [serverb.lab.example.com]
+2022-05-15 11:11:03,828 p=22944 u=devops |  ok: [gitlab.lab.example.com]
+2022-05-15 11:11:04,547 p=22944 u=devops |  changed: [serverd.lab.example.com]
+2022-05-15 11:11:11,411 p=22944 u=devops |  changed: [workstation.lab.example.com]
+2022-05-15 11:11:23,665 p=22944 u=devops |  changed: [serverf.lab.example.com]
+2022-05-15 11:11:25,108 p=22944 u=devops |  changed: [servere.lab.example.com]
+2022-05-15 11:11:25,126 p=22944 u=devops |  TASK [This task does not need privileges] ************************************************************************************************************
+2022-05-15 11:11:25,760 p=22944 u=devops |  changed: [serverb.lab.example.com]
+2022-05-15 11:11:25,778 p=22944 u=devops |  changed: [serverc.lab.example.com]
+2022-05-15 11:11:25,836 p=22944 u=devops |  changed: [servera.lab.example.com]
+2022-05-15 11:11:25,852 p=22944 u=devops |  changed: [serverd.lab.example.com]
+2022-05-15 11:11:25,961 p=22944 u=devops |  changed: [workstation.lab.example.com]
+2022-05-15 11:11:26,080 p=22944 u=devops |  changed: [serverf.lab.example.com]
+2022-05-15 11:11:26,106 p=22944 u=devops |  changed: [servere.lab.example.com]
+2022-05-15 11:11:26,164 p=22944 u=devops |  changed: [gitlab.lab.example.com]
+2022-05-15 11:11:26,167 p=22944 u=devops |  PLAY RECAP *******************************************************************************************************************************************
+2022-05-15 11:11:26,167 p=22944 u=devops |  gitlab.lab.example.com     : ok=3    changed=1    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0   
+2022-05-15 11:11:26,167 p=22944 u=devops |  servera.lab.example.com    : ok=3    changed=2    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0   
+2022-05-15 11:11:26,167 p=22944 u=devops |  serverb.lab.example.com    : ok=3    changed=2    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0   
+2022-05-15 11:11:26,167 p=22944 u=devops |  serverc.lab.example.com    : ok=3    changed=2    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0   
+2022-05-15 11:11:26,167 p=22944 u=devops |  serverd.lab.example.com    : ok=3    changed=2    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0   
+2022-05-15 11:11:26,167 p=22944 u=devops |  servere.lab.example.com    : ok=3    changed=2    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0   
+2022-05-15 11:11:26,168 p=22944 u=devops |  serverf.lab.example.com    : ok=3    changed=2    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0   
+2022-05-15 11:11:26,168 p=22944 u=devops |  workstation.lab.example.com : ok=3    changed=2    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0   
+2022-05-15 11:17:12,378 p=26362 u=devops |  PLAY [Deploy web services] ***************************************************************************************************************************
+2022-05-15 11:17:12,384 p=26362 u=devops |  TASK [Gathering Facts] *******************************************************************************************************************************
+2022-05-15 11:17:13,505 p=26362 u=devops |  ok: [serverb.lab.example.com]
+2022-05-15 11:17:13,512 p=26362 u=devops |  ok: [servera.lab.example.com]
+2022-05-15 11:17:13,524 p=26362 u=devops |  TASK [Ensure httpd is installed] *********************************************************************************************************************
+2022-05-15 11:17:14,589 p=26362 u=devops |  ok: [serverb.lab.example.com]
+2022-05-15 11:17:14,601 p=26362 u=devops |  ok: [servera.lab.example.com]
+2022-05-15 11:17:14,614 p=26362 u=devops |  TASK [Start and enable webserver] ********************************************************************************************************************
+2022-05-15 11:17:15,271 p=26362 u=devops |  ok: [servera.lab.example.com]
+2022-05-15 11:17:15,279 p=26362 u=devops |  ok: [serverb.lab.example.com]
+2022-05-15 11:17:15,291 p=26362 u=devops |  TASK [Test website from itself, do not become] *******************************************************************************************************
+2022-05-15 11:17:15,814 p=26362 u=devops |  ok: [serverb.lab.example.com]
+2022-05-15 11:17:15,834 p=26362 u=devops |  ok: [servera.lab.example.com]
+2022-05-15 11:17:15,846 p=26362 u=devops |  TASK [Check webpage variable content] ****************************************************************************************************************
+2022-05-15 11:17:15,862 p=26362 u=devops |  ok: [servera.lab.example.com] => {
+    "webpage": {
+        "accept_ranges": "bytes",
+        "changed": false,
+        "connection": "close",
+        "content": "Hello world\n",
+        "content_length": "12",
+        "content_type": "text/html; charset=UTF-8",
+        "cookies": {},
+        "cookies_string": "",
+        "date": "Sun, 15 May 2022 03:17:15 GMT",
+        "elapsed": 0,
+        "etag": "\"c-5a5115a525939\"",
+        "failed": false,
+        "failed_when_result": false,
+        "last_modified": "Thu, 07 May 2020 16:27:11 GMT",
+        "msg": "OK (12 bytes)",
+        "redirected": false,
+        "server": "Apache/2.4.37 (Red Hat Enterprise Linux)",
+        "status": 200,
+        "url": "http://servera.lab.example.com"
+    }
+}
+2022-05-15 11:17:15,871 p=26362 u=devops |  ok: [serverb.lab.example.com] => {
+    "webpage": {
+        "accept_ranges": "bytes",
+        "changed": false,
+        "connection": "close",
+        "content": "Hello world\n",
+        "content_length": "12",
+        "content_type": "text/html; charset=UTF-8",
+        "cookies": {},
+        "cookies_string": "",
+        "date": "Sun, 15 May 2022 03:17:15 GMT",
+        "elapsed": 0,
+        "etag": "\"c-5a5115a4ddf33\"",
+        "failed": false,
+        "failed_when_result": false,
+        "last_modified": "Thu, 07 May 2020 16:27:11 GMT",
+        "msg": "OK (12 bytes)",
+        "redirected": false,
+        "server": "Apache/2.4.37 (Red Hat Enterprise Linux)",
+        "status": 200,
+        "url": "http://serverb.lab.example.com"
+    }
+}
+2022-05-15 11:17:15,873 p=26362 u=devops |  PLAY RECAP *******************************************************************************************************************************************
+2022-05-15 11:17:15,873 p=26362 u=devops |  servera.lab.example.com    : ok=5    changed=0    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0   
+2022-05-15 11:17:15,873 p=26362 u=devops |  serverb.lab.example.com    : ok=5    changed=0    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0   
+2022-05-15 11:28:04,805 p=26916 u=devops |  PLAY [Example play using connection variables] *******************************************************************************************************
+2022-05-15 11:28:04,816 p=26916 u=devops |  TASK [Gathering Facts] *******************************************************************************************************************************
+2022-05-15 11:28:06,300 p=26916 u=devops |  ok: [serverb.lab.example.com]
+2022-05-15 11:28:06,320 p=26916 u=devops |  ok: [servera.lab.example.com]
+2022-05-15 11:28:06,332 p=26916 u=devops |  TASK [Play will use privilege escalation even if inventory says no] **********************************************************************************
+2022-05-15 11:28:07,554 p=26916 u=devops |  ok: [servera.lab.example.com]
+2022-05-15 11:28:07,554 p=26916 u=devops |  ok: [serverb.lab.example.com]
+2022-05-15 11:28:07,556 p=26916 u=devops |  PLAY RECAP *******************************************************************************************************************************************
+2022-05-15 11:28:07,556 p=26916 u=devops |  servera.lab.example.com    : ok=2    changed=0    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0   
+2022-05-15 11:28:07,556 p=26916 u=devops |  serverb.lab.example.com    : ok=2    changed=0    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0   
+2022-05-15 11:29:14,676 p=27112 u=devops |  PLAY [Example play using connection variables] *******************************************************************************************************
+2022-05-15 11:29:14,682 p=27112 u=devops |  TASK [Gathering Facts] *******************************************************************************************************************************
+2022-05-15 11:29:15,877 p=27112 u=devops |  ok: [servera.lab.example.com]
+2022-05-15 11:29:15,882 p=27112 u=devops |  ok: [serverb.lab.example.com]
+2022-05-15 11:29:15,894 p=27112 u=devops |  TASK [Verify current username] ***********************************************************************************************************************
+2022-05-15 11:29:15,914 p=27112 u=devops |  ok: [servera.lab.example.com] => {
+    "root": "VARIABLE IS NOT DEFINED!"
+}
+2022-05-15 11:29:15,924 p=27112 u=devops |  ok: [serverb.lab.example.com] => {
+    "root": "VARIABLE IS NOT DEFINED!"
+}
+2022-05-15 11:29:15,935 p=27112 u=devops |  TASK [Play will use privilege escalation even if inventory says no] **********************************************************************************
+2022-05-15 11:29:16,972 p=27112 u=devops |  ok: [servera.lab.example.com]
+2022-05-15 11:29:16,974 p=27112 u=devops |  ok: [serverb.lab.example.com]
+2022-05-15 11:29:16,976 p=27112 u=devops |  PLAY RECAP *******************************************************************************************************************************************
+2022-05-15 11:29:16,976 p=27112 u=devops |  servera.lab.example.com    : ok=3    changed=0    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0   
+2022-05-15 11:29:16,976 p=27112 u=devops |  serverb.lab.example.com    : ok=3    changed=0    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0   
+2022-05-15 11:29:30,316 p=27310 u=devops |  PLAY [Example play using connection variables] *******************************************************************************************************
+2022-05-15 11:29:30,322 p=27310 u=devops |  TASK [Gathering Facts] *******************************************************************************************************************************
+2022-05-15 11:29:31,159 p=27310 u=devops |  ok: [servera.lab.example.com]
+2022-05-15 11:29:31,162 p=27310 u=devops |  ok: [serverb.lab.example.com]
+2022-05-15 11:29:31,175 p=27310 u=devops |  TASK [Verify current username] ***********************************************************************************************************************
+2022-05-15 11:29:31,192 p=27310 u=devops |  ok: [servera.lab.example.com] => {
+    "devops": "VARIABLE IS NOT DEFINED!"
+}
+2022-05-15 11:29:31,201 p=27310 u=devops |  ok: [serverb.lab.example.com] => {
+    "devops": "VARIABLE IS NOT DEFINED!"
+}
+2022-05-15 11:29:31,213 p=27310 u=devops |  TASK [Play will use privilege escalation even if inventory says no] **********************************************************************************
+2022-05-15 11:29:32,302 p=27310 u=devops |  ok: [serverb.lab.example.com]
+2022-05-15 11:29:32,308 p=27310 u=devops |  ok: [servera.lab.example.com]
+2022-05-15 11:29:32,310 p=27310 u=devops |  PLAY RECAP *******************************************************************************************************************************************
+2022-05-15 11:29:32,310 p=27310 u=devops |  servera.lab.example.com    : ok=3    changed=0    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0   
+2022-05-15 11:29:32,310 p=27310 u=devops |  serverb.lab.example.com    : ok=3    changed=0    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0   
+2022-05-15 11:30:04,886 p=27493 u=devops |  PLAY [Example play using connection variables] *******************************************************************************************************
+2022-05-15 11:30:04,893 p=27493 u=devops |  TASK [Gathering Facts] *******************************************************************************************************************************
+2022-05-15 11:30:05,737 p=27493 u=devops |  ok: [serverb.lab.example.com]
+2022-05-15 11:30:05,753 p=27493 u=devops |  ok: [servera.lab.example.com]
+2022-05-15 11:30:05,765 p=27493 u=devops |  TASK [Verify current username] ***********************************************************************************************************************
+2022-05-15 11:30:05,782 p=27493 u=devops |  ok: [servera.lab.example.com] => {
+    "ansible_user_id": "root"
+}
+2022-05-15 11:30:05,790 p=27493 u=devops |  ok: [serverb.lab.example.com] => {
+    "ansible_user_id": "root"
+}
+2022-05-15 11:30:05,801 p=27493 u=devops |  TASK [Play will use privilege escalation even if inventory says no] **********************************************************************************
+2022-05-15 11:30:06,821 p=27493 u=devops |  ok: [serverb.lab.example.com]
+2022-05-15 11:30:06,829 p=27493 u=devops |  ok: [servera.lab.example.com]
+2022-05-15 11:30:06,831 p=27493 u=devops |  PLAY RECAP *******************************************************************************************************************************************
+2022-05-15 11:30:06,831 p=27493 u=devops |  servera.lab.example.com    : ok=3    changed=0    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0   
+2022-05-15 11:30:06,832 p=27493 u=devops |  serverb.lab.example.com    : ok=3    changed=0    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0   
+2022-05-15 11:31:54,467 p=27770 u=devops |  servera.lab.example.com | SUCCESS => {
+    "ansible_facts": {
+        "ansible_all_ipv4_addresses": [
+            "172.25.250.10"
+        ],
+        "ansible_all_ipv6_addresses": [
+            "fe80::e6c5:468e:edb6:9b52"
+        ],
+        "ansible_apparmor": {
+            "status": "disabled"
+        },
+        "ansible_architecture": "x86_64",
+        "ansible_bios_date": "04/01/2014",
+        "ansible_bios_version": "1.11.1-3.module+el8+2529+a9686a4d",
+        "ansible_cmdline": {
+            "BOOT_IMAGE": "(hd0,msdos1)/boot/vmlinuz-4.18.0-80.el8.x86_64",
+            "console": "ttyS0,115200n8",
+            "crashkernel": "auto",
+            "no_timer_check": true,
+            "ro": true,
+            "root": "UUID=884f47c9-a69d-4c5b-915d-6b7c9c74c923"
+        },
+        "ansible_date_time": {
+            "date": "2022-05-15",
+            "day": "15",
+            "epoch": "1652585514",
+            "hour": "11",
+            "iso8601": "2022-05-15T03:31:54Z",
+            "iso8601_basic": "20220515T113154282466",
+            "iso8601_basic_short": "20220515T113154",
+            "iso8601_micro": "2022-05-15T03:31:54.282573Z",
+            "minute": "31",
+            "month": "05",
+            "second": "54",
+            "time": "11:31:54",
+            "tz": "CST",
+            "tz_offset": "+0800",
+            "weekday": "Sunday",
+            "weekday_number": "0",
+            "weeknumber": "19",
+            "year": "2022"
+        },
+        "ansible_default_ipv4": {
+            "address": "172.25.250.10",
+            "alias": "enp1s0",
+            "broadcast": "172.25.250.255",
+            "gateway": "172.25.250.254",
+            "interface": "enp1s0",
+            "macaddress": "52:54:00:00:fa:0a",
+            "mtu": 1500,
+            "netmask": "255.255.255.0",
+            "network": "172.25.250.0",
+            "type": "ether"
+        },
+        "ansible_default_ipv6": {},
+        "ansible_device_links": {
+            "ids": {},
+            "labels": {},
+            "masters": {},
+            "uuids": {
+                "vda1": [
+                    "884f47c9-a69d-4c5b-915d-6b7c9c74c923"
+                ]
+            }
+        },
+        "ansible_devices": {
+            "vda": {
+                "holders": [],
+                "host": "SCSI storage controller: Red Hat, Inc. Virtio block device (rev 01)",
+                "links": {
+                    "ids": [],
+                    "labels": [],
+                    "masters": [],
+                    "uuids": []
+                },
+                "model": null,
+                "partitions": {
+                    "vda1": {
+                        "holders": [],
+                        "links": {
+                            "ids": [],
+                            "labels": [],
+                            "masters": [],
+                            "uuids": [
+                                "884f47c9-a69d-4c5b-915d-6b7c9c74c923"
+                            ]
+                        },
+                        "sectors": "20969439",
+                        "sectorsize": 512,
+                        "size": "10.00 GB",
+                        "start": "2048",
+                        "uuid": "884f47c9-a69d-4c5b-915d-6b7c9c74c923"
+                    }
+                },
+                "removable": "0",
+                "rotational": "1",
+                "sas_address": null,
+                "sas_device_handle": null,
+                "scheduler_mode": "mq-deadline",
+                "sectors": "20971520",
+                "sectorsize": "512",
+                "size": "10.00 GB",
+                "support_discard": "0",
+                "vendor": "0x1af4",
+                "virtual": 1
+            },
+            "vdb": {
+                "holders": [],
+                "host": "SCSI storage controller: Red Hat, Inc. Virtio block device (rev 01)",
+                "links": {
+                    "ids": [],
+                    "labels": [],
+                    "masters": [],
+                    "uuids": []
+                },
+                "model": null,
+                "partitions": {},
+                "removable": "0",
+                "rotational": "1",
+                "sas_address": null,
+                "sas_device_handle": null,
+                "scheduler_mode": "mq-deadline",
+                "sectors": "2097152",
+                "sectorsize": "512",
+                "size": "1.00 GB",
+                "support_discard": "0",
+                "vendor": "0x1af4",
+                "virtual": 1
+            }
+        },
+        "ansible_distribution": "RedHat",
+        "ansible_distribution_file_parsed": true,
+        "ansible_distribution_file_path": "/etc/redhat-release",
+        "ansible_distribution_file_search_string": "Red Hat",
+        "ansible_distribution_file_variety": "RedHat",
+        "ansible_distribution_major_version": "8",
+        "ansible_distribution_release": "Ootpa",
+        "ansible_distribution_version": "8.0",
+        "ansible_dns": {
+            "nameservers": [
+                "172.25.250.254"
+            ],
+            "search": [
+                "lab.example.com",
+                "example.com"
+            ]
+        },
+        "ansible_domain": "lab.example.com",
+        "ansible_effective_group_id": 1001,
+        "ansible_effective_user_id": 1001,
+        "ansible_enp1s0": {
+            "active": true,
+            "device": "enp1s0",
+            "features": {
+                "esp_hw_offload": "off [fixed]",
+                "esp_tx_csum_hw_offload": "off [fixed]",
+                "fcoe_mtu": "off [fixed]",
+                "generic_receive_offload": "on",
+                "generic_segmentation_offload": "on",
+                "highdma": "on [fixed]",
+                "hw_tc_offload": "off [fixed]",
+                "l2_fwd_offload": "off [fixed]",
+                "large_receive_offload": "off [fixed]",
+                "loopback": "off [fixed]",
+                "netns_local": "off [fixed]",
+                "ntuple_filters": "off [fixed]",
+                "receive_hashing": "off [fixed]",
+                "rx_all": "off [fixed]",
+                "rx_checksumming": "on [fixed]",
+                "rx_fcs": "off [fixed]",
+                "rx_gro_hw": "off [fixed]",
+                "rx_udp_tunnel_port_offload": "off [fixed]",
+                "rx_vlan_filter": "on [fixed]",
+                "rx_vlan_offload": "off [fixed]",
+                "rx_vlan_stag_filter": "off [fixed]",
+                "rx_vlan_stag_hw_parse": "off [fixed]",
+                "scatter_gather": "on",
+                "tcp_segmentation_offload": "on",
+                "tls_hw_record": "off [fixed]",
+                "tls_hw_tx_offload": "off [fixed]",
+                "tx_checksum_fcoe_crc": "off [fixed]",
+                "tx_checksum_ip_generic": "on",
+                "tx_checksum_ipv4": "off [fixed]",
+                "tx_checksum_ipv6": "off [fixed]",
+                "tx_checksum_sctp": "off [fixed]",
+                "tx_checksumming": "on",
+                "tx_esp_segmentation": "off [fixed]",
+                "tx_fcoe_segmentation": "off [fixed]",
+                "tx_gre_csum_segmentation": "off [fixed]",
+                "tx_gre_segmentation": "off [fixed]",
+                "tx_gso_partial": "off [fixed]",
+                "tx_gso_robust": "on [fixed]",
+                "tx_ipxip4_segmentation": "off [fixed]",
+                "tx_ipxip6_segmentation": "off [fixed]",
+                "tx_lockless": "off [fixed]",
+                "tx_nocache_copy": "off",
+                "tx_scatter_gather": "on",
+                "tx_scatter_gather_fraglist": "off [fixed]",
+                "tx_sctp_segmentation": "off [fixed]",
+                "tx_tcp6_segmentation": "on",
+                "tx_tcp_ecn_segmentation": "on",
+                "tx_tcp_mangleid_segmentation": "off",
+                "tx_tcp_segmentation": "on",
+                "tx_udp_segmentation": "off [fixed]",
+                "tx_udp_tnl_csum_segmentation": "off [fixed]",
+                "tx_udp_tnl_segmentation": "off [fixed]",
+                "tx_vlan_offload": "off [fixed]",
+                "tx_vlan_stag_hw_insert": "off [fixed]",
+                "udp_fragmentation_offload": "off",
+                "vlan_challenged": "off [fixed]"
+            },
+            "hw_timestamp_filters": [],
+            "ipv4": {
+                "address": "172.25.250.10",
+                "broadcast": "172.25.250.255",
+                "netmask": "255.255.255.0",
+                "network": "172.25.250.0"
+            },
+            "ipv6": [
+                {
+                    "address": "fe80::e6c5:468e:edb6:9b52",
+                    "prefix": "64",
+                    "scope": "link"
+                }
+            ],
+            "macaddress": "52:54:00:00:fa:0a",
+            "module": "virtio_net",
+            "mtu": 1500,
+            "pciid": "virtio1",
+            "promisc": false,
+            "speed": -1,
+            "timestamping": [
+                "tx_software",
+                "rx_software",
+                "software"
+            ],
+            "type": "ether"
+        },
+        "ansible_env": {
+            "DBUS_SESSION_BUS_ADDRESS": "unix:path=/run/user/1001/bus",
+            "HOME": "/home/devops",
+            "LANG": "en_US.UTF-8",
+            "LC_CTYPE": "en_US.UTF-8",
+            "LESSOPEN": "||/usr/bin/lesspipe.sh %s",
+            "LOGNAME": "devops",
+            "MAIL": "/var/mail/devops",
+            "PATH": "/home/devops/.local/bin:/home/devops/bin:/usr/local/bin:/usr/bin:/usr/local/sbin:/usr/sbin",
+            "PWD": "/home/devops",
+            "SELINUX_LEVEL_REQUESTED": "",
+            "SELINUX_ROLE_REQUESTED": "",
+            "SELINUX_USE_CURRENT_RANGE": "",
+            "SHELL": "/bin/bash",
+            "SHLVL": "2",
+            "SSH_CLIENT": "172.25.250.9 38576 22",
+            "SSH_CONNECTION": "172.25.250.9 38576 172.25.250.10 22",
+            "USER": "devops",
+            "XDG_RUNTIME_DIR": "/run/user/1001",
+            "XDG_SESSION_ID": "23",
+            "_": "/usr/libexec/platform-python"
+        },
+        "ansible_fibre_channel_wwn": [],
+        "ansible_fips": false,
+        "ansible_form_factor": "Other",
+        "ansible_fqdn": "servera.lab.example.com",
+        "ansible_hostname": "servera",
+        "ansible_hostnqn": "",
+        "ansible_interfaces": [
+            "enp1s0",
+            "lo"
+        ],
+        "ansible_is_chroot": true,
+        "ansible_iscsi_iqn": "",
+        "ansible_kernel": "4.18.0-80.el8.x86_64",
+        "ansible_lo": {
+            "active": true,
+            "device": "lo",
+            "features": {
+                "esp_hw_offload": "off [fixed]",
+                "esp_tx_csum_hw_offload": "off [fixed]",
+                "fcoe_mtu": "off [fixed]",
+                "generic_receive_offload": "on",
+                "generic_segmentation_offload": "on",
+                "highdma": "on [fixed]",
+                "hw_tc_offload": "off [fixed]",
+                "l2_fwd_offload": "off [fixed]",
+                "large_receive_offload": "off [fixed]",
+                "loopback": "on [fixed]",
+                "netns_local": "on [fixed]",
+                "ntuple_filters": "off [fixed]",
+                "receive_hashing": "off [fixed]",
+                "rx_all": "off [fixed]",
+                "rx_checksumming": "on [fixed]",
+                "rx_fcs": "off [fixed]",
+                "rx_gro_hw": "off [fixed]",
+                "rx_udp_tunnel_port_offload": "off [fixed]",
+                "rx_vlan_filter": "off [fixed]",
+                "rx_vlan_offload": "off [fixed]",
+                "rx_vlan_stag_filter": "off [fixed]",
+                "rx_vlan_stag_hw_parse": "off [fixed]",
+                "scatter_gather": "on",
+                "tcp_segmentation_offload": "on",
+                "tls_hw_record": "off [fixed]",
+                "tls_hw_tx_offload": "off [fixed]",
+                "tx_checksum_fcoe_crc": "off [fixed]",
+                "tx_checksum_ip_generic": "on [fixed]",
+                "tx_checksum_ipv4": "off [fixed]",
+                "tx_checksum_ipv6": "off [fixed]",
+                "tx_checksum_sctp": "on [fixed]",
+                "tx_checksumming": "on",
+                "tx_esp_segmentation": "off [fixed]",
+                "tx_fcoe_segmentation": "off [fixed]",
+                "tx_gre_csum_segmentation": "off [fixed]",
+                "tx_gre_segmentation": "off [fixed]",
+                "tx_gso_partial": "off [fixed]",
+                "tx_gso_robust": "off [fixed]",
+                "tx_ipxip4_segmentation": "off [fixed]",
+                "tx_ipxip6_segmentation": "off [fixed]",
+                "tx_lockless": "on [fixed]",
+                "tx_nocache_copy": "off [fixed]",
+                "tx_scatter_gather": "on [fixed]",
+                "tx_scatter_gather_fraglist": "on [fixed]",
+                "tx_sctp_segmentation": "on",
+                "tx_tcp6_segmentation": "on",
+                "tx_tcp_ecn_segmentation": "on",
+                "tx_tcp_mangleid_segmentation": "on",
+                "tx_tcp_segmentation": "on",
+                "tx_udp_segmentation": "off [fixed]",
+                "tx_udp_tnl_csum_segmentation": "off [fixed]",
+                "tx_udp_tnl_segmentation": "off [fixed]",
+                "tx_vlan_offload": "off [fixed]",
+                "tx_vlan_stag_hw_insert": "off [fixed]",
+                "udp_fragmentation_offload": "off",
+                "vlan_challenged": "on [fixed]"
+            },
+            "hw_timestamp_filters": [],
+            "ipv4": {
+                "address": "127.0.0.1",
+                "broadcast": "host",
+                "netmask": "255.0.0.0",
+                "network": "127.0.0.0"
+            },
+            "ipv6": [
+                {
+                    "address": "::1",
+                    "prefix": "128",
+                    "scope": "host"
+                }
+            ],
+            "mtu": 65536,
+            "promisc": false,
+            "timestamping": [
+                "tx_software",
+                "rx_software",
+                "software"
+            ],
+            "type": "loopback"
+        },
+        "ansible_local": {},
+        "ansible_lsb": {},
+        "ansible_machine": "x86_64",
+        "ansible_machine_id": "88394775ca9147439ae63aab9c500045",
+        "ansible_memfree_mb": 214,
+        "ansible_memory_mb": {
+            "nocache": {
+                "free": 555,
+                "used": 266
+            },
+            "real": {
+                "free": 214,
+                "total": 821,
+                "used": 607
+            },
+            "swap": {
+                "cached": 0,
+                "free": 0,
+                "total": 0,
+                "used": 0
+            }
+        },
+        "ansible_memtotal_mb": 821,
+        "ansible_mounts": [
+            {
+                "block_available": 2198208,
+                "block_size": 4096,
+                "block_total": 2618619,
+                "block_used": 420411,
+                "device": "/dev/vda1",
+                "fstype": "xfs",
+                "inode_available": 5190923,
+                "inode_total": 5242304,
+                "inode_used": 51381,
+                "mount": "/",
+                "options": "rw,seclabel,relatime,attr2,inode64,noquota",
+                "size_available": 9003859968,
+                "size_total": 10725863424,
+                "uuid": "884f47c9-a69d-4c5b-915d-6b7c9c74c923"
+            }
+        ],
+        "ansible_nodename": "servera.lab.example.com",
+        "ansible_os_family": "RedHat",
+        "ansible_pkg_mgr": "dnf",
+        "ansible_proc_cmdline": {
+            "BOOT_IMAGE": "(hd0,msdos1)/boot/vmlinuz-4.18.0-80.el8.x86_64",
+            "console": [
+                "tty0",
+                "ttyS0,115200n8"
+            ],
+            "crashkernel": "auto",
+            "no_timer_check": true,
+            "ro": true,
+            "root": "UUID=884f47c9-a69d-4c5b-915d-6b7c9c74c923"
+        },
+        "ansible_processor": [
+            "0",
+            "AuthenticAMD",
+            "QEMU Virtual CPU version 2.5+"
+        ],
+        "ansible_processor_cores": 1,
+        "ansible_processor_count": 1,
+        "ansible_processor_threads_per_core": 1,
+        "ansible_processor_vcpus": 1,
+        "ansible_product_name": "KVM",
+        "ansible_product_serial": "NA",
+        "ansible_product_uuid": "NA",
+        "ansible_product_version": "RHEL-7.6.0 PC (Q35 + ICH9, 2009)",
+        "ansible_python": {
+            "executable": "/usr/libexec/platform-python",
+            "has_sslcontext": true,
+            "type": "cpython",
+            "version": {
+                "major": 3,
+                "micro": 8,
+                "minor": 6,
+                "releaselevel": "final",
+                "serial": 0
+            },
+            "version_info": [
+                3,
+                6,
+                8,
+                "final",
+                0
+            ]
+        },
+        "ansible_python_version": "3.6.8",
+        "ansible_real_group_id": 1001,
+        "ansible_real_user_id": 1001,
+        "ansible_selinux": {
+            "config_mode": "enforcing",
+            "mode": "enforcing",
+            "policyvers": 31,
+            "status": "enabled",
+            "type": "targeted"
+        },
+        "ansible_selinux_python_present": true,
+        "ansible_service_mgr": "systemd",
+        "ansible_ssh_host_key_ecdsa_public": "AAAAE2VjZHNhLXNoYTItbmlzdHAyNTYAAAAIbmlzdHAyNTYAAABBBMzl8zujH2mt6wy+3tgViAh/kbAOg/o+5bbNMUqiDX+keObXAIODAEb9EoQLfAcR3ZlEKqYCsweGADkw52HmNCc=",
+        "ansible_ssh_host_key_ed25519_public": "AAAAC3NzaC1lZDI1NTE5AAAAICduOpoEOEGzWCiFyWpwOPPzo729ugmYJ+z+Xd2VYxTl",
+        "ansible_ssh_host_key_rsa_public": "AAAAB3NzaC1yc2EAAAADAQABAAABAQDLXT54GJfAGvnIbzAW8flDln+3QAgHrlut7VBIwdus6+Fwf/GKFvMz28VpL2mRJO/Don1LDcyojxWgmRjaI8nOYQxE58zxWH/rQ05sjD9rtVd529921E5RJjUaiydjW4FXf1EsCyKbt2mxEPKKA5Neg6WTQmGdljh4TqPtv9bqDbMjUUj+cwFV2OoY2RmqDtrxW6bggeZQMYMFmgYEaQDcGUc1n3+3gHHIZDOTj8ice4z/fKMUl2QKmcU619zy4A2jwHYawrFx7s+OkeKSVT6gfrcI7wk9+I2PqbINXXa/WsLNlFzDkmiD0JbOL9ZrjBW3WmoX4SIc2G2BH97ZFXqD",
+        "ansible_swapfree_mb": 0,
+        "ansible_swaptotal_mb": 0,
+        "ansible_system": "Linux",
+        "ansible_system_capabilities": [
+            ""
+        ],
+        "ansible_system_capabilities_enforced": "True",
+        "ansible_system_vendor": "Red Hat",
+        "ansible_uptime_seconds": 47985,
+        "ansible_user_dir": "/home/devops",
+        "ansible_user_gecos": "",
+        "ansible_user_gid": 1001,
+        "ansible_user_id": "devops",
+        "ansible_user_shell": "/bin/bash",
+        "ansible_user_uid": 1001,
+        "ansible_userspace_architecture": "x86_64",
+        "ansible_userspace_bits": "64",
+        "ansible_virtualization_role": "guest",
+        "ansible_virtualization_type": "kvm",
+        "discovered_interpreter_python": "/usr/libexec/platform-python",
+        "gather_subset": [
+            "all"
+        ],
+        "module_setup": true
+    },
+    "changed": false
+}
+2022-05-15 11:55:47,532 p=28479 u=devops |  PLAY [use motd role playbook] ***********************************************************************************************************************
+2022-05-15 11:55:47,538 p=28479 u=devops |  TASK [Gathering Facts] ******************************************************************************************************************************
+2022-05-15 11:55:48,799 p=28479 u=devops |  ok: [serverb.lab.example.com]
+2022-05-15 11:55:48,811 p=28479 u=devops |  TASK [verify managed host cpu architecture] *********************************************************************************************************
+2022-05-15 11:55:48,823 p=28479 u=devops |  ok: [serverb.lab.example.com] => {
+    "msg": "Arch of managed host is x86_64"
+}
+2022-05-15 11:55:48,833 p=28479 u=devops |  TASK [test include_role module with when statement] *************************************************************************************************
+2022-05-15 11:55:48,845 p=28479 u=devops |  skipping: [serverb.lab.example.com]
+2022-05-15 11:55:48,846 p=28479 u=devops |  PLAY RECAP ******************************************************************************************************************************************
+2022-05-15 11:55:48,847 p=28479 u=devops |  serverb.lab.example.com    : ok=2    changed=0    unreachable=0    failed=0    skipped=1    rescued=0    ignored=0   
+2022-05-15 11:56:24,777 p=28665 u=devops |  PLAY [use motd role playbook] ***********************************************************************************************************************
+2022-05-15 11:56:24,783 p=28665 u=devops |  TASK [Gathering Facts] ******************************************************************************************************************************
+2022-05-15 11:56:25,538 p=28665 u=devops |  ok: [serverb.lab.example.com]
+2022-05-15 11:56:25,550 p=28665 u=devops |  TASK [verify managed host cpu architecture] *********************************************************************************************************
+2022-05-15 11:56:25,562 p=28665 u=devops |  ok: [serverb.lab.example.com] => {
+    "msg": "Arch of managed host is x86_64"
+}
+2022-05-15 11:56:25,574 p=28665 u=devops |  TASK [motd : deliver motd file] *********************************************************************************************************************
+2022-05-15 11:56:25,586 p=28665 u=devops |  skipping: [serverb.lab.example.com]
+2022-05-15 11:56:25,588 p=28665 u=devops |  PLAY RECAP ******************************************************************************************************************************************
+2022-05-15 11:56:25,588 p=28665 u=devops |  serverb.lab.example.com    : ok=2    changed=0    unreachable=0    failed=0    skipped=1    rescued=0    ignored=0   
+2022-05-15 11:58:30,289 p=28853 u=devops |  PLAY [use motd role playbook] ***********************************************************************************************************************
+2022-05-15 11:58:30,295 p=28853 u=devops |  TASK [Gathering Facts] ******************************************************************************************************************************
+2022-05-15 11:58:31,309 p=28853 u=devops |  ok: [serverb.lab.example.com]
+2022-05-15 11:58:31,321 p=28853 u=devops |  TASK [verify managed host cpu architecture] *********************************************************************************************************
+2022-05-15 11:58:31,333 p=28853 u=devops |  ok: [serverb.lab.example.com] => {
+    "msg": "Arch of managed host is x86_64"
+}
+2022-05-15 11:58:31,344 p=28853 u=devops |  TASK [test include_role module with when statement] *************************************************************************************************
+2022-05-15 11:58:31,381 p=28853 u=devops |  TASK [motd : deliver motd file] *********************************************************************************************************************
+2022-05-15 11:58:31,987 p=28853 u=devops |  ok: [serverb.lab.example.com]
+2022-05-15 11:58:31,988 p=28853 u=devops |  PLAY RECAP ******************************************************************************************************************************************
+2022-05-15 11:58:31,988 p=28853 u=devops |  serverb.lab.example.com    : ok=3    changed=0    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0   
+2022-05-15 14:33:51,274 p=31749 u=devops |  playbook: meta_flush_handlers.yaml
+2022-05-15 14:34:17,639 p=31927 u=devops |  PLAY [Test meta module to verify multiple handlers] *************************************************************************************************
+2022-05-15 14:34:17,646 p=31927 u=devops |  TASK [Gathering Facts] ******************************************************************************************************************************
+2022-05-15 14:34:18,887 p=31927 u=devops |  ok: [servera.lab.example.com]
+2022-05-15 14:34:18,899 p=31927 u=devops |  TASK [Install several packages] *********************************************************************************************************************
+2022-05-15 14:34:19,440 p=31927 u=devops |  failed: [servera.lab.example.com] (item=httpd) => {"ansible_loop_var": "item", "changed": false, "item": "httpd", "msg": "This command has to be run under the root user.", "results": []}
+2022-05-15 14:34:19,767 p=31927 u=devops |  failed: [servera.lab.example.com] (item=mariadb) => {"ansible_loop_var": "item", "changed": false, "item": "mariadb", "msg": "This command has to be run under the root user.", "results": []}
+2022-05-15 14:34:19,769 p=31927 u=devops |  PLAY RECAP ******************************************************************************************************************************************
+2022-05-15 14:34:19,769 p=31927 u=devops |  servera.lab.example.com    : ok=1    changed=0    unreachable=0    failed=1    skipped=0    rescued=0    ignored=0   
+2022-05-15 14:35:19,227 p=32199 u=devops |  PLAY [Test meta module to verify multiple handlers] **************************************************************************************************
+2022-05-15 14:35:19,234 p=32199 u=devops |  TASK [Gathering Facts] *******************************************************************************************************************************
+2022-05-15 14:35:20,382 p=32199 u=devops |  ok: [servera.lab.example.com]
+2022-05-15 14:35:20,395 p=32199 u=devops |  TASK [Install several packages] **********************************************************************************************************************
+2022-05-15 14:35:21,446 p=32199 u=devops |  ok: [servera.lab.example.com] => (item=httpd)
+2022-05-15 14:35:24,087 p=32199 u=devops |  changed: [servera.lab.example.com] => (item=mariadb)
+2022-05-15 14:35:24,089 p=32199 u=devops |  RUNNING HANDLER [Restart apache web server] **********************************************************************************************************
+2022-05-15 14:35:25,765 p=32199 u=devops |  changed: [servera.lab.example.com]
+2022-05-15 14:35:25,785 p=32199 u=devops |  PLAY RECAP *******************************************************************************************************************************************
+2022-05-15 14:35:25,785 p=32199 u=devops |  servera.lab.example.com    : ok=3    changed=2    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0   
+2022-05-15 14:37:16,052 p=32393 u=devops |  PLAY [Test meta module to verify multiple handlers] *************************************************************************************************
+2022-05-15 14:37:16,059 p=32393 u=devops |  TASK [Gathering Facts] ******************************************************************************************************************************
+2022-05-15 14:37:17,347 p=32393 u=devops |  ok: [servera.lab.example.com]
+2022-05-15 14:37:17,360 p=32393 u=devops |  TASK [Install several packages] *********************************************************************************************************************
+2022-05-15 14:37:18,507 p=32393 u=devops |  ok: [servera.lab.example.com] => (item=httpd)
+2022-05-15 14:37:19,312 p=32393 u=devops |  ok: [servera.lab.example.com] => (item=mariadb)
+2022-05-15 14:37:19,314 p=32393 u=devops |  PLAY RECAP ******************************************************************************************************************************************
+2022-05-15 14:37:19,314 p=32393 u=devops |  servera.lab.example.com    : ok=2    changed=0    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0   
+2022-05-15 14:39:16,898 p=32745 u=devops |  PLAY [Test meta module to verify multiple handlers] **************************************************************************************************
+2022-05-15 14:39:16,906 p=32745 u=devops |  TASK [Gathering Facts] *******************************************************************************************************************************
+2022-05-15 14:39:18,003 p=32745 u=devops |  ok: [servera.lab.example.com]
+2022-05-15 14:39:18,016 p=32745 u=devops |  TASK [Install several packages] **********************************************************************************************************************
+2022-05-15 14:39:19,087 p=32745 u=devops |  ok: [servera.lab.example.com] => (item=httpd)
+2022-05-15 14:39:19,879 p=32745 u=devops |  ok: [servera.lab.example.com] => (item=mariadb)
+2022-05-15 14:39:19,886 p=32745 u=devops |  PLAY RECAP *******************************************************************************************************************************************
+2022-05-15 14:39:19,886 p=32745 u=devops |  servera.lab.example.com    : ok=2    changed=0    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0   
+2022-05-15 14:39:32,546 p=480 u=devops |  PLAY [Test meta module to verify multiple handlers] **************************************************************************************************
+2022-05-15 14:39:32,552 p=480 u=devops |  TASK [Gathering Facts] *******************************************************************************************************************************
+2022-05-15 14:39:33,376 p=480 u=devops |  ok: [servera.lab.example.com]
+2022-05-15 14:39:33,388 p=480 u=devops |  TASK [Install several packages] **********************************************************************************************************************
+2022-05-15 14:39:34,350 p=480 u=devops |  ok: [servera.lab.example.com] => (item=httpd)
+2022-05-15 14:39:35,170 p=480 u=devops |  ok: [servera.lab.example.com] => (item=mariadb)
+2022-05-15 14:39:35,173 p=480 u=devops |  PLAY RECAP *******************************************************************************************************************************************
+2022-05-15 14:39:35,173 p=480 u=devops |  servera.lab.example.com    : ok=2    changed=0    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0   
+2022-05-15 14:40:47,684 p=673 u=devops |  PLAY [Test meta module to verify multiple handlers] **************************************************************************************************
+2022-05-15 14:40:47,690 p=673 u=devops |  TASK [Gathering Facts] *******************************************************************************************************************************
+2022-05-15 14:40:48,913 p=673 u=devops |  ok: [servera.lab.example.com]
+2022-05-15 14:40:48,931 p=673 u=devops |  TASK [Install several packages] **********************************************************************************************************************
+2022-05-15 14:40:49,957 p=673 u=devops |  changed: [servera.lab.example.com] => (item=httpd)
+2022-05-15 14:40:50,740 p=673 u=devops |  changed: [servera.lab.example.com] => (item=mariadb)
+2022-05-15 14:40:50,743 p=673 u=devops |  RUNNING HANDLER [Restart apache web server] **********************************************************************************************************
+2022-05-15 14:40:52,382 p=673 u=devops |  changed: [servera.lab.example.com]
+2022-05-15 14:40:52,382 p=673 u=devops |  RUNNING HANDLER [Restart mariadb database] ***********************************************************************************************************
+2022-05-15 14:40:52,661 p=673 u=devops |  fatal: [servera.lab.example.com]: FAILED! => {"changed": false, "msg": "Could not find the requested service mariadb: host"}
+2022-05-15 14:40:52,661 p=673 u=devops |  NO MORE HOSTS LEFT ***********************************************************************************************************************************
+2022-05-15 14:40:52,668 p=673 u=devops |  PLAY RECAP *******************************************************************************************************************************************
+2022-05-15 14:40:52,668 p=673 u=devops |  servera.lab.example.com    : ok=3    changed=2    unreachable=0    failed=1    skipped=0    rescued=0    ignored=0   
+2022-05-15 14:52:47,910 p=1380 u=devops |  PLAY [Test meta module to verify multiple handlers] *************************************************************************************************
+2022-05-15 14:52:47,916 p=1380 u=devops |  TASK [Gathering Facts] ******************************************************************************************************************************
+2022-05-15 14:52:49,002 p=1380 u=devops |  ok: [servera.lab.example.com]
+2022-05-15 14:52:49,014 p=1380 u=devops |  TASK [Install several packages] *********************************************************************************************************************
+2022-05-15 14:52:49,978 p=1380 u=devops |  changed: [servera.lab.example.com] => (item=httpd)
+2022-05-15 14:52:56,483 p=1380 u=devops |  changed: [servera.lab.example.com] => (item=mariadb-server)
+2022-05-15 14:52:56,485 p=1380 u=devops |  RUNNING HANDLER [Restart apache web server] *********************************************************************************************************
+2022-05-15 14:52:58,290 p=1380 u=devops |  changed: [servera.lab.example.com]
+2022-05-15 14:52:58,290 p=1380 u=devops |  RUNNING HANDLER [Restart mariadb database] **********************************************************************************************************
+2022-05-15 14:53:02,132 p=1380 u=devops |  changed: [servera.lab.example.com]
+2022-05-15 14:53:02,134 p=1380 u=devops |  PLAY RECAP ******************************************************************************************************************************************
+2022-05-15 14:53:02,134 p=1380 u=devops |  servera.lab.example.com    : ok=4    changed=3    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0   
+2022-05-15 14:54:56,780 p=1708 u=devops |  PLAY [Test meta module to verify multiple handlers] *************************************************************************************************
+2022-05-15 14:54:56,787 p=1708 u=devops |  TASK [Gathering Facts] ******************************************************************************************************************************
+2022-05-15 14:54:57,952 p=1708 u=devops |  ok: [servera.lab.example.com]
+2022-05-15 14:54:57,965 p=1708 u=devops |  TASK [Install several packages] *********************************************************************************************************************
+2022-05-15 14:54:59,122 p=1708 u=devops |  changed: [servera.lab.example.com] => (item=httpd)
+2022-05-15 14:54:59,943 p=1708 u=devops |  changed: [servera.lab.example.com] => (item=mariadb-server)
+2022-05-15 14:54:59,946 p=1708 u=devops |  RUNNING HANDLER [Restart apache web server] *********************************************************************************************************
+2022-05-15 14:55:01,610 p=1708 u=devops |  changed: [servera.lab.example.com]
+2022-05-15 14:55:01,610 p=1708 u=devops |  RUNNING HANDLER [Restart mariadb database] **********************************************************************************************************
+2022-05-15 14:55:04,107 p=1708 u=devops |  changed: [servera.lab.example.com]
+2022-05-15 14:55:04,109 p=1708 u=devops |  PLAY RECAP ******************************************************************************************************************************************
+2022-05-15 14:55:04,109 p=1708 u=devops |  servera.lab.example.com    : ok=4    changed=3    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0   
+2022-05-15 14:55:33,924 p=1941 u=devops |  PLAY [Testing the listen directive] *****************************************************************************************************************
+2022-05-15 14:55:33,932 p=1941 u=devops |  TASK [debug] ****************************************************************************************************************************************
+2022-05-15 14:55:33,948 p=1941 u=devops |  changed: [localhost] => {
+    "msg": "Trigerring the handlers"
+}
+2022-05-15 14:55:33,949 p=1941 u=devops |  RUNNING HANDLER [Listening to a notification] *******************************************************************************************************
+2022-05-15 14:55:33,959 p=1941 u=devops |  ok: [localhost] => {
+    "msg": "First handler was notified"
+}
+2022-05-15 14:55:33,960 p=1941 u=devops |  RUNNING HANDLER [My handlers] ***********************************************************************************************************************
+2022-05-15 14:55:33,970 p=1941 u=devops |  ok: [localhost] => {
+    "msg": "Second handler was notified"
+}
+2022-05-15 14:55:33,971 p=1941 u=devops |  RUNNING HANDLER [Subcribe a notification] ***********************************************************************************************************
+2022-05-15 14:55:33,981 p=1941 u=devops |  ok: [localhost] => {
+    "msg": "Third handler was notified"
+}
+2022-05-15 14:55:33,982 p=1941 u=devops |  PLAY RECAP ******************************************************************************************************************************************
+2022-05-15 14:55:33,983 p=1941 u=devops |  localhost                  : ok=4    changed=1    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0   
+2022-05-15 15:04:05,795 p=2997 u=devops |  PLAY [Test meta module to verify multiple handlers] **************************************************************************************************
+2022-05-15 15:04:05,805 p=2997 u=devops |  TASK [Gathering Facts] *******************************************************************************************************************************
+2022-05-15 15:04:07,441 p=2997 u=devops |  ok: [serverb.lab.example.com]
+2022-05-15 15:04:07,477 p=2997 u=devops |  ok: [servera.lab.example.com]
+2022-05-15 15:04:07,490 p=2997 u=devops |  TASK [Install several packages] **********************************************************************************************************************
+2022-05-15 15:04:08,810 p=2997 u=devops |  changed: [serverb.lab.example.com] => (item=httpd)
+2022-05-15 15:04:08,842 p=2997 u=devops |  changed: [servera.lab.example.com] => (item=httpd)
+2022-05-15 15:04:09,788 p=2997 u=devops |  changed: [servera.lab.example.com] => (item=mariadb-server)
+2022-05-15 15:04:16,067 p=2997 u=devops |  changed: [serverb.lab.example.com] => (item=mariadb-server)
+2022-05-15 15:04:16,069 p=2997 u=devops |  RUNNING HANDLER [Restart apache web server] **********************************************************************************************************
+2022-05-15 15:04:17,779 p=2997 u=devops |  changed: [servera.lab.example.com]
+2022-05-15 15:04:17,977 p=2997 u=devops |  changed: [serverb.lab.example.com]
+2022-05-15 15:04:17,977 p=2997 u=devops |  RUNNING HANDLER [Restart mariadb database] ***********************************************************************************************************
+2022-05-15 15:04:20,377 p=2997 u=devops |  changed: [servera.lab.example.com]
+2022-05-15 15:04:21,895 p=2997 u=devops |  changed: [serverb.lab.example.com]
+2022-05-15 15:04:21,897 p=2997 u=devops |  PLAY RECAP *******************************************************************************************************************************************
+2022-05-15 15:04:21,898 p=2997 u=devops |  servera.lab.example.com    : ok=4    changed=3    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0   
+2022-05-15 15:04:21,898 p=2997 u=devops |  serverb.lab.example.com    : ok=4    changed=3    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0   
+2022-05-15 15:12:34,886 p=3282 u=devops |  PLAY [Example play using tagging] *******************************************************************************************************************
+2022-05-15 15:12:34,893 p=3282 u=devops |  TASK [Gathering Facts] ******************************************************************************************************************************
+2022-05-15 15:12:36,042 p=3282 u=devops |  ok: [servera.lab.example.com]
+2022-05-15 15:12:36,124 p=3282 u=devops |  ok: [serverb.lab.example.com]
+2022-05-15 15:12:36,138 p=3282 u=devops |  TASK [httpd is installed] ***************************************************************************************************************************
+2022-05-15 15:12:36,697 p=3282 u=devops |  fatal: [servera.lab.example.com]: FAILED! => {"changed": false, "msg": "This command has to be run under the root user.", "results": []}
+2022-05-15 15:12:36,755 p=3282 u=devops |  fatal: [serverb.lab.example.com]: FAILED! => {"changed": false, "msg": "This command has to be run under the root user.", "results": []}
+2022-05-15 15:12:36,757 p=3282 u=devops |  PLAY RECAP ******************************************************************************************************************************************
+2022-05-15 15:12:36,757 p=3282 u=devops |  servera.lab.example.com    : ok=1    changed=0    unreachable=0    failed=1    skipped=0    rescued=0    ignored=0   
+2022-05-15 15:12:36,757 p=3282 u=devops |  serverb.lab.example.com    : ok=1    changed=0    unreachable=0    failed=1    skipped=0    rescued=0    ignored=0   
+2022-05-15 15:12:55,883 p=3492 u=devops |  PLAY [Example play using tagging] *******************************************************************************************************************
+2022-05-15 15:12:55,890 p=3492 u=devops |  TASK [Gathering Facts] ******************************************************************************************************************************
+2022-05-15 15:12:56,761 p=3492 u=devops |  ok: [servera.lab.example.com]
+2022-05-15 15:12:56,775 p=3492 u=devops |  ok: [serverb.lab.example.com]
+2022-05-15 15:12:56,788 p=3492 u=devops |  TASK [httpd is installed] ***************************************************************************************************************************
+2022-05-15 15:12:57,876 p=3492 u=devops |  ok: [servera.lab.example.com]
+2022-05-15 15:12:58,042 p=3492 u=devops |  ok: [serverb.lab.example.com]
+2022-05-15 15:12:58,044 p=3492 u=devops |  PLAY RECAP ******************************************************************************************************************************************
+2022-05-15 15:12:58,044 p=3492 u=devops |  servera.lab.example.com    : ok=2    changed=0    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0   
+2022-05-15 15:12:58,044 p=3492 u=devops |  serverb.lab.example.com    : ok=2    changed=0    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0   
+2022-05-15 15:15:39,155 p=3784 u=devops |  PLAY [Setup httpd service] ***************************************************************************************************************************
+2022-05-15 15:15:39,162 p=3784 u=devops |  TASK [Gathering Facts] *******************************************************************************************************************************
+2022-05-15 15:15:41,017 p=3784 u=devops |  ok: [serverb.lab.example.com]
+2022-05-15 15:15:41,077 p=3784 u=devops |  ok: [serverf.lab.example.com]
+2022-05-15 15:15:41,200 p=3784 u=devops |  ok: [servere.lab.example.com]
+2022-05-15 15:15:41,237 p=3784 u=devops |  ok: [serverd.lab.example.com]
+2022-05-15 15:15:41,281 p=3784 u=devops |  ok: [serverc.lab.example.com]
+2022-05-15 15:15:41,898 p=3784 u=devops |  ok: [servera.lab.example.com]
+2022-05-15 15:15:41,910 p=3784 u=devops |  TASK [Ensure httpd packages are installed] ***********************************************************************************************************
+2022-05-15 15:15:52,031 p=3784 u=devops |  changed: [serverb.lab.example.com]
+2022-05-15 15:15:52,883 p=3784 u=devops |  changed: [serverd.lab.example.com]
+2022-05-15 15:15:53,044 p=3784 u=devops |  changed: [serverc.lab.example.com]
+2022-05-15 15:15:56,230 p=3784 u=devops |  changed: [serverf.lab.example.com]
+2022-05-15 15:15:57,081 p=3784 u=devops |  changed: [servere.lab.example.com]
+2022-05-15 15:15:59,033 p=3784 u=devops |  changed: [servera.lab.example.com]
+2022-05-15 15:15:59,046 p=3784 u=devops |  TASK [Ensure SELinux allows httpd connection to a remote database] ***********************************************************************************
+2022-05-15 15:16:02,700 p=3784 u=devops |  changed: [serverb.lab.example.com]
+2022-05-15 15:16:02,742 p=3784 u=devops |  changed: [serverf.lab.example.com]
+2022-05-15 15:16:03,411 p=3784 u=devops |  changed: [serverd.lab.example.com]
+2022-05-15 15:16:03,748 p=3784 u=devops |  changed: [servere.lab.example.com]
+2022-05-15 15:16:03,984 p=3784 u=devops |  changed: [serverc.lab.example.com]
+2022-05-15 15:16:05,054 p=3784 u=devops |  changed: [servera.lab.example.com]
+2022-05-15 15:16:05,076 p=3784 u=devops |  TASK [Ensure httpd service is started and enabled] ***************************************************************************************************
+2022-05-15 15:16:06,280 p=3784 u=devops |  ok: [serverb.lab.example.com]
+2022-05-15 15:16:06,698 p=3784 u=devops |  changed: [serverf.lab.example.com]
+2022-05-15 15:16:06,702 p=3784 u=devops |  changed: [servere.lab.example.com]
+2022-05-15 15:16:06,730 p=3784 u=devops |  ok: [serverd.lab.example.com]
+2022-05-15 15:16:06,843 p=3784 u=devops |  ok: [servera.lab.example.com]
+2022-05-15 15:16:06,964 p=3784 u=devops |  ok: [serverc.lab.example.com]
+2022-05-15 15:16:06,970 p=3784 u=devops |  PLAY RECAP *******************************************************************************************************************************************
+2022-05-15 15:16:06,970 p=3784 u=devops |  servera.lab.example.com    : ok=4    changed=2    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0   
+2022-05-15 15:16:06,970 p=3784 u=devops |  serverb.lab.example.com    : ok=4    changed=2    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0   
+2022-05-15 15:16:06,971 p=3784 u=devops |  serverc.lab.example.com    : ok=4    changed=2    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0   
+2022-05-15 15:16:06,971 p=3784 u=devops |  serverd.lab.example.com    : ok=4    changed=2    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0   
+2022-05-15 15:16:06,971 p=3784 u=devops |  servere.lab.example.com    : ok=4    changed=3    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0   
+2022-05-15 15:16:06,971 p=3784 u=devops |  serverf.lab.example.com    : ok=4    changed=3    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0   
+2022-05-15 15:17:03,163 p=3981 u=devops |  playbook: block_tags.yml
+2022-05-15 15:17:03,164 p=3981 u=devops |    play #1 (managed_nodes): Setup httpd service	TAGS: []
+2022-05-15 15:17:03,165 p=3981 u=devops |        TASK TAGS: [webserver]
+
+2022-05-15 15:19:36,222 p=4089 u=devops |  PLAY [Setup httpd service] **************************************************************************************************************************
+2022-05-15 15:19:41,999 p=4089 u=devops |  Perform task: TASK: Gathering Facts (N)o/(y)es/(c)ontinue: ******************************************************************************************
+2022-05-15 15:19:42,003 p=4089 u=devops |  TASK [Gathering Facts] ******************************************************************************************************************************
+2022-05-15 15:19:44,103 p=4089 u=devops |  ok: [serverb.lab.example.com]
+2022-05-15 15:19:44,213 p=4089 u=devops |  ok: [servere.lab.example.com]
+2022-05-15 15:19:44,248 p=4089 u=devops |  ok: [serverc.lab.example.com]
+2022-05-15 15:19:44,286 p=4089 u=devops |  ok: [serverf.lab.example.com]
+2022-05-15 15:19:44,322 p=4089 u=devops |  ok: [serverd.lab.example.com]
+2022-05-15 15:19:45,167 p=4089 u=devops |  ok: [servera.lab.example.com]
+2022-05-15 15:19:48,491 p=4089 u=devops |  Perform task: TASK: Notify start of process (N)o/(y)es/(c)ontinue: **********************************************************************************
+2022-05-15 15:19:48,503 p=4089 u=devops |  TASK [Notify start of process] **********************************************************************************************************************
+2022-05-15 15:19:48,523 p=4089 u=devops |  ok: [serverf.lab.example.com] => {
+    "msg": "Beginning httpd setup"
+}
+2022-05-15 15:19:48,538 p=4089 u=devops |  ok: [servere.lab.example.com] => {
+    "msg": "Beginning httpd setup"
+}
+2022-05-15 15:19:48,572 p=4089 u=devops |  ok: [serverd.lab.example.com] => {
+    "msg": "Beginning httpd setup"
+}
+2022-05-15 15:19:48,587 p=4089 u=devops |  ok: [serverc.lab.example.com] => {
+    "msg": "Beginning httpd setup"
+}
+2022-05-15 15:19:48,588 p=4089 u=devops |  ok: [serverb.lab.example.com] => {
+    "msg": "Beginning httpd setup"
+}
+2022-05-15 15:19:48,594 p=4089 u=devops |  ok: [servera.lab.example.com] => {
+    "msg": "Beginning httpd setup"
+}
+2022-05-15 15:19:51,427 p=4089 u=devops |  Perform task: TASK: Ensure httpd packages are installed (N)o/(y)es/(c)ontinue: **********************************************************************
+2022-05-15 15:19:51,439 p=4089 u=devops |  TASK [Ensure httpd packages are installed] **********************************************************************************************************
+2022-05-15 15:19:53,195 p=4089 u=devops |  ok: [servere.lab.example.com]
+2022-05-15 15:19:53,486 p=4089 u=devops |  ok: [serverb.lab.example.com]
+2022-05-15 15:19:53,559 p=4089 u=devops |  ok: [serverc.lab.example.com]
+2022-05-15 15:19:53,750 p=4089 u=devops |  ok: [serverf.lab.example.com]
+2022-05-15 15:19:54,179 p=4089 u=devops |  ok: [serverd.lab.example.com]
+2022-05-15 15:19:54,530 p=4089 u=devops |  ok: [servera.lab.example.com]
+2022-05-15 15:19:55,668 p=4089 u=devops |  Perform task: TASK: Ensure SELinux allows httpd connection to a remote database (N)o/(y)es/(c)ontinue: **********************************************
+2022-05-15 15:19:55,679 p=4089 u=devops |  TASK [Ensure SELinux allows httpd connection to a remote database] **********************************************************************************
+2022-05-15 15:19:56,521 p=4089 u=devops |  ok: [serverd.lab.example.com]
+2022-05-15 15:19:56,522 p=4089 u=devops |  ok: [serverc.lab.example.com]
+2022-05-15 15:19:56,714 p=4089 u=devops |  ok: [serverf.lab.example.com]
+2022-05-15 15:19:56,886 p=4089 u=devops |  ok: [servere.lab.example.com]
+2022-05-15 15:19:56,985 p=4089 u=devops |  ok: [serverb.lab.example.com]
+2022-05-15 15:19:57,202 p=4089 u=devops |  ok: [servera.lab.example.com]
+2022-05-15 15:19:58,371 p=4089 u=devops |  Perform task: TASK: Ensure httpd service is started and enabled (N)o/(y)es/(c)ontinue: **************************************************************
+2022-05-15 15:19:58,382 p=4089 u=devops |  TASK [Ensure httpd service is started and enabled] **************************************************************************************************
+2022-05-15 15:19:59,152 p=4089 u=devops |  ok: [serverf.lab.example.com]
+2022-05-15 15:19:59,171 p=4089 u=devops |  ok: [servere.lab.example.com]
+2022-05-15 15:19:59,172 p=4089 u=devops |  ok: [serverb.lab.example.com]
+2022-05-15 15:19:59,244 p=4089 u=devops |  ok: [serverc.lab.example.com]
+2022-05-15 15:19:59,247 p=4089 u=devops |  ok: [serverd.lab.example.com]
+2022-05-15 15:19:59,464 p=4089 u=devops |  ok: [servera.lab.example.com]
+2022-05-15 15:19:59,467 p=4089 u=devops |  PLAY RECAP ******************************************************************************************************************************************
+2022-05-15 15:19:59,467 p=4089 u=devops |  servera.lab.example.com    : ok=5    changed=0    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0   
+2022-05-15 15:19:59,467 p=4089 u=devops |  serverb.lab.example.com    : ok=5    changed=0    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0   
+2022-05-15 15:19:59,468 p=4089 u=devops |  serverc.lab.example.com    : ok=5    changed=0    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0   
+2022-05-15 15:19:59,468 p=4089 u=devops |  serverd.lab.example.com    : ok=5    changed=0    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0   
+2022-05-15 15:19:59,468 p=4089 u=devops |  servere.lab.example.com    : ok=5    changed=0    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0   
+2022-05-15 15:19:59,468 p=4089 u=devops |  serverf.lab.example.com    : ok=5    changed=0    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0   
+2022-05-15 16:02:37,855 p=5071 u=devops |  ERROR! No setting was provided for required configuration plugin_type: callback plugin: cgroup_perf_recap setting: control_group 
+2022-05-15 16:03:54,703 p=5323 u=devops |  PLAY [Example play using tagging] ********************************************************************************************************************
+2022-05-15 16:03:54,709 p=5323 u=devops |  TASK [Gathering Facts] *******************************************************************************************************************************
+2022-05-15 16:03:54,711 p=5323 u=devops |  Sunday 15 May 2022  16:03:54 +0800 (0:00:00.034)       0:00:00.034 ************ 
+2022-05-15 16:03:54,711 p=5323 u=devops |  Sunday 15 May 2022  16:03:54 +0800 (0:00:00.034)       0:00:00.034 ************ 
+2022-05-15 16:03:56,212 p=5323 u=devops |  ok: [serverb.lab.example.com]
+2022-05-15 16:03:56,221 p=5323 u=devops |  ok: [servera.lab.example.com]
+2022-05-15 16:03:56,239 p=5323 u=devops |  TASK [httpd is installed] ****************************************************************************************************************************
+2022-05-15 16:03:56,242 p=5323 u=devops |  Sunday 15 May 2022  16:03:56 +0800 (0:00:01.530)       0:00:01.564 ************ 
+2022-05-15 16:03:56,242 p=5323 u=devops |  Sunday 15 May 2022  16:03:56 +0800 (0:00:01.531)       0:00:01.565 ************ 
+2022-05-15 16:03:57,503 p=5323 u=devops |  ok: [serverb.lab.example.com]
+2022-05-15 16:03:57,527 p=5323 u=devops |  ok: [servera.lab.example.com]
+2022-05-15 16:03:57,541 p=5323 u=devops |  TASK [postfix is installed] **************************************************************************************************************************
+2022-05-15 16:03:57,542 p=5323 u=devops |  Sunday 15 May 2022  16:03:57 +0800 (0:00:01.301)       0:00:02.865 ************ 
+2022-05-15 16:03:57,542 p=5323 u=devops |  Sunday 15 May 2022  16:03:57 +0800 (0:00:01.300)       0:00:02.865 ************ 
+2022-05-15 16:04:03,165 p=5323 u=devops |  changed: [servera.lab.example.com]
+2022-05-15 16:04:04,868 p=5323 u=devops |  changed: [serverb.lab.example.com]
+2022-05-15 16:04:04,882 p=5323 u=devops |  PLAY RECAP *******************************************************************************************************************************************
+2022-05-15 16:04:04,882 p=5323 u=devops |  servera.lab.example.com    : ok=3    changed=1    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0   
+2022-05-15 16:04:04,882 p=5323 u=devops |  serverb.lab.example.com    : ok=3    changed=1    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0   
+2022-05-15 16:04:04,882 p=5323 u=devops |  CGROUP PERF RECAP ************************************************************************************************************************************
+2022-05-15 16:04:04,882 p=5323 u=devops |  Memory Execution Maximum: 86.10MB
+
+2022-05-15 16:04:04,882 p=5323 u=devops |  cpu Execution Maximum: 106.79%
+
+2022-05-15 16:04:04,882 p=5323 u=devops |  pids Execution Maximum: 13.00
+
+2022-05-15 16:04:04,882 p=5323 u=devops |  
+2022-05-15 16:04:04,882 p=5323 u=devops |  memory:
+
+2022-05-15 16:04:04,882 p=5323 u=devops |  Gathering Facts (52540000-fa09-05ea-29bd-000000000014): 79.25MB
+2022-05-15 16:04:04,883 p=5323 u=devops |  httpd is installed (52540000-fa09-05ea-29bd-00000000000f): 85.99MB
+2022-05-15 16:04:04,883 p=5323 u=devops |  postfix is installed (52540000-fa09-05ea-29bd-000000000010): 71.31MB
+2022-05-15 16:04:04,883 p=5323 u=devops |  
+2022-05-15 16:04:04,883 p=5323 u=devops |  cpu:
+
+2022-05-15 16:04:04,883 p=5323 u=devops |  Gathering Facts (52540000-fa09-05ea-29bd-000000000014): 106.79%
+2022-05-15 16:04:04,883 p=5323 u=devops |  httpd is installed (52540000-fa09-05ea-29bd-00000000000f): 97.58%
+2022-05-15 16:04:04,883 p=5323 u=devops |  postfix is installed (52540000-fa09-05ea-29bd-000000000010): 40.90%
+2022-05-15 16:04:04,883 p=5323 u=devops |  
+2022-05-15 16:04:04,883 p=5323 u=devops |  pids:
+
+2022-05-15 16:04:04,883 p=5323 u=devops |  Gathering Facts (52540000-fa09-05ea-29bd-000000000014): 13.00
+2022-05-15 16:04:04,883 p=5323 u=devops |  httpd is installed (52540000-fa09-05ea-29bd-00000000000f): 12.00
+2022-05-15 16:04:04,883 p=5323 u=devops |  postfix is installed (52540000-fa09-05ea-29bd-000000000010): 12.00
+2022-05-15 16:04:04,883 p=5323 u=devops |  
+2022-05-15 16:04:04,883 p=5323 u=devops |  Sunday 15 May 2022  16:04:04 +0800 (0:00:07.341)       0:00:10.207 ************ 
+2022-05-15 16:04:04,883 p=5323 u=devops |  =============================================================================== 
+2022-05-15 16:04:04,883 p=5323 u=devops |  yum --------------------------------------------------------------------- 8.64s
+2022-05-15 16:04:04,883 p=5323 u=devops |  gather_facts ------------------------------------------------------------ 1.53s
+2022-05-15 16:04:04,884 p=5323 u=devops |  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ 
+2022-05-15 16:04:04,884 p=5323 u=devops |  total ------------------------------------------------------------------ 10.17s
+2022-05-15 16:04:04,884 p=5323 u=devops |  Sunday 15 May 2022  16:04:04 +0800 (0:00:07.341)       0:00:10.207 ************ 
+2022-05-15 16:04:04,884 p=5323 u=devops |  =============================================================================== 
+2022-05-15 16:04:04,884 p=5323 u=devops |  postfix is installed -------------------------------------------------------------------------------------------------------------------------- 7.34s
+2022-05-15 16:04:04,884 p=5323 u=devops |  Gathering Facts ------------------------------------------------------------------------------------------------------------------------------- 1.53s
+2022-05-15 16:04:04,884 p=5323 u=devops |  httpd is installed ---------------------------------------------------------------------------------------------------------------------------- 1.30s
+2022-05-15 16:04:04,884 p=5323 u=devops |  Playbook run took 0 days, 0 hours, 0 minutes, 10 seconds
+2022-05-15 16:37:09,047 p=5885 u=devops |  ERROR! 'becaome' is not a valid attribute for a Play
+
+The error appears to be in '/home/devops/github/ansible-demo/do447-course-demo/variable_definied_verify.yaml': line 2, column 3, but may
+be elsewhere in the file depending on the exact syntax problem.
+
+The offending line appears to be:
+
+---
+- name: Variable definied verify
+  ^ here
+
+2022-05-15 16:37:24,889 p=6047 u=devops |  PLAY [Variable definied verify] *********************************************************************************************************************
+2022-05-15 16:37:24,896 p=6047 u=devops |  TASK [Gathering Facts] ******************************************************************************************************************************
+2022-05-15 16:37:24,897 p=6047 u=devops |  Sunday 15 May 2022  16:37:24 +0800 (0:00:00.035)       0:00:00.035 ************ 
+2022-05-15 16:37:24,897 p=6047 u=devops |  Sunday 15 May 2022  16:37:24 +0800 (0:00:00.035)       0:00:00.035 ************ 
+2022-05-15 16:37:25,666 p=6047 u=devops |  ok: [localhost]
+2022-05-15 16:37:25,688 p=6047 u=devops |  TASK [Output username variable vaule] ***************************************************************************************************************
+2022-05-15 16:37:25,689 p=6047 u=devops |  Sunday 15 May 2022  16:37:25 +0800 (0:00:00.791)       0:00:00.827 ************ 
+2022-05-15 16:37:25,689 p=6047 u=devops |  Sunday 15 May 2022  16:37:25 +0800 (0:00:00.791)       0:00:00.827 ************ 
+2022-05-15 16:37:25,704 p=6047 u=devops |  fatal: [localhost]: FAILED! => {"msg": "The conditional check 'username is definied' failed. The error was: template error while templating string: no test named 'definied'. String: {% if username is definied %} True {% else %} False {% endif %}\n\nThe error appears to be in '/home/devops/github/ansible-demo/do447-course-demo/variable_definied_verify.yaml': line 9, column 7, but may\nbe elsewhere in the file depending on the exact syntax problem.\n\nThe offending line appears to be:\n\n  tasks:\n    - name: Output username variable vaule\n      ^ here\n"}
+2022-05-15 16:37:25,706 p=6047 u=devops |  PLAY RECAP ******************************************************************************************************************************************
+2022-05-15 16:37:25,706 p=6047 u=devops |  localhost                  : ok=1    changed=0    unreachable=0    failed=1    skipped=0    rescued=0    ignored=0   
+2022-05-15 16:37:25,706 p=6047 u=devops |  CGROUP PERF RECAP ***********************************************************************************************************************************
+2022-05-15 16:37:25,706 p=6047 u=devops |  Memory Execution Maximum: 2.46MB
+
+2022-05-15 16:37:25,707 p=6047 u=devops |  cpu Execution Maximum: 0.00%
+
+2022-05-15 16:37:25,707 p=6047 u=devops |  pids Execution Maximum: 0.00
+
+2022-05-15 16:37:25,707 p=6047 u=devops |  
+2022-05-15 16:37:25,707 p=6047 u=devops |  memory:
+
+2022-05-15 16:37:25,707 p=6047 u=devops |  Gathering Facts (52540000-fa09-21e2-1085-000000000014): 2.46MB
+2022-05-15 16:37:25,707 p=6047 u=devops |  Output username variable vaule (52540000-fa09-21e2-1085-00000000000f): 2.46MB
+2022-05-15 16:37:25,707 p=6047 u=devops |  
+2022-05-15 16:37:25,708 p=6047 u=devops |  cpu:
+
+2022-05-15 16:37:25,708 p=6047 u=devops |  Gathering Facts (52540000-fa09-21e2-1085-000000000014): 0.00%
+2022-05-15 16:37:25,708 p=6047 u=devops |  Output username variable vaule (52540000-fa09-21e2-1085-00000000000f): 0.00%
+2022-05-15 16:37:25,708 p=6047 u=devops |  
+2022-05-15 16:37:25,708 p=6047 u=devops |  pids:
+
+2022-05-15 16:37:25,708 p=6047 u=devops |  Gathering Facts (52540000-fa09-21e2-1085-000000000014): 0.00
+2022-05-15 16:37:25,708 p=6047 u=devops |  Output username variable vaule (52540000-fa09-21e2-1085-00000000000f): 0.00
+2022-05-15 16:37:25,708 p=6047 u=devops |  
+2022-05-15 16:37:25,708 p=6047 u=devops |  Sunday 15 May 2022  16:37:25 +0800 (0:00:00.019)       0:00:00.846 ************ 
+2022-05-15 16:37:25,708 p=6047 u=devops |  =============================================================================== 
+2022-05-15 16:37:25,708 p=6047 u=devops |  gather_facts ------------------------------------------------------------ 0.79s
+2022-05-15 16:37:25,709 p=6047 u=devops |  command ----------------------------------------------------------------- 0.02s
+2022-05-15 16:37:25,709 p=6047 u=devops |  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ 
+2022-05-15 16:37:25,709 p=6047 u=devops |  total ------------------------------------------------------------------- 0.81s
+2022-05-15 16:37:25,709 p=6047 u=devops |  Sunday 15 May 2022  16:37:25 +0800 (0:00:00.019)       0:00:00.847 ************ 
+2022-05-15 16:37:25,709 p=6047 u=devops |  =============================================================================== 
+2022-05-15 16:37:25,709 p=6047 u=devops |  Gathering Facts ------------------------------------------------------------------------------------------------------------------------------ 0.79s
+2022-05-15 16:37:25,709 p=6047 u=devops |  Output username variable vaule --------------------------------------------------------------------------------------------------------------- 0.02s
+2022-05-15 16:37:25,709 p=6047 u=devops |  Playbook run took 0 days, 0 hours, 0 minutes, 0 seconds
+2022-05-15 16:37:53,216 p=6287 u=devops |  PLAY [Variable definied verify] *********************************************************************************************************************
+2022-05-15 16:37:53,222 p=6287 u=devops |  TASK [Gathering Facts] ******************************************************************************************************************************
+2022-05-15 16:37:53,986 p=6287 u=devops |  ok: [localhost]
+2022-05-15 16:37:54,000 p=6287 u=devops |  TASK [Output username variable vaule] ***************************************************************************************************************
+2022-05-15 16:37:54,015 p=6287 u=devops |  fatal: [localhost]: FAILED! => {"msg": "The conditional check 'username is definied' failed. The error was: template error while templating string: no test named 'definied'. String: {% if username is definied %} True {% else %} False {% endif %}\n\nThe error appears to be in '/home/devops/github/ansible-demo/do447-course-demo/variable_definied_verify.yaml': line 9, column 7, but may\nbe elsewhere in the file depending on the exact syntax problem.\n\nThe offending line appears to be:\n\n  tasks:\n    - name: Output username variable vaule\n      ^ here\n"}
+2022-05-15 16:37:54,016 p=6287 u=devops |  PLAY RECAP ******************************************************************************************************************************************
+2022-05-15 16:37:54,016 p=6287 u=devops |  localhost                  : ok=1    changed=0    unreachable=0    failed=1    skipped=0    rescued=0    ignored=0   
+2022-05-15 16:39:24,213 p=6585 u=devops |  PLAY [Variable definied verify] *********************************************************************************************************************
+2022-05-15 16:39:24,220 p=6585 u=devops |  TASK [Gathering Facts] ******************************************************************************************************************************
+2022-05-15 16:39:25,962 p=6585 u=devops |  ok: [localhost]
+2022-05-15 16:39:25,977 p=6585 u=devops |  TASK [Output username variable vaule] ***************************************************************************************************************
+2022-05-15 16:39:25,991 p=6585 u=devops |  fatal: [localhost]: FAILED! => {"msg": "The conditional check 'username is definied' failed. The error was: template error while templating string: no test named 'definied'. String: {% if username is definied %} True {% else %} False {% endif %}\n\nThe error appears to be in '/home/devops/github/ansible-demo/do447-course-demo/variable_definied_verify.yaml': line 9, column 7, but may\nbe elsewhere in the file depending on the exact syntax problem.\n\nThe offending line appears to be:\n\n  tasks:\n    - name: Output username variable vaule\n      ^ here\n"}
+2022-05-15 16:39:25,992 p=6585 u=devops |  PLAY RECAP ******************************************************************************************************************************************
+2022-05-15 16:39:25,993 p=6585 u=devops |  localhost                  : ok=1    changed=0    unreachable=0    failed=1    skipped=0    rescued=0    ignored=0   
+2022-05-15 16:39:44,761 p=6804 u=devops |  PLAY [Variable definied verify] *********************************************************************************************************************
+2022-05-15 16:39:44,771 p=6804 u=devops |  TASK [Gathering Facts] ******************************************************************************************************************************
+2022-05-15 16:39:45,584 p=6804 u=devops |  ok: [localhost]
+2022-05-15 16:39:45,599 p=6804 u=devops |  TASK [Output username variable vaule] ***************************************************************************************************************
+2022-05-15 16:39:45,612 p=6804 u=devops |  fatal: [localhost]: FAILED! => {"msg": "The conditional check 'username is definied' failed. The error was: template error while templating string: no test named 'definied'. String: {% if username is definied %} True {% else %} False {% endif %}\n\nThe error appears to be in '/home/devops/github/ansible-demo/do447-course-demo/variable_definied_verify.yaml': line 9, column 7, but may\nbe elsewhere in the file depending on the exact syntax problem.\n\nThe offending line appears to be:\n\n  tasks:\n    - name: Output username variable vaule\n      ^ here\n"}
+2022-05-15 16:39:45,613 p=6804 u=devops |  PLAY RECAP ******************************************************************************************************************************************
+2022-05-15 16:39:45,614 p=6804 u=devops |  localhost                  : ok=1    changed=0    unreachable=0    failed=1    skipped=0    rescued=0    ignored=0   
+2022-05-15 16:40:52,873 p=7100 u=devops |  PLAY [Variable definied verify] *********************************************************************************************************************
+2022-05-15 16:40:52,880 p=7100 u=devops |  TASK [Gathering Facts] ******************************************************************************************************************************
+2022-05-15 16:40:53,600 p=7100 u=devops |  ok: [localhost]
+2022-05-15 16:40:53,615 p=7100 u=devops |  TASK [Output username variable vaule] ***************************************************************************************************************
+2022-05-15 16:40:53,628 p=7100 u=devops |  fatal: [localhost]: FAILED! => {"msg": "The conditional check 'username is not definied' failed. The error was: template error while templating string: no test named 'definied'. String: {% if username is not definied %} True {% else %} False {% endif %}\n\nThe error appears to be in '/home/devops/github/ansible-demo/do447-course-demo/variable_definied_verify.yaml': line 9, column 7, but may\nbe elsewhere in the file depending on the exact syntax problem.\n\nThe offending line appears to be:\n\n  tasks:\n    - name: Output username variable vaule\n      ^ here\n"}
+2022-05-15 16:40:53,629 p=7100 u=devops |  PLAY RECAP ******************************************************************************************************************************************
+2022-05-15 16:40:53,630 p=7100 u=devops |  localhost                  : ok=1    changed=0    unreachable=0    failed=1    skipped=0    rescued=0    ignored=0   
+2022-05-15 16:42:26,344 p=7326 u=devops |  PLAY [Variable definied verify] **********************************************************************************************************************
+2022-05-15 16:42:26,351 p=7326 u=devops |  TASK [Gathering Facts] *******************************************************************************************************************************
+2022-05-15 16:42:27,098 p=7326 u=devops |  ok: [localhost]
+2022-05-15 16:42:27,113 p=7326 u=devops |  TASK [Output username variable vaule] ****************************************************************************************************************
+2022-05-15 16:42:27,127 p=7326 u=devops |  fatal: [localhost]: FAILED! => {"msg": "The conditional check 'username is definied' failed. The error was: template error while templating string: no test named 'definied'. String: {% if username is definied %} True {% else %} False {% endif %}\n\nThe error appears to be in '/home/devops/github/ansible-demo/do447-course-demo/variable_definied_verify.yaml': line 9, column 7, but may\nbe elsewhere in the file depending on the exact syntax problem.\n\nThe offending line appears to be:\n\n  tasks:\n    - name: Output username variable vaule\n      ^ here\n"}
+2022-05-15 16:42:27,128 p=7326 u=devops |  PLAY RECAP *******************************************************************************************************************************************
+2022-05-15 16:42:27,128 p=7326 u=devops |  localhost                  : ok=1    changed=0    unreachable=0    failed=1    skipped=0    rescued=0    ignored=0   
+2022-05-15 16:43:07,265 p=7536 u=devops |  PLAY [Variable definied verify] **********************************************************************************************************************
+2022-05-15 16:43:07,270 p=7536 u=devops |  TASK [Gathering Facts] *******************************************************************************************************************************
+2022-05-15 16:43:07,992 p=7536 u=devops |  ok: [localhost]
+2022-05-15 16:43:08,007 p=7536 u=devops |  TASK [Test username variable vaule] ******************************************************************************************************************
+2022-05-15 16:43:08,020 p=7536 u=devops |  fatal: [localhost]: FAILED! => {"msg": "The conditional check 'username is definied' failed. The error was: template error while templating string: no test named 'definied'. String: {% if username is definied %} True {% else %} False {% endif %}\n\nThe error appears to be in '/home/devops/github/ansible-demo/do447-course-demo/variable_definied_verify.yaml': line 9, column 7, but may\nbe elsewhere in the file depending on the exact syntax problem.\n\nThe offending line appears to be:\n\n  tasks:\n    - name: Test username variable vaule\n      ^ here\n"}
+2022-05-15 16:43:08,026 p=7536 u=devops |  PLAY RECAP *******************************************************************************************************************************************
+2022-05-15 16:43:08,026 p=7536 u=devops |  localhost                  : ok=1    changed=0    unreachable=0    failed=1    skipped=0    rescued=0    ignored=0   
+2022-05-15 16:52:09,582 p=7919 u=devops |  PLAY [Test Jinja2 variables] *************************************************************************************************************************
+2022-05-15 16:52:09,589 p=7919 u=devops |  TASK [Confirm that the second list element is "Marvin"] **********************************************************************************************
+2022-05-15 16:52:09,607 p=7919 u=devops |  ok: [localhost] => {
+    "changed": false,
+    "msg": "All assertions passed"
+}
+2022-05-15 16:52:09,609 p=7919 u=devops |  TASK [Confirm "Marvin" vaule of hash] ****************************************************************************************************************
+2022-05-15 16:52:09,622 p=7919 u=devops |  ok: [localhost] => {
+    "changed": false,
+    "msg": "All assertions passed"
+}
+2022-05-15 16:52:09,624 p=7919 u=devops |  PLAY RECAP *******************************************************************************************************************************************
+2022-05-15 16:52:09,624 p=7919 u=devops |  localhost                  : ok=2    changed=0    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0   
+2022-05-15 17:03:01,022 p=8283 u=devops |  PLAY [Test Jinja2 expression filters] ****************************************************************************************************************
+2022-05-15 17:03:04,074 p=8283 u=devops |  Perform task: TASK: Gathering Facts (N)o/(y)es/(c)ontinue: *******************************************************************************************
+2022-05-15 17:03:04,078 p=8283 u=devops |  TASK [Gathering Facts] *******************************************************************************************************************************
+2022-05-15 17:03:05,384 p=8283 u=devops |  ok: [servera.lab.example.com]
+2022-05-15 17:03:11,194 p=8283 u=devops |  Perform task: TASK: Install web server package (N)o/(y)es/(c)ontinue: ********************************************************************************
+2022-05-15 17:03:11,206 p=8283 u=devops |  TASK [Install web server package] ********************************************************************************************************************
+2022-05-15 17:03:12,343 p=8283 u=devops |  ok: [servera.lab.example.com]
+2022-05-15 17:03:21,355 p=8283 u=devops |  Perform task: TASK: Install web server package (N)o/(y)es/(c)ontinue: ********************************************************************************
+2022-05-15 17:03:21,367 p=8283 u=devops |  TASK [Install web server package] ********************************************************************************************************************
+2022-05-15 17:03:22,221 p=8283 u=devops |  ok: [servera.lab.example.com]
+2022-05-15 17:03:22,233 p=8283 u=devops |  TASK [Ensure user jonfoo exists.] ********************************************************************************************************************
+2022-05-15 17:03:22,958 p=8283 u=devops |  changed: [servera.lab.example.com]
+2022-05-15 17:03:22,970 p=8283 u=devops |  TASK [Output variable value of filter] ***************************************************************************************************************
+2022-05-15 17:03:22,985 p=8283 u=devops |  ok: [servera.lab.example.com] => {
+    "msg": "The capitalize myname is Alberthua and lower myname is alberthua and upper myname is ALBERTHUA and the number mynumber is 447 and random number of list is \"10\" and another list is \"[5, 9, 27, 13]\"\n"
+}
+2022-05-15 17:03:22,997 p=8283 u=devops |  TASK [Operate number calculate] **********************************************************************************************************************
+2022-05-15 17:03:23,011 p=8283 u=devops |  ok: [servera.lab.example.com] => {
+    "msg": "The result is 18 and int result is 47 and sum result is 42\n"
+}
+2022-05-15 17:03:23,036 p=8283 u=devops |  TASK [Test multiple filters for list] ****************************************************************************************************************
+2022-05-15 17:03:23,080 p=8283 u=devops |  ok: [servera.lab.example.com] => {
+    "changed": false,
+    "msg": "All assertions passed"
+}
+2022-05-15 17:03:23,092 p=8283 u=devops |  TASK [Test multiple filters for dictionary] **********************************************************************************************************
+2022-05-15 17:03:23,116 p=8283 u=devops |  ok: [servera.lab.example.com] => {
+    "changed": false,
+    "msg": "All assertions passed"
+}
+2022-05-15 17:03:23,128 p=8283 u=devops |  TASK [Put quotes around 'my_string'] *****************************************************************************************************************
+2022-05-15 17:03:23,430 p=8283 u=devops |  changed: [servera.lab.example.com]
+2022-05-15 17:03:23,442 p=8283 u=devops |  TASK [Output my_string variable] *********************************************************************************************************************
+2022-05-15 17:03:23,456 p=8283 u=devops |  ok: [servera.lab.example.com] => {
+    "msg": "Quote result is Hello DO447"
+}
+2022-05-15 17:03:23,468 p=8283 u=devops |  TASK [Test results of regex search and search-and-replace] *******************************************************************************************
+2022-05-15 17:03:23,488 p=8283 u=devops |  ok: [servera.lab.example.com] => {
+    "changed": false,
+    "msg": "All assertions passed"
+}
+2022-05-15 17:03:23,499 p=8283 u=devops |  TASK [Get the 'name' elements from the list of dictionaries in 'hosts'] ******************************************************************************
+2022-05-15 17:03:23,516 p=8283 u=devops |  ok: [servera.lab.example.com] => {
+    "changed": false,
+    "msg": "All assertions passed"
+}
+2022-05-15 17:03:23,530 p=8283 u=devops |  TASK [Convert between JSON and YAML format] **********************************************************************************************************
+2022-05-15 17:03:23,547 p=8283 u=devops |  ok: [servera.lab.example.com] => {
+    "changed": false,
+    "msg": "All assertions passed"
+}
+2022-05-15 17:03:23,550 p=8283 u=devops |  PLAY RECAP *******************************************************************************************************************************************
+2022-05-15 17:03:23,550 p=8283 u=devops |  servera.lab.example.com    : ok=13   changed=2    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0   
+2022-05-15 17:04:05,359 p=8575 u=devops |  PLAY [Test Jinja2 expression filters] ***************************************************************************************************************
+2022-05-15 17:04:08,352 p=8575 u=devops |  Perform task: TASK: Gathering Facts (N)o/(y)es/(c)ontinue: ******************************************************************************************
+2022-05-15 17:04:08,357 p=8575 u=devops |  TASK [Gathering Facts] ******************************************************************************************************************************
+2022-05-15 17:04:09,292 p=8575 u=devops |  ok: [servera.lab.example.com]
+2022-05-15 17:04:15,491 p=8575 u=devops |  Perform task: TASK: mandatory filter - install web server package (N)o/(y)es/(c)ontinue: ************************************************************
+2022-05-15 17:04:15,502 p=8575 u=devops |  TASK [mandatory filter - install web server package] ************************************************************************************************
+2022-05-15 17:04:16,590 p=8575 u=devops |  ok: [servera.lab.example.com]
+2022-05-15 17:04:24,008 p=8575 u=devops |  Perform task: TASK: default filter - install web server package (N)o/(y)es/(c)ontinue: **************************************************************
+2022-05-15 17:04:26,754 p=8575 u=devops |   [ERROR]: User interrupted execution
+
+2022-05-15 17:06:44,163 p=8775 u=devops |  PLAY [Test Jinja2 expression filters] ***************************************************************************************************************
+2022-05-15 17:06:45,967 p=8775 u=devops |  Perform task: TASK: Gathering Facts (N)o/(y)es/(c)ontinue: ******************************************************************************************
+2022-05-15 17:06:45,972 p=8775 u=devops |  TASK [Gathering Facts] ******************************************************************************************************************************
+2022-05-15 17:06:47,078 p=8775 u=devops |  ok: [servera.lab.example.com]
+2022-05-15 17:06:47,975 p=8775 u=devops |  Perform task: TASK: mandatory filter - install web server package (N)o/(y)es/(c)ontinue: ************************************************************
+2022-05-15 17:06:47,986 p=8775 u=devops |  TASK [mandatory filter - install web server package] ************************************************************************************************
+2022-05-15 17:06:48,969 p=8775 u=devops |  ok: [servera.lab.example.com]
+2022-05-15 17:06:50,387 p=8775 u=devops |  Perform task: TASK: default filter - install web server package (N)o/(y)es/(c)ontinue: **************************************************************
+2022-05-15 17:06:50,399 p=8775 u=devops |  TASK [default filter - install web server package] **************************************************************************************************
+2022-05-15 17:06:51,294 p=8775 u=devops |  ok: [servera.lab.example.com]
+2022-05-15 17:07:06,807 p=8775 u=devops |  Perform task: TASK: Ensure user jonfoo exists. (N)o/(y)es/(c)ontinue: *******************************************************************************
+2022-05-15 17:07:09,085 p=8775 u=devops |   [ERROR]: User interrupted execution
+

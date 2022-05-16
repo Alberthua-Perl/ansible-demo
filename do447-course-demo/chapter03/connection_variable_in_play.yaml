@@ -1,0 +1,16 @@
+---
+- name: Example play using connection variables
+  hosts: webservers
+  become: false
+  vars:
+    ansible_become: true
+    # Priority of connection variable is higher than become in play level.
+  tasks:
+    - name: Verify current username
+      debug:
+        var: ansible_user_id
+
+    - name: Play will use privilege escalation even if inventory says no
+      yum:
+        name: perl
+        state: installed

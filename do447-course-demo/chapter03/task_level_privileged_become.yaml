@@ -1,0 +1,16 @@
+---
+- name: Play with two tasks, one uses privilege escalation
+  hosts: all
+  become: false
+  tasks:
+    - name: This task needs privileges
+      yum:
+        name: perl
+        state: installed
+      become: true
+    - name: This task does not need privileges
+      shell: perl -v
+      register: perlcheck
+      failed_when: perlcheck.rc != 0
+      # 若 Perl 安装成功可查看版本信息，而安装失败，该命令无法正确执行，failed_when 语句
+      # 将标记该任务为 failed 状态。

@@ -1,0 +1,26 @@
+---
+- name: Deploy web services
+  hosts: webservers
+  become: false
+  tasks:
+    - block:
+      - name: Ensure httpd is installed
+        yum:
+          name: httpd
+          state: installed
+      - name: Start and enable webserver
+        service:
+          name: httpd
+          state: started
+          enabled: yes
+      become: true
+    - name: Test website from itself, do not become
+      uri:
+        url: http://{{ ansible_host }}
+        return_content: yes
+      register: webpage
+      failed_when: webpage.status != 200
+      # 若返回码不为 200 时，将该任务设置为 failed。
+    - name: Check webpage variable content
+      debug:
+        var: webpage

@@ -4,8 +4,17 @@
   gather_facts: yes
 
   tasks:
+    ## mandatory filter
+    - name: mandatory filter - install web server package
+      yum:
+        name: "{{ package | mandatory }}"
+        state: present
+      become: true  
+      vars:
+        package: ~
+
     ## default filter
-    - name: Install web server package
+    - name: default filter - install web server package
       yum:
         name: "{{ package | default(webserver, True) }}"
         state: present

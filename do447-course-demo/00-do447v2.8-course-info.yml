@@ -1,8 +1,9 @@
 ---
 ansible_variable_priority:
-# ansible 变量优先级从高到低排列
+# Ansible 变量优先级从高到低排列
   - command_line:
       - -e <key>=<value> option in ansible-playbook command
+      # 
 
   - play_level:
       - vars directive under include_tasks module
