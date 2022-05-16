@@ -1,5 +1,7 @@
-# DO447 Course Demo
+# DO447 Course Demo and Extend
 
-Demo ansible configuration file and playbooks for DO447 course of Red Hat Ansible Tower.
+- Demo ansible playbooks for DO447 course of Ansible advanced practice and Red Hat Ansible Tower.
 
-In this course ansible engine v2.8 is used to display demos.
+- In this course ansible engine v2.8 is used to display demos.
+
+- One node gitlab.lab.example.com is customized which includes GitLab repository.
