@@ -1,0 +1,13 @@
+[lb_servers]
+servera.lab.example.com
+
+[web_servers]
+serverb.lab.example.com
+serverc.lab.example.com
+
+[web_servers:vars]
+alternate_server=serverd.lab.example.com
+# 组变量
+
+[backend_server_pool]
+server[b:f].lab.example.com

@@ -1,0 +1,13 @@
+@all:
+  |--@backend_server_pool:
+  |  |--serverb.lab.example.com
+  |  |--serverc.lab.example.com
+  |  |--serverd.lab.example.com
+  |  |--servere.lab.example.com
+  |  |--serverf.lab.example.com
+  |--@lb_servers:
+  |  |--servera.lab.example.com
+  |--@ungrouped:
+  |--@web_servers:
+  |  |--serverb.lab.example.com
+  |  |--serverc.lab.example.com
