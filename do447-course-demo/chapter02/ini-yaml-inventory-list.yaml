@@ -1,0 +1,19 @@
+all:
+  children:
+    backend_server_pool:
+      hosts:
+        serverb.lab.example.com:
+          alternate_server: serverd.lab.example.com
+        serverc.lab.example.com:
+          alternate_server: serverd.lab.example.com
+        serverd.lab.example.com: {}
+        servere.lab.example.com: {}
+        serverf.lab.example.com: {}
+    lb_servers:
+      hosts:
+        servera.lab.example.com: {}
+    ungrouped: {}
+    web_servers:
+      hosts:
+        serverb.lab.example.com: {}
+        serverc.lab.example.com: {}
