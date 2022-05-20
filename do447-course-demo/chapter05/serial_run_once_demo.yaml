@@ -1,6 +1,7 @@
 ---
 - name: test serial and run_once keywords
-  hosts: all
+  hosts: all,!gitlab_node
+  order: sorted
   become: false
   gather_facts: no
   serial: 2
