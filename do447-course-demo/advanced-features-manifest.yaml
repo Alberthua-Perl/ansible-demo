@@ -37,6 +37,8 @@ modules:
     - raw
     - script
     - set_fact
+    # set_fact module always used to set customized facts to delegate facts
+    # for delegated hosts
     - setup
     - fail
     - ping
@@ -127,7 +129,8 @@ filters:
 
   dictionary:
     - combine({<defined_dict>})
-    - dict2items: transfer dictionary to list used by loop
+    - dict2items
+    # transfer dictionary to list used by loop
     - items2dict
 
   JSON_or_YAML:
