@@ -35,5 +35,3 @@
       debug:
         msg: "{{ hostvars['servera.lab.example.com']['myfact'] }}"
       # use magic variable to verify delegation fact
-
-
