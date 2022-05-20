@@ -1,18 +1,11 @@
 ---
-- name: Ensure current NTP server
+- name: test serial and run_once keywords
   hosts: all
   become: false
   gather_facts: no
   serial: 2
 
   tasks:
-    - name: Capture current NTP server
-      shell: chronyc sources -v | grep -E '^\^'
-      register: ntpserver_result
-
-    - debug:
-        var: ntpserver_result.stdout_lines
-
     - debug:
         msg: First host in play is {{ ansible_play_hosts[0] }}
 
@@ -23,4 +16,4 @@
       delegate_to: workstation.lab.example.com
       vars:
         batch_nodes: "{{ ansible_play_batch | join(' ') }}"
-      # ansible_play_batch variable is list included batch managed hosts.  
+      # ansible_play_batch variable is list included batch managed hosts.
