@@ -1,5 +1,5 @@
 ---
-# manifest includes ansible advanced features as followings
+# Ansible 的进阶使用方法，包括 Jinja2 过滤器、Jinja2 插件、循环结构、模块等。
 directives:
   play_level:
     name: <string>

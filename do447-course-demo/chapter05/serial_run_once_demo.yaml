@@ -7,6 +7,14 @@
   serial: 2
 
   tasks:
+    - name: 'List: show all hosts in play'
+      debug:
+        var: ansible_plsy_hosts
+
+    - name: 'List: show all hosts in each batch'
+      debug:
+        var: ansible_play_batch
+
     - debug:
         msg: First host in play is {{ ansible_play_hosts[0] }}
 
@@ -18,3 +26,5 @@
       vars:
         batch_nodes: "{{ ansible_play_batch | join(' ') }}"
       # ansible_play_batch variable is list included batch managed hosts.
+      #when: inventory_hostname == ansible_play_hosts[0]
+      # Just run the task on the fist node of all hosts
