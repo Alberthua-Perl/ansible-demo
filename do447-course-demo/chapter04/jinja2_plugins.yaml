@@ -34,7 +34,7 @@
       debug:
         msg: "{{ item[2] }}"
       loop:
-        - "{{ query('lines', 'cat /etc/services') }}"
+        #- "{{ query('lines', 'cat /etc/services') }}"
         - "{{ query('lines', 'cat /etc/passwd') }}"
         - "{{ query('lines', 'cat /etc/issue') }}"
 
@@ -42,5 +42,5 @@
       debug:
         msg: Message is {{ message }}
       vars:
-        message: "{{ lookup('file', 'myfile.txt', errors='warn') }}"
+        message: "{{ lookup('file', 'myfile.txt', errors='strict') }}"
 

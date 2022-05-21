@@ -15,9 +15,9 @@
     - name: Verify ipaddr filter network parameter
       debug:
         msg: >
-          VLSN netmask is {{ '10.0.0.1/23' | ipaddr('netmask') }}
-          CIDR netmask is {{ '10.0.0.1/255.255.254.0' | ipaddr('prefix') }}
-          test variable is {{ '172.24.16.50/20' | ipaddr('address') }}
+          VLSN netmask is {{ '10.0.0.1/23' | ipaddr('netmask') }}, 
+          CIDR netmask is {{ '10.0.0.1/255.255.254.0' | ipaddr('prefix') }}, 
+          test variable is {{ '172.24.16.50/20' | ipaddr('address') }}.
 
     ## dig filter depand with python3-dns package
     - name: Query specfied host A record

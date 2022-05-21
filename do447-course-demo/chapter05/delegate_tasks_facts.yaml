@@ -1,6 +1,8 @@
 ---
 - name: Test delegation tasks
   hosts: servera.lab.example.com
+  tags:
+    - delegate-tasks
 
   tasks:
     - name: Get system information
@@ -23,6 +25,8 @@
 - name: Test delegation facts
   hosts: localhost
   gather_facts: no
+  tags:
+    - delegate-facts
 
   tasks:
     - name: Set a fact in delegated task on servera
