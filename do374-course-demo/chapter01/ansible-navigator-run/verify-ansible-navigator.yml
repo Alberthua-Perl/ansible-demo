@@ -1,8 +1,0 @@
----
-- name: Verify ansible-navigator command basic
-  hosts: servera.lab.example.com
-  
-  tasks:
-    - name: Output debug module messages
-      debug:
-        msg: Hello ansible-navigator command user!
