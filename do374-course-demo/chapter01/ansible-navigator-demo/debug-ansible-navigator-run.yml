@@ -1,0 +1,8 @@
+---
+- name: Debug ansible-navigator run command
+  hosts: servera.lab.example.com
+  
+  tasks:
+    - name: Display test message on screen
+      debug:
+        msg: Hello ansible-navigator test user!
