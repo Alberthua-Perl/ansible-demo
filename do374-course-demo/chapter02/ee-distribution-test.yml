@@ -1,0 +1,12 @@
+---
+- name: Test ansible automation execution environments
+  hosts: servera.lab.example.com
+  
+  tasks:
+    - name: Create new user
+      ansible.builtin.user:
+        name: sysadmin
+        uid: 2000
+        state: present
+        group: wheel
+        append: yes
