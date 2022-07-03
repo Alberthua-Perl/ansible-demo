@@ -1,0 +1,15 @@
+# Log-level for HAProxy logs
+haproxy_log_level: info
+
+# Port exposed to clients
+haproxy_port: 80
+
+# Name for the default backend
+haproxy_backend_name: app
+
+# Port backend is exposed to
+haproxy_backend_port: 80
+
+# A list of back-end web servers
+haproxy_appservers: []
+### define haproxy_appservers variable in group_vars/lb_servers.yml
