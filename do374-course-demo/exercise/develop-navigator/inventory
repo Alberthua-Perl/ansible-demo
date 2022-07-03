@@ -1,0 +1,6 @@
+[servera]
+servera.lab.example.com
+
+[web:children]
+servera
+

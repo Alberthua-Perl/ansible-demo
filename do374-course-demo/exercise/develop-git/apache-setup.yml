@@ -1,0 +1,56 @@
+---
+- name: Install web servers with WSGI interface
+  hosts: web_servers
+  become: yes
+  vars:
+    httpd_packages:
+      - httpd
+      - python3-mod_wsgi
+    apache_test_message: This is a test message
+    apache_max_keep_alive_requests: 115
+
+  tasks:
+    - name: Install the apache web server
+      yum:
+        name: "{{ httpd_packages }}"
+        state: present
+      notify: restart apache service
+
+    - name: Generate apache's configuration file from jinja2 template
+      template:
+        src: templates/httpd.conf.j2
+        dest: /etc/httpd/conf/httpd.conf
+      notify: restart apache service
+
+    - name: Generate a basic homepage from jinja2 template
+      template:
+        src: templates/index.html.j2
+        dest: /var/www/html/index.html
+        force: yes
+
+    - name: Open the firewalld http port
+      firewalld:
+        port: 80/tcp
+        permanent: true
+        state: enabled
+      notify: restart firewalld service
+
+    - name: Start the apache web server
+      service:
+        name: httpd
+        state: started
+        enabled: yes
+
+  handlers:
+    - name: restart firewalld service
+      service:
+        name: firewalld
+        state: restarted
+        enabled: yes
+
+    - name: restart apache service
+      service:
+        name: httpd
+        state: restarted
+        enabled: yes
+

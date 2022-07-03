@@ -1,0 +1,33 @@
+---
+- name: Configure a basic web server
+  hosts: servere.lab.example.com
+  become: true
+  tasks:
+    - name: Install software
+      yum:
+        name:
+          - httpd
+          - firewalld
+        state: latest
+
+    - name: Start and enable services
+      service:
+        name: "{{ item }}"
+        state: started
+        enabled: true
+      loop:
+        - httpd
+        - firewalld
+
+    - name: Open access to http
+      firewalld:
+        service: http
+        immediate: true
+        permanent: true
+        state: enabled
+
+    - name: Configure simple index.html
+      copy:
+        content: "Hello world from {{ ansible_facts['fqdn'] }}.\n"
+        dest: /var/www/html/index.html
+

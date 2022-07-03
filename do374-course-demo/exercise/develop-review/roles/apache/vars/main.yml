@@ -1,0 +1,13 @@
+# Apache server requires:
+# 1.) httpd package (Apache)
+# 2.) php (To execute PHP-based apps)
+# 3.) php-mysqlnd (Enables php-based apps
+#                  to MySQL database)
+# 4.) git (To clone/update app from git repo)
+
+apache_packages:
+  - httpd
+  - php
+  - php-mysqlnd
+  - git
+
