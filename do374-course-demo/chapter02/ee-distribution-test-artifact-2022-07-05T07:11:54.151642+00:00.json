@@ -1,0 +1,61 @@
+{
+    "version": "1.0.0",
+    "plays": [
+        {
+            "playbook": "/home/kiosk/backup/github/ansible-demo/do374-course-demo/chapter02/ee-distribution-test.yml",
+            "playbook_uuid": "a767464e-7b7e-4dee-ab83-f2650410520d",
+            "play": "Test ansible automation execution environments",
+            "play_uuid": "5e1736f2-6bd4-6e60-eefd-000000000007",
+            "play_pattern": "servera.lab.example.com",
+            "name": "Test ansible automation execution environments",
+            "pattern": "servera.lab.example.com",
+            "uuid": "5e1736f2-6bd4-6e60-eefd-000000000007",
+            "__play_name": "Test ansible automation execution environments",
+            "tasks": [
+                {
+                    "playbook": "/home/kiosk/backup/github/ansible-demo/do374-course-demo/chapter02/ee-distribution-test.yml",
+                    "playbook_uuid": "a767464e-7b7e-4dee-ab83-f2650410520d",
+                    "play": "Test ansible automation execution environments",
+                    "play_uuid": "5e1736f2-6bd4-6e60-eefd-000000000007",
+                    "play_pattern": "servera.lab.example.com",
+                    "task": "Gathering Facts",
+                    "task_uuid": "5e1736f2-6bd4-6e60-eefd-00000000000e",
+                    "task_action": "gather_facts",
+                    "resolved_action": "gather_facts",
+                    "task_args": "",
+                    "task_path": "/home/kiosk/backup/github/ansible-demo/do374-course-demo/chapter02/ee-distribution-test.yml:2",
+                    "host": "servera.lab.example.com",
+                    "uuid": "233dd6f9-130d-4dae-ab29-d3cfc505b9ea",
+                    "__host": "servera.lab.example.com",
+                    "__result": "UNREACHABLE",
+                    "__changed": false,
+                    "__duration": "10s",
+                    "__number": 0,
+                    "__task": "Gathering Facts",
+                    "__task_action": "gather_facts",
+                    "remote_addr": "servera.lab.example.com",
+                    "start": "2022-07-05T07:11:43.696003",
+                    "end": "2022-07-05T07:11:53.732367",
+                    "duration": 10.036364,
+                    "res": {
+                        "unreachable": true,
+                        "msg": "Failed to connect to the host via ssh: ssh: connect to host servera.lab.example.com port 22: Connection timed out",
+                        "changed": false
+                    }
+                }
+            ]
+        }
+    ],
+    "stdout": [
+        "",
+        "PLAY [Test ansible automation execution environments] **************************",
+        "",
+        "TASK [Gathering Facts] *********************************************************",
+        "\u001b[1;31mfatal: [servera.lab.example.com]: UNREACHABLE! => {\"changed\": false, \"msg\": \"Failed to connect to the host via ssh: ssh: connect to host servera.lab.example.com port 22: Connection timed out\", \"unreachable\": true}\u001b[0m",
+        "",
+        "PLAY RECAP *********************************************************************",
+        "\u001b[0;31mservera.lab.example.com\u001b[0m    : ok=0    changed=0    \u001b[1;31munreachable=1   \u001b[0m failed=0    skipped=0    rescued=0    ignored=0   "
+    ],
+    "status": "failed",
+    "status_color": 9
+}

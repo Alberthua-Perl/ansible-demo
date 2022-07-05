@@ -10,3 +10,10 @@
         state: present
         group: wheel
         append: yes
+
+    - name: Test firewalld module in ansible 2.9
+      ansible.posix.firewalld:
+        service: http
+        state: enabled
+        permanent: yes
+        immediate: yes  
