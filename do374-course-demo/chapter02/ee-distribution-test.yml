@@ -1,5 +1,5 @@
 ---
-- name: Test ansible automation execution environments
+- name: Test ansible automation execution environment
   hosts: servera.lab.example.com
   
   tasks:
@@ -11,9 +11,15 @@
         group: wheel
         append: yes
 
-    - name: Test firewalld module in ansible 2.9
+    - name: Test firewalld module
       ansible.posix.firewalld:
+      # ansible.builtin.firewalld:
         service: http
         state: enabled
         permanent: yes
-        immediate: yes  
+        immediate: yes
+      # Note:
+      #  1. install collections use `ansible-galaxy' command as following:
+      #       $ ansible-galaxy collection install --collections-path . community-crypto-2.3.4.tar.gz
+      #  2. edit `collections_paths' arg in ~/ansible.cfg
+      #  3. use ansible content collections in ansible 2.9 automation execution environment
