@@ -1,0 +1,13 @@
+---
+collections:
+  - name: ansible.netcommon
+
+  - name: redhat.rhv
+    version: 1.4.1
+
+  - name: community.crypto
+    version: 1.9.3
+
+  - name: ansible.controller  
+
+  - name: git@git.lab.example.com:student/ansible.tower.git
