@@ -16,3 +16,4 @@
         system_owner: tommy@host.example.com
       # Just vars directive can be under include_role module.
       when: ansible_facts['architecture'] == "x86_64"
+      #when: ansible_facts['architecture'] == "amd"
