@@ -12,6 +12,8 @@
       vars:
         # hosts: "{{ lookup('file', '/etc/hosts', '/etc/issue') }}"
         hosts: "{{ query('file', '/etc/hosts', '/etc/issue') }}"
+      tags:
+        - lookup_query_file
 
     - name: Transfer YAML file format
       debug:
@@ -19,7 +21,8 @@
       vars:
         my_yaml: "{{ lookup('file', 'user_list.yml') | from_yaml }}"
       # from_yaml filter used to transfer yaml format to structure file  
-
+      tags:
+        - lookup_file_from_yaml
 
     ## template plug-in
     - name: Print "Hello class"
@@ -27,20 +30,25 @@
         msg: "{{ lookup('template', 'mytemplate.j2') }}"
       vars:
         name: class
-
+      tags:
+        - lookup_template
 
     ## pipe, lines plug-in
     - name: Prints the specfied line of some files
       debug:
-        msg: "{{ item[2] }}"
+        msg: "{{ item[0] }}"
       loop:
         #- "{{ query('lines', 'cat /etc/services') }}"
         - "{{ query('lines', 'cat /etc/passwd') }}"
         - "{{ query('lines', 'cat /etc/issue') }}"
+        - "{{ query('pipe', 'cat /etc/fstab') }}"
+      tags:
+        - query_lines_pipe
 
     - name: Verify lookup plugin file ERROR
       debug:
         msg: Message is {{ message }}
       vars:
         message: "{{ lookup('file', 'myfile.txt', errors='strict') }}"
-
+      tags:
+        - lookup_errors

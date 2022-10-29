@@ -21,7 +21,7 @@
       become: true
       vars:
         package: ~
-        # Undefined variable could be defined as null, ~, '', "".
+        # Undefined variable could be defined as null, ~
         webserver: httpd
 
     - name: Ensure user jonfoo exists.
