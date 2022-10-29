@@ -46,19 +46,21 @@
     ## loop equal to with_list in the case.
     - name: Generage test files
       command: bash prepare_test_files.sh
+      tags:
+        - always
 
     - name: Remove build files through with_items
       file:
         path: "{{ item }}"
         state: absent
       with_items:
+      #loop:
         - "{{ app_a_tmp_files }}"
         - "{{ app_b_tmp_files }}"
         - "{{ app_c_tmp_files }}"
+      tags:
+        - loop_with_items
 
-    - name: Regenerate test files
-      command: bash prepare_test_files.sh
-          
     - name: Remove build files through loop
       file:
         path: "{{ item }}"
@@ -69,7 +71,8 @@
           - "{{ app_a_tmp_files }}"
           - "{{ app_b_tmp_files }}"
           - "{{ app_c_tmp_files }}"
-
+      tags:
+        - loop_flatten
 
     ## loop + subelements filter equal to with_subelements
     - name: Test complex data structure through with_subelements
@@ -78,12 +81,15 @@
       with_subelements:
         - "{{ users_list }}"
         - hobby
+      tags:
+        - loop_with_subelements
 
     - name: Test complex data structure through loop
       debug:
         msg: "{{ item.0.name }}'s hobby is {{ item.1 }}"
       loop: "{{ users_list | subelements('hobby') }}"  
-          
+      tags:
+        - loop_with_subelements
 
     ## loop + dict2items filter equal to with_dict
     - name: Verify users key and value through with_dict
