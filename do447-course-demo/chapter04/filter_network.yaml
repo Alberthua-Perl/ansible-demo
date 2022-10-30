@@ -2,29 +2,45 @@
 - name: Handler network information
   hosts: localhost
   become: false
-  gather_facts: no
+  gather_facts: yes
 
   tasks:
-    - name: Just collect network information
-      setup:
-        gather_subset:
-          - '!all'
-          - network
+    - name: Install ipaddr filter and dig plug-in packages
+      yum:
+        name:
+          - python3-netaddr
+          - python3-dns
+        state: present
+      become: true  
+      tags:
+        - always
 
-    ## ipaddr filter depand with python3-netaddr package
-    - name: Verify ipaddr filter network parameter
-      debug:
-        msg: >
-          VLSN netmask is {{ '10.0.0.1/23' | ipaddr('netmask') }}, 
-          CIDR netmask is {{ '10.0.0.1/255.255.254.0' | ipaddr('prefix') }}, 
-          test variable is {{ '172.24.16.50/20' | ipaddr('address') }}.
+    - name: ipaddr filter validate
+      block:
+        ## ipaddr filter depand with python3-netaddr package
+        - name: Verify ipaddr filter network parameter
+          assert:
+            that:
+              - "'{{ '10.0.0.1/23' | ipaddr('netmask') }}' is eq( '255.255.254.0' )"
+              - "'{{ '10.0.0.1/255.255.254.0' | ipaddr('prefix') }}' is eq( '23' )"
+              - "'{{ '172.24.16.50/20' | ipaddr('address') }}' is eq( '172.24.16.50' )"
+        - name: Print specified NIC CIDR netmask
+          debug:
+            msg: "CIDR of enp1s0 interface is {{ cidr_prefix }}"
+          vars:
+            cidr_prefix: "{{ ansible_facts['enp1s0']['ipv4']['netmask'] | ipaddr('prefix') }}"
+      tags:
+        - ipaddr_filter
 
-    ## dig filter depand with python3-dns package
-    - name: Query specfied host A record
-      debug:
-        msg: Host A record is {{ lookup('dig', 'servera.lab.example.com', '@172.25.250.254') }}
-
-    - name: Determinte if host's ip address is private
-      debug:
-        msg: "{{ lookup('dig', ansible_facts['hostname']) | ipaddr('private') }}"
-
+    - name: dig plug-in validate
+      block:
+        ## dig filter depand with python3-dns package
+        - name: Query specfied host A record
+          debug:
+            msg: Host A record is {{ lookup('dig', 'servera.lab.example.com', '@172.25.250.254') }}
+        - name: Determinte if host's ip address is private
+          debug:
+            msg: "{{ lookup('dig', ansible_facts['hostname']) | ipaddr('private') }}"
+      tags:
+        - dig_plugin
+        
