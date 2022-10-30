@@ -1,0 +1,210 @@
+---
+# Ansible 的进阶使用方法，包括 Jinja2 过滤器、Jinja2 插件、循环结构、模块等。
+directives:
+  play_level:
+    name: <string>
+    hosts: <host_pattern>
+    order:
+      - inventory
+      - reverse_inventory
+      - sorted
+      - reverse_sorted
+      - shuffle
+    become_user: root or <username>
+    become_method: sudo or su
+    become_ask_pass: True or False
+    gather_facts: yes or no
+    force_handlers: yes or no
+    serial: <number> or <percenttage> or list
+    max_fail_percentage: <number>%
+    # Previous two directives should be used together.
+
+  task_level:
+    name: <string>
+    ignore_errors: yes or no
+    register: define capture variable
+    delegate_to: <ip_address> or <hostname> or <fqdn>
+    delegate_facts: True or False
+    # Previous two directives should be used together.
+    run_once: yes or no
+    # often used with serial and max_fail_percentage directive
+
+modules:
+  system:
+    - systemd
+    - shell
+    - command
+    - raw
+    - script
+    - set_fact
+    # set_fact module always used to set customized facts to delegate facts
+    # for delegated hosts
+    - setup
+    - fail
+    - ping
+    - reboot
+    - include_role
+    - debug
+    - assert
+    - assemble
+  user:
+    - user
+    - group
+    - mysql_user
+  file:
+    - blockinfile
+    - lineinfile
+    - replace
+    - file
+    - copy
+    - fetch
+    - sefcontext
+    - template
+    - archive
+    - unarchive
+    - async_status
+    - synchronize
+  service:
+    - yum
+    - uri
+    # debug http or restful api
+    - get_url
+    - service
+    - firewalld
+    - haproxy
+    - git
+    - wait_for
+
+# manifest of filters and plugins in DO447 chapter4
+# filters used to change different type of variables
+filters:
+  variable_define:
+    - mandatory
+    - default(<var_name>, 'True|False')
+    - default(omit)
+
+  string:
+    - capitalize
+    - upper
+    - lower
+    - hash('md5|sha1|sha256|sha512')
+    - password_hash('sha512')
+    - b64encode
+    - b64decode
+    - replace('ar', '**')
+    - regex_research('a\\S*r')
+    - regex_replace('a(\\S*)r', '\\1mb')
+    # add extra '\' in front of regular expression of ansible
+
+  number_or_float:
+    - string
+    - int
+    - float
+    - log
+    - pow
+    - root
+    - abs
+    - round
+
+  list:
+    - unique
+    - sort
+    - reverse
+    - shuffle
+    - flatten(levels=N)
+    - "join(' ')"
+    # return list without square brackets whose elements is separated by space
+    - max
+    - min
+    - sum
+    - first
+    - last
+    - length
+    - random
+
+  set:
+    - union([<defined_set>])
+    - intersect([<defined_set>])
+    - difference([<defined_set>])
+
+  dictionary:
+    - combine({<defined_dict>})
+    - dict2items
+    # transfer dictionary to list used by loop
+    - items2dict
+
+  JSON_or_YAML:
+    - json_query('[*].name')
+    - to_json
+    - to_yaml
+    - to_nice_json
+    - to_nice_yaml
+    - from_json
+    - from_yaml
+
+  network:
+    - ipaddr:
+        dependance: python3-netaddr package
+
+lookup_plugins:
+  # Pluginds work on control node, and ansible modules work on managed nodes.
+  - functions:
+      lookup: return comma-separated string
+      query: return list
+
+  - plugins:
+      - file:
+          syntax: "{{ lookup('file', '<file1>', ..., '<fileN>', errors='strict|warn|ignore') }}"
+      - template:
+          syntax: "{{ lookup('template', '<template_name>.j2') }}"
+          # Variables in template must be defined through customzied variables,
+          # not to use ansible facts.
+          # So variables should be defined in playbook or variable files.
+      - env:
+          syntax: "{{ lookup('env', '<environment_var_name>') }}"
+      - pipe:
+          syntax: "{{ query('pipe', '<command_line>') }}"
+      - lines:
+          syntax: "{{ query('lines', '<command_line>') }}"
+      - url:
+          syntax: "{{ lookup('url', '<url_address>') }}"
+      - dig:
+          dependance: python3-dns package
+          syntax:
+            - "{{ lookup('dig', '<fqdn>', 'qtype=A|MX') }}"
+            - "{{ lookup('dig', '<fqdn>/MX') }}"
+            # Previous two syntaxes is same.
+            - "{{ lookup('dig', '<fqdn>', '@<dns_server1>,<dns_server2>,<dns_server3>') }}"
+            # dig lookup could use mutiple upstream DNS servers not to use servers in
+            # /etc/resolv.conf on control node.
+      - dnstxt
+
+advanced_loop:
+  ### list of list
+  - with_items:
+      equal_to: loop + flatten filter
+      syntax:
+        loop: "{{ <list_of_list> | flatten(levels=N) }}"
+    # Simple with_items is equal to loop.
+    # Sometimes loop is equal to with_list.
+
+  ### list of dict
+  - with_subelements:
+      equal_to: loop + subelements filter
+      syntax:
+        loop: "{{ <list_of_dict> | subelements('key') }}"
+    # Key is reference to list of item.
+    # This filter will generate new list.
+
+  ### dict of dict
+  - with_dict:
+      equal_to: loop + dict2items filter
+      syntax:
+        loop: "{{ <dict_of_dict> | dict2items }}"
+
+  ### iterate file names
+  - with_fileglob:
+      equal_to: loop + fileglob plugin
+      syntax:
+        loop: "{{ lookup('fileglob', '<glob_of_filename>') }}"
+...
