@@ -1,0 +1,4 @@
+230211060426.262 ERROR 'ansible_navigator.actions.doc._run_runner' Error occurred while fetching doc for plugin ansible.posix.synchrinize: '[WARNING]: module ansible.posix.synchrinize not found in: /home/student/git-
+repos/inventory-review/library:/home/runner/.ansible/plugins/modules:/usr/share
+/ansible/plugins/modules:/usr/lib/python3.8/site-packages/ansible/modules
+'
