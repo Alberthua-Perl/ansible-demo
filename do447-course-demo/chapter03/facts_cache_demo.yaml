@@ -1,0 +1,16 @@
+---
+- name: Gather facts for every host
+  hosts: all
+  gather_facts: true
+
+  # any tasks we might want for the first play
+  # if you do not have tasks, "setup" will still run
+
+- name: The next play, does not gather facts
+  hosts: all
+  gather_facts: false
+
+  tasks:
+    - name: Show that we still know the facts
+      ansible.builtin.debug:
+        var: ansible_facts
