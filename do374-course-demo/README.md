@@ -1,3 +1,3 @@
-# DO374 Course Demo and Extend
+# **DO374 Course Demo and Extend** #
 
-- Demo ansible playbooks for DO374 courses.
+- Demo ansible configurations and playbooks for DO374 RHAAP2.0 course.
