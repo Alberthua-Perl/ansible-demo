@@ -1,6 +1,6 @@
 ---
 - name: Gather facts for every host
-  hosts: all
+  hosts: webservers
   gather_facts: true
 
   # any tasks we might want for the first play
