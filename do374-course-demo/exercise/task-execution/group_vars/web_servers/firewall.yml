@@ -1,0 +1,5 @@
+firewall_rules:
+  # Firewall rules.
+  - port: "{{ web_port }}"
+    zone: "{{ web_zone }}"
+

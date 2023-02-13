@@ -1,0 +1,85 @@
+---
+- name: Implementing Handlers
+  hosts: web_servers
+  gather_facts: true
+
+  pre_tasks:
+    - name: Configuring Apache
+      #include: apache.yml
+      include_tasks: apache.yml
+
+    # add set_fact task and variables for next play
+    # next play will use fact cache of the play
+    - name: Setting web zone and port for firewall
+      set_fact:
+        web_port: 80/tcp
+        web_zone: public
+      register: port_and_zone
+      changed_when: true
+      notify: pre handler
+
+    - name: Display port_and_zone register
+      debug:
+        var: port_and_zone
+        
+  roles:
+    - role: firewall
+
+  # add post_tasks to copy index.html to managed hosts
+  post_tasks:
+    - name: Ensure the web content is copied
+      copy:
+        src: index.html
+        dest: /var/www/html/
+      notify: post handler
+
+  # use listen directive and legency handler
+  handlers:
+    - name: Showing the web port configured as pre_task
+      debug:
+        var: port_and_zone['ansible_facts']['web_port']
+      listen: pre handler
+
+    - name: Showing the web zone configured as pre_task
+      debug:
+        var: port_and_zone['ansible_facts']['web_zone']
+      listen: pre handler
+
+    - name: post handler
+      uri:
+        url: http://{{ ansible_facts['fqdn'] }}
+        status_code: 200
+      become: false  
+
+- name: Cleaning Firewall rules
+  hosts: web_servers
+  gather_facts: false
+
+  tasks:
+    - name: Disabling firewall configuration
+      firewalld:
+        #zone: "{{ item.zone if item.zone is defined else omit }}"
+        zone: "{{ item.zone | default(omit) }}"
+        permanent: true
+        state: 'disabled'
+        #port: "{{ item.port if item.port is defined else omit }}"
+        port: "{{ item.port | default(omit) }}"
+      loop: "{{ firewall_rules }}"
+      notify: restart firewalld
+
+  post_tasks:
+    - name: Removing index.html file
+      file:
+        path: /var/www/html/index.html
+        state: absent
+      notify: post handler
+
+  handlers:
+    - name: restart firewalld
+      service:
+        name: firewalld
+        state: restarted
+
+    - name: post handler
+      debug:
+        msg: The index.html file was deleted

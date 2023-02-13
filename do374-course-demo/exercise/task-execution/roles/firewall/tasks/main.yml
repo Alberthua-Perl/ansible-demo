@@ -1,0 +1,14 @@
+---
+# tasks file for firewall
+
+- name: Ensure Firewall Port Configuration
+  firewalld:
+    zone: "{{ item.zone | default(omit) }}"
+    permanent: yes
+    state: "{{ item.state | default('enabled') }}"
+    port: "{{ item.port }}"
+    immediate: true
+  loop: "{{ firewall_rules }}"
+  notify: reload firewalld
+  when: item.port is defined
+  become: true

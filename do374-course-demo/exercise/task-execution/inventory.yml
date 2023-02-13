@@ -1,0 +1,6 @@
+all:
+  children:
+    ungrouped: {}
+    web_servers:
+      hosts:
+        servera.lab.example.com:
