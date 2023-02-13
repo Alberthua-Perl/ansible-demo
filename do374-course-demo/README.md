@@ -1,5 +1,5 @@
 # **DO374 Course Demo and Extend** #
 
-- Demo ansible configurations and playbooks for DO374 course.
+- DO374 course includes demo ansible configurations, playbooks and exercises.
 
 - Course includes Red Hat Ansible Automation Platform v2.0.
