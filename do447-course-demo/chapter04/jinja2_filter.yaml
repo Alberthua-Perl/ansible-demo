@@ -129,7 +129,7 @@
         that:
           #- "{{ hosts | json_query('[*].name') }} is eq( ['bastion', 'classroom'] )"
           - "{{ hosts | community.general.json_query('[*].name') is eq( ['bastion', 'classroom'] ) }}"
-          # use ansible content collections
+          # first to install community.general collection, or run the task to display error
       vars:
         hosts:
           - name: bastion
