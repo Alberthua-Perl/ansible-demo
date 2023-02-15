@@ -10,6 +10,6 @@ ansible-navigator:
     image: hub.lab.example.com/ee-supported-rhel8:2.0
   logging:
     file: /dev/null
-  mode: stdout
+  # mode: stdout
   playbook-artifact:
     enable: False
