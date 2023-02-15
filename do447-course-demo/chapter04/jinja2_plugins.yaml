@@ -41,7 +41,7 @@
         #- "{{ query('lines', 'cat /etc/services') }}"
         - "{{ query('lines', 'cat /etc/passwd') }}"
         - "{{ query('lines', 'cat /etc/issue') }}"
-        - "{{ query('pipe', 'cat /etc/fstab') }}"
+        - "{{ query('pipe', 'cat /etc/group') }}"
       tags:
         - query_lines_pipe
 

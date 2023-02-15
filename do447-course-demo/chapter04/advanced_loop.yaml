@@ -112,13 +112,22 @@
     ## loop + query + fileglob plug-in equal to with_fileglob
     - name: Test fileglob lookup plugin through loop
       debug:
-        msg: Bash file is {{ item }}
-      loop: "{{ query('fileglob', '~/.bash*') }}"
+        #msg: Bash file is {{ item }}  # DO447v2.8 course demo
+        msg: log file is {{ item }}  # DO374 RHAAP2.0 course demo
+      #loop: "{{ query('fileglob', '~/.bash*') }}"  # DO447v2.8 course demo
+      loop: "{{ query('fileglob', '/var/log/*') }}"  # DO374 RHAAP2.0 course demo
 
     - name: Test fileglob lookup plugin through with_fileglob
       debug:
-        msg: Bash file is {{ item }}
+        #msg: Bash file is {{ item }}  # DO447v2.8 course demo
+        msg: log file is {{ item }}  # DO374 RHAAP2.0 course demo
       with_fileglob:
-        - "~/.bash*"
+        #- "~/.bash*"  # DO447v2.8 course demo
+        - "/var/log/*"  # DO374 RHAAP2.0 course demo
         
-        
+    # Note:
+    #   In DO447v2.8 course run playbook on control node including necessary files.
+    #   But in DO374 RHAAP2.0 course run playbook in automation execution environment 
+    #   which is a container, fileblob plug-in searchs files in container. If no files 
+    #   in container, the task will return error.
+
