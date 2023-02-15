@@ -44,6 +44,10 @@
         - "{{ query('pipe', 'cat /etc/group') }}"
       tags:
         - query_lines_pipe
+      
+      # Note:
+      #   If use DO374 RHAAP2.0 course, please ensure files in automation
+      #   execution environment, or playbook returns error.
 
     - name: Verify lookup plugin file ERROR
       debug:
