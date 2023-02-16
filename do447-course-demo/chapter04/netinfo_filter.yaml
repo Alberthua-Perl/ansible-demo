@@ -27,12 +27,12 @@
         - name: Verify ipaddr filter network parameter
           assert:
             that:
-              #- "'{{ '10.0.0.1/23' | ipaddr('netmask') }}' is eq( '255.255.254.0' )"
-              - "'{{ '10.0.0.1/23' | ansible.netcommon.ipaddr('netmask') }}' is eq( '255.255.254.0' )"
-              #- "'{{ '10.0.0.1/255.255.254.0' | ipaddr('prefix') }}' is eq( '23' )"
-              - "'{{ '10.0.0.1/255.255.254.0' | ansible.netcommon.ipaddr('prefix') }}' is eq( '23' )"
-              #- "'{{ '172.24.16.50/20' | ipaddr('address') }}' is eq( '172.24.16.50' )"
-              - "'{{ '172.24.16.50/20' | ansible.netcommon.ipaddr('address') }}' is eq( '172.24.16.50' )"
+              #- "'{{ '10.0.0.1/23' | ipaddr('netmask') }}' is eq('255.255.254.0')"
+              - "'{{ '10.0.0.1/23' | ansible.netcommon.ipaddr('netmask') }}' is eq('255.255.254.0')"
+              #- "'{{ '10.0.0.1/255.255.254.0' | ipaddr('prefix') }}' is eq('23')"
+              - "'{{ '10.0.0.1/255.255.254.0' | ansible.netcommon.ipaddr('prefix') }}' is eq('23')"
+              #- "'{{ '172.24.16.50/20' | ipaddr('address') }}' is eq('172.24.16.50')"
+              - "'{{ '172.24.16.50/20' | ansible.netcommon.ipaddr('address') }}' is eq('172.24.16.50')"
         - name: Print specified NIC CIDR netmask
           debug:
             msg: "CIDR of eth0 interface is {{ cidr_prefix }}"
@@ -42,7 +42,7 @@
         - name: Use different arguments to test ipaddr or ansible.netcommon.ipaddr filter
           debug:
             #msg: "{{ listips | ipaddr(...) }}"
-            msg: "{{ listips | ansible.netcommon.ipaddr('netmask') }}"
+            msg: "{{ listips | ansible.netcommon.ipaddr('revdns') }}"
           vars:
             listips:
               - 192.168.2.1
@@ -57,15 +57,29 @@
       tags:
         - ipaddr_filter
 
+    - name: Usage of ansible.netcommon.network_in_usable filter
+      debug:
+        msg: "IP address validate!"
+      when: "{{ '192.0.2.0/24' | ansible.netcommon.network_in_usable('192.0.2.254') }}"
+      # Note: [WARNING]: conditional statements should not include jinja2 templating delimiters such as {{ }} or {% %}.
+      tags:
+        - network_in_usable_filter
+
     - name: dig plug-in validate
       block:
-        ## dig filter depand with python3-dns package
+        ## dig plug-in depand with python3-dns package
         - name: Query specfied host A record
           debug:
             msg: Host A record is {{ lookup('dig', 'servera.lab.example.com', '@172.25.250.254') }}
         - name: Determinte if host's ip address is private
           debug:
-            msg: "{{ lookup('dig', ansible_facts['hostname']) | ipaddr('private') }}"
+            #msg: "{{ lookup('dig', ansible_facts['hostname']) | ipaddr('private') }}"
+            msg: "{{ lookup('dig', ansible_facts['hostname']) | ansible.netcommon.ipaddr('private') }}"
       tags:
         - dig_plugin
         
+      # Note: 
+      #   If you want to use the task with dig_plugin tag in execution environment, you should ensure dnspython python
+      #   library in it. So you can use `podman commit' command or Containerfile to build execution environment
+      #   image including dnspython. Then run `ansible-navigator run' with --eei option to specified image, and 
+      #   make the task successfully.

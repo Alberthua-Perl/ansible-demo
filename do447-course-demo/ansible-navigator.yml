@@ -10,6 +10,7 @@ ansible-navigator:
     image: hub.lab.example.com/ee-supported-rhel8:2.0
   logging:
     file: /dev/null
-  # mode: stdout
+  mode: stdout
+  # use interactive mode to override this configure
   playbook-artifact:
     enable: False
