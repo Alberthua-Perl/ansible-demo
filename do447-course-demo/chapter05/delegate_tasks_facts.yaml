@@ -6,21 +6,23 @@
 
   tasks:
     - name: Get system information
-      command: uname -a
+      #command: uname -a
+      ansible.builtin.command: uname -a
       register: server
 
     - name: Display servera system information
       debug:
         msg: "{{ server }}"
 
-    - name: Get system information
-      command: uname -a
-      delegate_to: localhost
-      register: local
+    - name: Delegate system information to localhost
+      #command: uname -a
+      ansible.builtin.command: uname -a
+      delegate_to: serverb.lab.example.com
+      register: delegate_server
 
     - name: Display localhost system information
       debug:
-        msg: "{{ local }}"
+        msg: "{{ delegate_server }}"
 
 - name: Test delegation facts
   hosts: localhost

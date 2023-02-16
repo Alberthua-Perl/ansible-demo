@@ -7,3 +7,5 @@
 - One node gitlab.lab.example.com is customized which includes GitLab repository.
 
 - 🔥 Note: DO374 RHAAP2.0 course also uses some demoes to display new features.
+
+- 👉 Please use `ansible-playbook` or `ansible-navigator` run playbooks in current do447-course-demo directory.
