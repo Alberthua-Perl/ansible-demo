@@ -26,19 +26,19 @@
         msg: "{{ delegate_server_info }}"
 
 - name: Test delegation facts
-  hosts: localhost
+  hosts: servera.lab.example.com
   gather_facts: no
   tags:
     - delegate_facts
 
   tasks:
-    - name: Set a fact in delegated task on servera
+    - name: Set a fact in delegated task for serverb
       set_fact:
         myfact: Where am I set?
-      delegate_to: servera.lab.example.com
+      delegate_to: serverb.lab.example.com
       delegate_facts: true
 
-    - name: Display the facts from servera.lab.example.com
+    - name: Display the facts from serverb.lab.example.com
       debug:
-        msg: "{{ hostvars['servera.lab.example.com']['myfact'] }}"
+        msg: "{{ hostvars['serverb.lab.example.com']['myfact'] }}"
       # use magic variable to verify delegation fact
