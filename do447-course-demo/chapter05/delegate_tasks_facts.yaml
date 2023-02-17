@@ -1,34 +1,35 @@
 ---
 - name: Test delegation tasks
   hosts: servera.lab.example.com
+  become: false
   tags:
-    - delegate-tasks
+    - delegate_tasks
 
   tasks:
-    - name: Get system information
+    - name: "{{ inventory_hostname }}: get system information"
       #command: uname -a
       ansible.builtin.command: uname -a
-      register: server
+      register: inventory_server_info
 
-    - name: Display servera system information
+    - name: "{{ inventory_hostname }}: display system information"
       debug:
-        msg: "{{ server }}"
+        msg: "{{ inventory_server_info }}"
 
-    - name: Delegate system information to localhost
+    - name: Delegate system information to other host
       #command: uname -a
       ansible.builtin.command: uname -a
       delegate_to: serverb.lab.example.com
-      register: delegate_server
+      register: delegate_server_info
 
-    - name: Display localhost system information
+    - name: Display delegate system information
       debug:
-        msg: "{{ delegate_server }}"
+        msg: "{{ delegate_server_info }}"
 
 - name: Test delegation facts
   hosts: localhost
   gather_facts: no
   tags:
-    - delegate-facts
+    - delegate_facts
 
   tasks:
     - name: Set a fact in delegated task on servera
