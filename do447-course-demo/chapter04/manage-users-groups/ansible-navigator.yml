@@ -1,0 +1,10 @@
+---
+ansible-navigator:
+  ansible:
+    config: ./ansible.cfg
+
+  execution-environment:
+    image: hub.lab.example.com/ee-supported-rhel8:2.0
+    pull-policy: missing
+  playbook-artifact:
+    enable: False

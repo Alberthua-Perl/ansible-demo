@@ -1,0 +1,32 @@
+---
+- name: devs
+  members:
+    - jonfoo
+    - janebar
+- name: ops
+  members:
+    - philbaz
+
+# Note:
+#   If use subelements filter to convert dictionary in list like 
+#   previous yaml format with loop, each loop will be like:
+#   
+#   "{{ item }}" for first loop:
+#   - name: devs
+#     members:
+#       - jonfoo
+#       - janebar
+#   - jonfoo
+#
+#   "{{ item }}" for second loop:
+#   - name: dev
+#     members:
+#       - jonfoo
+#       - janebar
+#   - janebar
+#
+#   "{{ item }}" for third loop:
+#   - name: ops
+#     members:
+#       - philbaz
+#   - philbaz    

@@ -1,0 +1,23 @@
+---
+- name: Remove users and groups
+  hosts: all
+  gather_facts: no
+
+  tasks:
+    - name: Load group information
+      set_fact:
+        user_groups: "{{ lookup('file', 'groups.yml') | from_yaml }}"
+
+    - name: Remove groups
+      group:
+        name: "{{ item.name }}"
+        state: absent
+      loop: "{{ user_groups }}"
+
+    - name: Remove users
+      user:
+        name: "{{ item }}"
+        state: absent
+        remove: yes
+      loop: "{{ query('lines', 'cat users.txt') }}"
+
