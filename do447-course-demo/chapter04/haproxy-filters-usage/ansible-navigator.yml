@@ -1,0 +1,16 @@
+---
+# the configure file just for DO374 RHAAP2.0 demo
+ansible-navigator:
+  ansible:
+    config: ./ansible.cfg
+
+  execution-environment:
+    container-engine: podman
+    enabled: True
+    image: hub.lab.example.com/ee-supported-rhel8:2.0
+  logging:
+    file: /dev/null
+  mode: stdout
+  # use interactive mode to override this configure
+  playbook-artifact:
+    enable: False

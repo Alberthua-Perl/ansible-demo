@@ -1,0 +1,57 @@
+---
+# tasks file for webapp
+
+- name: Ensure stub web content is deployed
+  copy:
+    content: "{{ webapp_message }} (version {{ webapp_version }})\n"
+    dest: "{{ webapp_content_root_dir }}/index.html"
+
+- name: Find deployed webapp files
+  find:
+    paths: "{{ webapp_content_root_dir }}"
+    recurse: yes
+  register: webapp_find_files
+
+- name: Compute the webapp file list
+  set_fact:
+    # TODO: Use the map filter to extract
+    # the 'path' attribute of each entry
+    # in the 'webapp_find_files'
+    # variable 'files' list.
+    webapp_deployed_files: "{{ webapp_find_files['files'] | map(attribute='path') | list }}"
+
+- name: Compute the relative webapp file list
+  set_fact:
+    # TODO: Use the 'map' filter, along with
+    # the 'relpath' filter, to create the
+    # 'webapp_rel_deployed_files' variable
+    # from the 'webapp_deployed_files' variable.
+    #
+    # Files in the 'webapp_rel_deployed_files'
+    # variable should have a path relative to
+    # the 'webapp_content_root_dir' variable.
+    webapp_rel_deployed_files: "{{ webapp_deployed_files | map('relpath', webapp_content_root_dir) | list }}"
+
+- name: Remove Extraneous Files
+  file:
+    path: "{{ webapp_content_root_dir }}/{{ item }}"
+    state: absent
+  # TODO: Loop over a list of files
+  # that are in the 'webapp_rel_deployed_files'
+  # list, but not in the 'webapp_file_list' list.
+  # Use the difference filter.
+  loop: "{{ webapp_root_file }}"
+  vars: 
+    webapp_root_file: "{{ webapp_rel_deployed_files | difference(webapp_file_list) }}"
+
+# modified by hualf
+- name: Display webapp_find_files variable
+  debug:
+    var: webapp_find_files
+
+- name: Display changed variables
+  debug:
+    msg: >
+      "webapp_deployed_files is {{ webapp_deployed_files }}; webapp_rel_deployed_files is 
+      {{ webapp_rel_deployed_files }}"
+
