@@ -64,5 +64,3 @@ backend {{ haproxy_backend_name }}
 {% for server in haproxy_appservers %}
     server {{ server.name }} {{ server.ip }}:{{ server.backend_port }}
 {% endfor %}
-
-

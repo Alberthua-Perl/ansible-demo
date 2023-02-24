@@ -1,4 +1,3 @@
----
 # tasks file for haproxy
 
 - name: Ensure haproxy packages are present

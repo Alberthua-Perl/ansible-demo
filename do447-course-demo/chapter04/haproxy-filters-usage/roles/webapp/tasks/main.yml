@@ -54,4 +54,3 @@
     msg: >
       "webapp_deployed_files is {{ webapp_deployed_files }}; webapp_rel_deployed_files is 
       {{ webapp_rel_deployed_files }}"
-

@@ -1,6 +1,4 @@
----
 # defaults file for firewall
-
 
 # This role requires that firewall_rules variable
 # be defined. The variable is a list of rules, and
@@ -22,5 +20,3 @@
 
 # By default, no rules are implemented.
 firewall_rules: []
-
-

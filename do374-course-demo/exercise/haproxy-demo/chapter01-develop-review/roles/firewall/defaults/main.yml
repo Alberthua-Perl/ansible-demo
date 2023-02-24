@@ -22,5 +22,3 @@
 
 # By default, no rules are implemented.
 firewall_rules: []
-
-

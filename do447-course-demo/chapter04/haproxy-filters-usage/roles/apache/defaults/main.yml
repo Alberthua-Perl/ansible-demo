@@ -25,4 +25,3 @@ apache_optional_packages: []
 # By default, no additional
 #   repositories are enabled.
 apache_enablerepos_list: []
-

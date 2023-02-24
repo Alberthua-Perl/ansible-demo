@@ -1,3 +1,4 @@
+---
 haproxy_appservers:
   - name: serverb.lab.example.com
     ip: 172.25.250.11

@@ -10,4 +10,3 @@ apache_packages:
   - php
   - php-mysqlnd
   - git
-

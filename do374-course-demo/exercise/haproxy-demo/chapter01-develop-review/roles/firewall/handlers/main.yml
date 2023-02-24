@@ -5,5 +5,3 @@
   service:
     name: firewalld
     state: reloaded
-
-

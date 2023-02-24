@@ -1,4 +1,3 @@
----
 # handlers file for firewall
 
 - name: reload firewalld
