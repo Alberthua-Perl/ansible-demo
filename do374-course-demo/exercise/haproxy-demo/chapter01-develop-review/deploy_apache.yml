@@ -1,3 +1,4 @@
+---
 - name: Ensure Apache is deployed
   hosts: web_servers
   force_handlers: True
@@ -20,4 +21,3 @@
         # the internal zone.
         - zone: internal
           source: 172.25.250.10
-

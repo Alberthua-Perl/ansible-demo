@@ -43,4 +43,3 @@
         url: http://servera.lab.example.com
         return_content: yes
         status_code: 200
-

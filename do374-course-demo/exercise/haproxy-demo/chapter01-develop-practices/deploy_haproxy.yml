@@ -1,3 +1,4 @@
+---
 - name: Ensure HAProxy is deployed
   hosts: lb_servers
   force_handlers: True
@@ -11,4 +12,3 @@
       firewall_rules:
         # Allow 80/tcp connections
         - port: 80/tcp
-

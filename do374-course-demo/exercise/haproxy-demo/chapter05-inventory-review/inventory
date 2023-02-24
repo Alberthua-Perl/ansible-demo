@@ -14,4 +14,3 @@ serverb.lab.example.com
 # Group "B" of Web Servers
 [b_web_servers]
 serverc.lab.example.com
-

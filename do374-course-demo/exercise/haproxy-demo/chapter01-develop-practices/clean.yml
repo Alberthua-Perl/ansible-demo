@@ -1,3 +1,4 @@
+---
 - name: Clean Load Balancers
   hosts: lb_servers
   gather_facts: no
@@ -50,4 +51,3 @@
       file:
         state: absent
         path: "/var/www/html/index.html"
-

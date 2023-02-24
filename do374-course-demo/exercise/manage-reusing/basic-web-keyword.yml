@@ -33,4 +33,3 @@
       copy:
         content: "Hello world from {{ ansible_facts['fqdn'] }}.\n"
         dest: /var/www/html/index.html
-
