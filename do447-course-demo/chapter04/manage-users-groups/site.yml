@@ -37,4 +37,3 @@
         groups: "{{ item.0.name }}"
         append: yes
       loop: "{{ user_groups | subelements('members', 'skip_missing=true') }}"
-
