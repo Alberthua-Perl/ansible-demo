@@ -1,0 +1,76 @@
+---
+- name: Include general tests variables
+  include_vars: main.yml
+
+- name: Ensure Ansible facts required by tests
+  setup:
+    gather_subset: min
+  when: not ansible_facts.keys() | list | intersect(__test_required_facts) == __test_required_facts
+  vars:
+    __test_required_facts:
+      - distribution
+      - distribution_major_version
+      - distribution_version
+      - os_family
+
+- name: Set version specific variables
+  include_vars: "{{ lookup('first_found', ffparams) }}"
+  vars:
+    ffparams:
+      files:
+        - "{{ ansible_facts['distribution'] }}_{{ ansible_facts['distribution_version'] }}.yml"
+        - "{{ ansible_facts['distribution'] }}_{{ ansible_facts['distribution_major_version'] }}.yml"
+        - "{{ ansible_facts['distribution'] }}.yml"
+        - "{{ ansible_facts['os_family'] }}.yml"
+        - "default.yml"
+      paths:
+        - "{{ playbook_dir }}/vars"
+
+- name: Print all available facts
+  debug:
+    var: ansible_facts
+
+- name: Install required packages for nbde_client tests
+  package:
+    name: "{{ nbde_client_test_packages }}"
+
+- name: Create temp dir for test on controller
+  tempfile:
+    state: directory
+    prefix: lsr_nbde_client_
+  register: __nbde_client_tmp_dir_local
+  changed_when: false
+  delegate_to: localhost
+
+- name: Set nbde_client_test_encryption_key_src, dest, roles dir
+  set_fact:
+    nbde_client_test_encryption_key_src: >-
+      {{ __nbde_client_tmp_dir_local.path }}/encryption_key
+    nbde_client_test_encryption_key_dest: >-
+      /tmp/encryption_key
+
+- name: Deploy NBDE server for testing
+  include_role:
+    name: redhat.rhel_system_roles.nbde_server
+
+- name: Create device for testing
+  command: fallocate -l64m {{ nbde_client_test_device }}
+  changed_when: false
+
+- name: Format test device as LUKS
+  shell: >-
+    set -euo pipefail;
+    echo -n {{ nbde_client_test_pass }} |
+    cryptsetup luksFormat --pbkdf pbkdf2 --pbkdf-force-iterations 1000
+    --batch-mode --force-password {{ nbde_client_test_device }}
+  changed_when: false
+
+- name: Create key file for test device
+  copy:
+    content: "{{ nbde_client_test_pass }}"
+    dest: "{{ nbde_client_test_encryption_key_src }}"
+    mode: preserve
+  delegate_to: localhost
+  changed_when: false
+
+# vim:set ts=2 sw=2 et:

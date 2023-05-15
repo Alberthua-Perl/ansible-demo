@@ -1,0 +1,100 @@
+---
+- name: Check if selinux role sets SELinux fcontext mappings
+  hosts: all
+  vars:
+    __str1: >-
+      /tmp/test_dir1[^ ]+[ ]+directory[
+      ]+staff_u:object_r:user_home_dir_t:s0-s0:c0.c1023
+    __str2: >-
+      /tmp/test_dir2[^ ]+[ ]+directory[
+      ]+staff_u:object_r:user_home_dir_t:s0-s0:c0.c1023
+  tasks:
+
+    - name: Include test variables
+      import_tasks: set_selinux_variables.yml
+
+    - name: Initial changes
+      include_role:
+        name: redhat.rhel_system_roles.selinux
+      vars:
+        selinux_fcontexts_purge: true
+        selinux_fcontexts:
+          - {target: '/tmp/test_dir1(/.*)?', setype: 'user_home_dir_t', ftype: 'd', seuser: 'staff_u', selevel: 's0-s0:c0.c1023'}
+
+    - name: Include test variables
+      import_tasks: set_selinux_variables.yml
+
+    - name: Save state after initial changes and before other changes
+      set_fact:
+        fcontext_before: "{{ selinux_role_fcontext.stdout }}"
+
+    - name: Check if there are SELinux fcontext mapping changes
+      assert:
+        that: fcontext_before | length > 0
+
+    - name: Check if there's mapping to seuser/selevel context
+      assert:
+        that: fcontext_before is search(__str1)
+
+    - name: Subsequent changes
+      include_role:
+        name: redhat.rhel_system_roles.selinux
+      vars:
+        selinux_fcontexts_purge: false
+        selinux_fcontexts:
+          - {target: '/tmp/test_dir2(/.*)?', setype: 'user_home_dir_t', ftype: 'd', seuser: 'staff_u', selevel: 's0-s0:c0.c1023'}
+
+    - name: Include test variables
+      import_tasks: set_selinux_variables.yml
+
+    - name: Save state after other changes
+      set_fact:
+        fcontext_after: "{{ selinux_role_fcontext.stdout }}"
+
+    - name: Check if there are SELinux fcontext mapping changes
+      assert:
+        that: fcontext_before != fcontext_after
+
+    - name: Check if there's another mapping to seuser/selevel context
+      assert:
+        that:
+          - fcontext_after is search(__str1)
+          - fcontext_after is search(__str2)
+
+    - name: Revert subsequent changes
+      include_role:
+        name: redhat.rhel_system_roles.selinux
+      vars:
+        selinux_fcontexts_purge: false
+        selinux_fcontexts:
+          - {target: '/tmp/test_dir2(/.*)?', setype: 'user_home_dir_t', ftype: 'd', state: absent}
+
+    - name: Include test variables
+      import_tasks: set_selinux_variables.yml
+
+    - name: Save state after reverting other changes
+      set_fact:
+        fcontext_after: "{{ selinux_role_fcontext.stdout }}"
+
+    - name: Check if SELinux fcontext mapping is as before
+      assert:
+        that: fcontext_before == fcontext_after
+
+    - name: Check if the correct mapping was removed
+      assert:
+        that:
+          - fcontext_after is search(__str1)
+          - not fcontext_after is search(__str2)
+
+    - name: Purge all fcontexts
+      include_role:
+        name: redhat.rhel_system_roles.selinux
+      vars:
+        selinux_fcontexts_purge: true
+
+    - name: Include test variables
+      import_tasks: set_selinux_variables.yml
+
+    - name: Check if there are no SELinux fcontext mappings
+      assert:
+        that: selinux_role_fcontext.stdout | length == 0

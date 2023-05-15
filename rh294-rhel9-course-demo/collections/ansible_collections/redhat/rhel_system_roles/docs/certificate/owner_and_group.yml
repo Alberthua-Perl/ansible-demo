@@ -1,0 +1,12 @@
+---
+- name: Example with owner and group
+  hosts: all
+  vars:
+    certificate_requests:
+      - name: mycert
+        dns: www.example.com
+        ca: self-sign
+        owner: ftp
+        group: ftp
+  roles:
+    - redhat.rhel_system_roles.certificate

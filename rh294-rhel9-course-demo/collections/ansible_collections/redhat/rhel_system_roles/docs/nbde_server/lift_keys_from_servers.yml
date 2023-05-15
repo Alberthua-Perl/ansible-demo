@@ -1,0 +1,9 @@
+---
+- name: Lift keys from server
+  hosts: all
+  vars:
+    nbde_server_fetch_keys: true
+    nbde_server_keys_dir: /root/nbde_server/keys
+  roles:
+    - redhat.rhel_system_roles.nbde_server
+# vim:set ts=2 sw=2 et:

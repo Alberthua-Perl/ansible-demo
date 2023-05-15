@@ -1,0 +1,65 @@
+# SPDX-License-Identifier: MIT
+---
+# Put the role's internal variables here that are not distribution specific.
+# You can override these by defining the same variable with a different
+# value in a platform/version specific file in vars/
+__podman_packages: [podman]
+
+# Default values to use when creating host directories for bind mounts
+# User can override these in podman_host_directories
+__podman_hostdirs_defaults:
+  state: directory
+
+# defaults applied when adding ports
+__podman_ports_defaults:
+  state: enabled
+
+# prefix to use for systemd service file names
+__podman_systemd_prefix: lsr_container
+
+# path for root containers - systemd unit files
+__podman_systemd_root_path: "/etc/systemd/system"
+
+# relative path for non-root containers - under home dir
+__podman_systemd_non_root_path: "/.config/systemd/user"
+
+# ansible_facts required by the role
+__podman_required_facts:
+  - distribution
+  - distribution_major_version
+  - distribution_version
+  - os_family
+
+__podman_containers_conf_file_name: 50-systemroles.conf
+__podman_containers_conf_system: >-
+  /etc/containers/containers.conf.d/{{ __podman_containers_conf_file_name }}
+# relative to $HOME
+__podman_containers_conf_user: >-
+  .config/containers/containers.conf.d/{{ __podman_containers_conf_file_name }}
+
+__podman_registries_conf_file_name: 50-systemroles.conf
+__podman_registries_conf_system: >-
+  /etc/containers/registries.conf.d/{{ __podman_registries_conf_file_name }}
+# relative to $HOME
+__podman_registries_conf_user: >-
+  .config/containers/registries.conf.d/{{ __podman_registries_conf_file_name }}
+
+__podman_storage_conf_file_name: storage.conf
+__podman_storage_conf_system: >-
+  /etc/containers/{{ __podman_storage_conf_file_name }}
+# relative to $HOME
+__podman_storage_conf_user: >-
+  .config/containers/{{ __podman_storage_conf_file_name }}
+
+__podman_policy_json_file_name: policy.json
+__podman_policy_json_system: >-
+  /etc/containers/{{ __podman_policy_json_file_name }}
+# relative to $HOME
+__podman_policy_json_user: >-
+  .config/containers/{{ __podman_policy_json_file_name }}
+
+# location for system kubernetes yaml files
+__podman_system_kube_path: "/etc/containers/ansible-kubernetes.d"
+
+# location for user kubernetes yaml files
+__podman_user_kube_path: "/.config/containers/ansible-kubernetes.d"

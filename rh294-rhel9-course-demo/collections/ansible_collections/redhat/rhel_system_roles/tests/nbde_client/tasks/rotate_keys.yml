@@ -1,0 +1,8 @@
+---
+- name: Rotate NBDE keys for testing
+  include_role:
+    name: redhat.rhel_system_roles.nbde_server
+  vars:
+    nbde_server_rotate_keys: true
+
+# vim:set ts=2 sw=2 et:

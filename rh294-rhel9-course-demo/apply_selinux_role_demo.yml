@@ -1,0 +1,24 @@
+---
+- name: Test SELinux role
+  hosts: servera.lab.example.com
+
+  tasks:
+    - name: Apply SELinux role
+      block:
+        - ansible.builtin.include_role: 
+            name: redhat.rhel_system_roles.selinux
+        - name: Verify selinux_reboot_required variable
+          ansible.builtin.debug:
+            msg: selinux_reboot_required is "{{ selinux_reboot_required }}"
+      rescue:
+        - name: Check for failure for other reasons than required reboot
+          ansible.builtin.fail:
+          when: not selinux_reboot_required
+
+        - name: Restart managed host
+          ansible.builtin.reboot:
+
+        - name: Reapply SELinux role to complete roles
+          ansible.builtin.include_role: 
+            name: redhat.rhel_system_roles.selinux
+            

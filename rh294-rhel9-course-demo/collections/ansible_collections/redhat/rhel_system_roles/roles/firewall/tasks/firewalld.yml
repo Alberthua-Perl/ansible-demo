@@ -1,0 +1,22 @@
+---
+- name: Ensure ansible_facts used by role
+  setup:
+    gather_subset: min
+  when: not ansible_facts.keys() | list | intersect(__firewall_required_facts) == __firewall_required_facts
+
+- name: Install firewalld
+  package:
+    name: "{{ __firewall_packages_base }}"
+    state: present
+
+- name: Install python-firewall
+  package:
+    name: "{{ __firewall_packages_python2 }}"
+    state: present
+  when: ansible_python_version is version('3', '<')
+
+- name: Install python3-firewall
+  package:
+    name: "{{ __firewall_packages_python3 }}"
+    state: present
+  when: ansible_python_version is version('3', '>=')

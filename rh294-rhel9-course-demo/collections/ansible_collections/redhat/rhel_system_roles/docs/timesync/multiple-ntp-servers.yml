@@ -1,0 +1,15 @@
+---
+- name: Example with multiple servers
+  hosts: "{{ targets }}"
+  vars:
+    timesync_ntp_servers:
+      - hostname: 0.pool.ntp.org
+        iburst: true
+      - hostname: 1.pool.ntp.org
+        iburst: true
+      - hostname: 2.pool.ntp.org
+        iburst: true
+      - hostname: 3.pool.ntp.org
+        iburst: true
+  roles:
+    - redhat.rhel_system_roles.timesync

@@ -1,0 +1,43 @@
+---
+# Deploy configuration files
+- name: Check remote inputs
+  vars:
+    __logging_remote: "{{ rsyslog_inputs | selectattr('type', 'match', '^remote$') | list }}"
+    __logging_remote_udp: "{{ __logging_remote | selectattr('udp_ports', 'defined') | list }}"
+    __logging_remote_tcp: "{{ __logging_remote | selectattr('tcp_ports', 'defined') | list }}"
+    __logging_remote_tls: "{{ __logging_remote_tcp | selectattr('tls', 'defined') | list }}"
+    __logging_remote_ptcp: "{{ (__logging_remote_tcp | selectattr('tls', 'undefined') | list) + (__logging_remote_tls | rejectattr('tls') | list) }}"
+    __logging_remote_tlstcp: "{{ __logging_remote_tls | selectattr('tls') | list }}"
+  block:
+    - name: Ensure Remote inputs contain no conflict connection type
+      fail:
+        msg: "Error: {{ item.0.name }} and {{ item.1.name }} conflict."
+      loop: "{{ [__logging_remote_udp, __logging_remote_ptcp, __logging_remote_tlstcp] }}"
+      when:
+        - item | length > 1
+
+- name: "Install/Update remote input packages and generate configuration files in /etc/rsyslog.d"
+  vars:
+    __rsyslog_packages: "{{ __rsyslog_remote_packages }}"
+    __rsyslog_rules:
+      - name: "input-remote-modules-{{ __rsyslog_input.name }}"
+        type: modules
+        sections:
+          - options: "{{ lookup('template', 'input_remote_module.j2') }}"
+  include_tasks:
+    file: "{{ role_path }}/tasks/deploy.yml"
+  when: __rsyslog_input.type | d() == 'remote'
+
+- name: "Create remote input configuration file /etc/rsyslog.d/input-remote-{{ __rsyslog_input.name }}"
+  vars:
+    __rsyslog_packages: []
+    __rsyslog_rules:
+      - name: "input-remote-{{ __rsyslog_input.name }}"
+        type: input
+        weight: "11"
+        state: "{{ __rsyslog_input.state | d('present') }}"
+        sections:
+          - options: "{{ lookup('template', 'input_remote.j2') }}"
+  include_tasks:
+    file: "{{ role_path }}/tasks/deploy.yml"
+  when: __rsyslog_input.type | d() == 'remote'

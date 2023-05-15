@@ -1,0 +1,20 @@
+---
+__tlog_packages:
+  - tlog
+  - sssd
+  - authselect
+__tlog_cockpit_packages:
+  - cockpit-session-recording
+__tlog_writer: journal
+__tlog_sssd_conf: /etc/sssd/sssd.conf
+# yamllint disable-line rule:line-length
+__tlog_sssd_session_recording_conf: >-
+  /etc/sssd/conf.d/sssd-session-recording.conf
+__tlog_rec_session_conf: /etc/tlog/tlog-rec-session.conf
+
+# ansible_facts required by the role
+__tlog_required_facts:
+  - distribution
+  - distribution_major_version
+  - distribution_version
+  - os_family

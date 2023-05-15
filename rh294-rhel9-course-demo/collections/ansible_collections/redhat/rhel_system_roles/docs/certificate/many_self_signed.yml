@@ -1,0 +1,16 @@
+---
+- name: Example with multiple self-signed certs
+  hosts: all
+  vars:
+    certificate_requests:
+      - name: mycert
+        dns: www.example.com
+        ca: self-sign
+      - name: /tmp/other-cert
+        dns: www.example.org
+        ca: self-sign
+      - name: /tmp/another-cert
+        dns: www.example.net
+        ca: self-sign
+  roles:
+    - redhat.rhel_system_roles.certificate

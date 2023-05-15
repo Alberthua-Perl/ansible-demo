@@ -1,0 +1,19 @@
+---
+- name: Execute the role and catch errors
+  block:
+    - name: Call SELinux role
+      include_role:
+        name: redhat.rhel_system_roles.selinux
+  rescue:
+  # Fail if failed for a different reason than selinux_reboot_required.
+    - name: Handle errors
+      fail:
+        msg: "role failed"
+      when: not selinux_reboot_required
+
+    - name: Restart managed host
+      reboot:
+        msg: Ansible updates triggered
+        pre_reboot_delay: 2
+        post_reboot_delay: 10
+        reboot_timeout: 300

@@ -1,0 +1,102 @@
+# SPDX-License-Identifier: BSD-3-Clause
+---
+- name: Install dnsmasq
+  package:
+    name: dnsmasq
+    state: present
+
+- name: Install pgrep, sysctl
+  package:
+    name: procps
+    state: present
+  when:
+    - ansible_os_family == 'RedHat'
+    - ansible_distribution_major_version is version('6', '<=')
+
+- name: Install pgrep, sysctl
+  package:
+    name: procps-ng
+    state: present
+  when:
+    - ansible_os_family == 'RedHat'
+    - ansible_distribution_major_version is version('7', '>=')
+
+- name: Create test interfaces
+  shell: |
+    set -euo pipefail
+    ip link add {{ dhcp_interface1 }} type veth peer name {{ dhcp_interface1 }}p
+    ip link add {{ dhcp_interface2 }} type veth peer name {{ dhcp_interface2 }}p
+    if [ -n "$(pgrep NetworkManager)" ];then
+      nmcli d set {{ dhcp_interface1 }} managed true
+      nmcli d set {{ dhcp_interface2 }} managed true
+      # NetworkManager should not manage DHCP server ports
+      nmcli d set {{ dhcp_interface1 }}p managed false
+      nmcli d set {{ dhcp_interface2 }}p managed false
+    fi
+    ip link set {{ dhcp_interface1 }}p up
+    ip link set {{ dhcp_interface2 }}p up
+
+    # Create the 'testbr' - providing both 10.x ipv4 and 2620:52:0 ipv6 dhcp
+    ip link add name testbr type bridge forward_delay 0
+    if [ -n "$(pgrep NetworkManager)" ];then
+      # NetworkManager should not manage DHCP server ports
+      nmcli d set testbr managed false
+    fi
+    ip link set testbr up
+    timer=0
+    # The while loop following is a workaround for the NM bug, which can be
+    # tracked in https://bugzilla.redhat.com/show_bug.cgi?id=2079642
+    while ! ip addr show testbr | grep -q 'inet [1-9]'
+    do
+        let "timer+=1"
+        if [ $timer -eq 30 ]; then break; fi
+        sleep 1
+        ip addr add 192.0.2.1/24 dev testbr
+        ip -6 addr add 2001:DB8::1/32 dev testbr
+    done
+
+    if grep 'release 6' /etc/redhat-release; then
+        # We need bridge-utils and radvd only in rhel6
+        if ! rpm -q --quiet radvd; then yum -y install radvd; fi
+        if ! rpm -q --quiet bridge-utils; then yum -y install bridge-utils; fi
+
+        # We need to add iptables rule to allow dhcp request
+        iptables -I INPUT -i testbr -p udp --dport 67:68 --sport 67:68 -j ACCEPT
+
+        # Add {{ dhcp_interface1 }}, {{ dhcp_interface2 }} peers into the testbr
+        brctl addif testbr {{ dhcp_interface1 }}p
+        brctl addif testbr {{ dhcp_interface2 }}p
+
+        # in RHEL6 /run is not present
+        mkdir -p /run
+
+        # and dnsmasq does not support ipv6
+        dnsmasq \
+            --pid-file=/run/dhcp_testbr.pid \
+            --dhcp-leasefile=/run/dhcp_testbr.lease \
+            --dhcp-range=192.0.2.1,192.0.2.254,240 \
+            --interface=testbr --bind-interfaces
+
+        # start radvd for ipv6
+        echo 'interface testbr {' > /etc/radvd.conf
+        echo '        AdvSendAdvert on;' >> /etc/radvd.conf
+        echo '        prefix 2001:DB8::/64 { ' >> /etc/radvd.conf
+        echo '              AdvOnLink on; }; ' >> /etc/radvd.conf
+        echo '        }; ' >> /etc/radvd.conf
+
+        # enable ipv6 forwarding
+        sysctl -w net.ipv6.conf.all.forwarding=1
+        service radvd restart
+
+    else
+        ip link set {{ dhcp_interface1 }}p master testbr
+        ip link set {{ dhcp_interface2 }}p master testbr
+        # Run joint DHCP4/DHCP6 server with RA enabled in veth namespace
+        dnsmasq \
+            --pid-file=/run/dhcp_testbr.pid \
+            --dhcp-leasefile=/run/dhcp_testbr.lease \
+            --dhcp-range=192.0.2.1,192.0.2.254,240 \
+            --dhcp-range=2001:DB8::10,2001:DB8::1FF,slaac,64,240 \
+            --enable-ra --interface=testbr --bind-interfaces
+    fi
+  changed_when: false

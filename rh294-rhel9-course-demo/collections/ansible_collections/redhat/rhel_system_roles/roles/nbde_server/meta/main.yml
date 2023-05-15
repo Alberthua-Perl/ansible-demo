@@ -1,0 +1,30 @@
+# SPDX-License-Identifier: MIT
+---
+galaxy_info:
+  author: Sergio Correia <scorreia@redhat.com>
+  description: >
+    Ansible role for configuring Network-Bound Disk Encryption servers
+    (e.g. tang)
+  company: Red Hat, Inc.
+  license: MIT
+  min_ansible_version: "2.9"
+  platforms:
+    - name: Fedora
+      versions:
+        - all
+    - name: EL
+      versions:
+        - "7"
+        - "8"
+        - "9"
+
+  galaxy_tags:
+    - centos
+    - fedora
+    - redhat
+    - nbde
+    - clevis
+    - tang
+
+dependencies: []
+# vim:set ts=2 sw=2 et:

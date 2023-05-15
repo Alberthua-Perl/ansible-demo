@@ -1,0 +1,21 @@
+---
+- name: Manage containers conf
+  when: podman_containers_conf | length > 0
+  block:
+    - name: Ensure containers.d exists
+      file:
+        path: "{{ __podman_container_conf_file | dirname }}"
+        state: directory
+        owner: "{{ podman_run_as_user }}"
+        group: "{{ podman_run_as_group if podman_run_as_group is not none else omit }}"
+        mode: "0755"
+
+    - name: Update container config file
+      template:
+        src: toml.j2
+        dest: "{{ __podman_container_conf_file }}"
+        owner: "{{ podman_run_as_user }}"
+        group: "{{ podman_run_as_group if podman_run_as_group is not none else omit }}"
+        mode: "0644"
+      vars:
+        __conf: "{{ podman_containers_conf }}"

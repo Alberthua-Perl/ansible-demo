@@ -1,0 +1,78 @@
+---
+# NOTE: The use of `become: false` in the
+# `stat` is to avoid using a become method.
+# NOTE: `fileglob` is the only lookup that will
+# look in the correct lookup path for files.  Yes,
+# I tried `first_file` and it did not work the same
+# way.  The wrinkle is that we do not want to match
+# file globs, so we escape any file glob patterns
+# in the string before using `fileglob`.
+- name: Prepare module installation
+  when:
+    - state == "enabled"
+    - item.path is defined
+  block:
+    - name: Get checksum for {{ item.path }}
+      stat:
+        path: "{{ __resolved_file }}"
+        checksum_algorithm: sha256
+      vars:
+        __esc: \\
+        __glob_pat: "([*?[])"
+        __escaped_file: "{{ item.path | regex_replace(__glob_pat, __esc ~ '\\1') }}"
+        __resolved_file: "{{ lookup('fileglob', __escaped_file) }}"
+      register: module_file
+      delegate_to: localhost
+      become: false
+
+    - name: Install module
+      when: not module_file.stat.checksum in checksum
+      block:
+        - name: Create temporary directory
+          tempfile:
+            state: directory
+            prefix: linux_system_role.selinux
+          register: tempdir
+
+        - name: Copy module file {{ item.path }}
+          copy:
+            dest: "{{ tempdir.path }}"
+            src: "{{ item.path }}"
+            mode: preserve
+
+        - name: Install the module
+          redhat.rhel_system_roles.local_semodule:
+            path: "{{ tempdir.path }}/{{ item.path | basename }}"
+            priority: "{{ priority }}"
+            state: enabled
+          notify: __selinux_reload_policy
+      always:
+        - name: Clean temporary directory {{ tempdir.path }}
+          file:
+            path: "{{ tempdir.path }}"
+            state: absent
+
+- name: Remove module
+  redhat.rhel_system_roles.local_semodule:
+    name: "{{ item.name }}"
+    state: absent
+    priority: "{{ priority }}"
+  when: state == "absent"
+  notify: __selinux_reload_policy
+
+- name: Enable module
+  redhat.rhel_system_roles.local_semodule:
+    name: "{{ item.name }}"
+    state: enabled
+  when: state == "enabled" and item.path is not defined
+  notify: __selinux_reload_policy
+
+- name: Disable module
+  redhat.rhel_system_roles.local_semodule:
+    name: "{{ item.name }}"
+    state: "disabled"
+  when: state == "disabled" and item.path is not defined
+  notify: __selinux_reload_policy
+
+- name: Refresh SELinux modules facts
+  redhat.rhel_system_roles.selinux_modules_facts:

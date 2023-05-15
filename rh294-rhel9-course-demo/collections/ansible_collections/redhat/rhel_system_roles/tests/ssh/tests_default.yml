@@ -1,0 +1,26 @@
+---
+- name: Backup configuration files
+  hosts: all
+  vars:
+    __ssh_test_backup_files:
+      - /etc/ssh_config.d/00-ansible.conf
+      - /etc/ssh_config
+  tasks:
+    - name: Backup configuration files
+      include_tasks: tasks/backup.yml
+
+- name: Ensure that the role runs with default parameters
+  hosts: all
+  gather_facts: false
+  roles:
+    - redhat.rhel_system_roles.ssh
+
+- name: Restore configuration files
+  hosts: all
+  vars:
+    __ssh_test_backup_files:
+      - /etc/ssh_config.d/00-ansible.conf
+      - /etc/ssh_config
+  tasks:
+    - name: Restore configuration files
+      include_tasks: tasks/restore.yml

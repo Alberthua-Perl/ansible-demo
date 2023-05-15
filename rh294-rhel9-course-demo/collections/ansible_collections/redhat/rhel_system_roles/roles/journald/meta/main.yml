@@ -1,0 +1,25 @@
+# SPDX-License-Identifier: MIT
+---
+galaxy_info:
+  author: Michal Sekletar <msekleta@redhat.com>
+  description: Configure systemd-journald
+  galaxy_tags:
+    - journald
+    - logging
+    - rhel
+    - fedora
+    - centos
+  company: Red Hat, Inc.
+  license: MIT
+  min_ansible_version: "2.9"
+  platforms:
+    - name: Fedora
+      versions:
+        - all
+    - name: EL
+      versions:
+        - "7"
+        - "8"
+        - "9"
+
+allow_duplicates: true

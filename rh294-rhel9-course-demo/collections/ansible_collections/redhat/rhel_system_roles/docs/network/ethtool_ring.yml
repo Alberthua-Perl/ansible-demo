@@ -1,0 +1,22 @@
+# SPDX-License-Identifier: BSD-3-Clause
+---
+- name: Manage ethtool ring
+  hosts: all
+  tasks:
+    - name: Configure ring parameters
+      include_role:
+        name: redhat.rhel_system_roles.network
+      vars:
+        network_connections:
+          - name: "{{ network_interface_name1 }}"
+            state: up
+            type: ethernet
+            ip:
+              dhcp4: false
+              auto6: false
+            ethtool:
+              ring:
+                rx: 128
+                rx_jumbo: 128
+                rx_mini: 128
+                tx: 128

@@ -1,0 +1,96 @@
+# SPDX-License-Identifier: BSD-3-Clause
+---
+network_connections: []
+
+network_allow_restart: false
+
+# Ansible distribution identifiers that the role treats like RHEL
+__network_rh_distros:
+  - CentOS
+  - OracleLinux
+  - RedHat
+  - Rocky
+
+# Use initscripts for RHEL/CentOS < 7, nm otherwise
+network_provider_os_default: "{{ 'initscripts' if ansible_distribution in __network_rh_distros and ansible_distribution_major_version is version('7', '<') else 'nm' }}"
+# If NetworkManager.service is running, assume that 'nm' is currently in-use,
+# otherwise initscripts
+__network_provider_current: "{{ 'nm' if 'NetworkManager.service' in ansible_facts.services and ansible_facts.services['NetworkManager.service']['state'] == 'running' else 'initscripts' }}"
+# Default to the auto-detected value
+network_provider: "{{ __network_provider_current }}"
+
+# check if any 802.1x connections are defined
+__network_ieee802_1x_connections_defined: "{{ network_connections | selectattr('ieee802_1x', 'defined') | list | count > 0 }}"
+
+# check if any wireless connections are defined
+__network_wireless_connections_defined: "{{ network_connections | selectattr('type', 'defined') | selectattr('type', 'match', '^wireless$') | list | count > 0 }}"
+
+# NetworkManager-wireless is required for wireless connections
+__network_packages_default_wireless: ["{% if __network_wireless_connections_defined %}NetworkManager-wifi{% endif %}"]
+
+# check if any team connections are defined
+__network_team_connections_defined: "{{ network_connections | selectattr('type', 'defined') | selectattr('type', 'match', '^team$') | list | count > 0 }}"
+
+# NetworkManager-team is required for team connections
+__network_packages_default_team: ["{% if __network_team_connections_defined %}NetworkManager-team{% endif %}"]
+
+# wpa_supplicant is required if any 802.1x or wireless connections are defined
+__network_wpa_supplicant_required: "{{ __network_ieee802_1x_connections_defined or __network_wireless_connections_defined }}"
+__network_packages_default_wpa_supplicant: ["{% if __network_wpa_supplicant_required %}wpa_supplicant{% endif %}"]
+
+# The python-gobject-base package depends on the python version and
+# distribution:
+# - python-gobject-base on RHEL7 (no python2-gobject-base :-/)
+# - python3-gobject-base on Fedora 28+
+__network_packages_default_gobject_packages: ["python{{ ansible_python['version']['major'] | replace('2', '') }}-gobject-base"]
+
+__network_service_name_default_nm: NetworkManager
+__network_packages_default_nm: "{{ ['NetworkManager'] + __network_packages_default_gobject_packages | select() | list() + __network_packages_default_wpa_supplicant | select() | list() + __network_packages_default_wireless | select() | list() + __network_packages_default_team | select() | list() }}"
+
+__network_service_name_default_initscripts: network
+
+# initscripts requires bridge-utils to manage bridges, install it when the
+# 'bridge' type is used in network_connections
+__network_packages_default_initscripts_bridge: ["{% if network_connections | selectattr('type', 'defined') | selectattr('type', 'match', '^bridge$') | list | count > 0 and ansible_distribution in __network_rh_distros and ansible_distribution_major_version is version('7', '<=') %}bridge-utils{% endif %}"]
+__network_packages_default_initscripts_network_scripts: ["{% if ansible_distribution in __network_rh_distros and ansible_distribution_major_version is version('7', '<=') %}initscripts{% else %}network-scripts{% endif %}"]
+# convert _network_packages_default_initscripts_bridge to an empty list if it
+# contains only the empty string and add it to the default package list
+# |select() filters the list to include only values that evaluate to true
+#     (the empty string is false)
+# |list() converts the generator that |select() creates to a list
+__network_packages_default_initscripts: "{{ __network_packages_default_initscripts_bridge | select() | list() + __network_packages_default_initscripts_network_scripts | select() | list() }}"
+
+
+# The user can explicitly set host variables "network_provider",
+# "network_service_name" and "network_packages".
+#
+# Usually, the user only wants to select the "network_provider"
+# (or not set it at all and let it be autodetected via the
+# internal variable "{{ __network_provider_current }}". Hence,
+# depending on the "network_provider", a different set of
+# service-name and packages is chosen.
+#
+# That is done via the internal "__network_provider_setup" dictionary.
+# If the user doesn't explicitly set "network_service_name" or
+# "network_packages" (which he usually wouldn't), then the defaults
+# from "__network_service_name_default_*" and "__network_packages_default_*"
+# apply. These values are hard-coded in this file, but they also could
+# be overwritten as host variables or via vars/*.yml.
+__network_provider_setup:
+  nm:
+    service_name: "{{ __network_service_name_default_nm }}"
+    packages: "{{ __network_packages_default_nm }}"
+  initscripts:
+    service_name: "{{ __network_service_name_default_initscripts }}"
+    packages: "{{ __network_packages_default_initscripts }}"
+
+network_packages: "{{ __network_provider_setup[network_provider]['packages'] }}"
+network_service_name: "{{ __network_provider_setup[network_provider]['service_name'] }}"
+
+# ansible_facts required by the role
+__network_required_facts:
+  - distribution
+  - distribution_major_version
+  - distribution_version
+  - os_family
+  - python

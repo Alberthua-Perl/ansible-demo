@@ -1,0 +1,5 @@
+[workstation]
+workstation.lab.example.com
+
+[intranetweb]
+servera.lab.example.com

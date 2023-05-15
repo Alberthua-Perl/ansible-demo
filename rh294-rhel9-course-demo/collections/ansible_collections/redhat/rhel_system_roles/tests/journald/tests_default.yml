@@ -1,0 +1,46 @@
+# SPDX-License-Identifier: MIT
+---
+- name: Ensure that the role runs with default parameters
+  hosts: all
+  roles:
+    - redhat.rhel_system_roles.journald
+
+  tasks:
+  # Make sure services are restarted before we verify system state is correct
+    - name: Flush handlers
+      meta: flush_handlers
+
+    - name: Get systemd-journald service state
+      command:
+      # noqa command-instead-of-module
+        cmd: systemctl show --property SubState systemd-journald.service
+      register: systemctl
+      changed_when: false
+
+    - name: Verify that systemd-journald is running
+      assert:
+        that: systemctl.stdout == 'SubState=running'
+
+    - name: Verify that /run/log/journal/$MACHINE_ID/system.journal exists
+      stat:
+        path: /run/log/journal/{{ ansible_machine_id }}/system.journal
+      register: __stat
+      failed_when: not __stat.stat.exists
+
+    - name: Verify that system.journal is in online state
+      shell:
+        cmd: >
+          set -euo pipefail;
+          journalctl --header
+          --file /run/log/journal/{{ ansible_machine_id }}/system.journal |
+          grep -q 'State: ONLINE'
+      changed_when: false
+
+    - name: Verify that system.journal is compressed
+      shell:
+        cmd: >
+          set -euo pipefail;
+          journalctl --header
+          --file /run/log/journal/{{ ansible_machine_id }}/system.journal |
+          grep -q COMPRESSED
+      changed_when: false

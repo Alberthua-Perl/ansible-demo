@@ -1,0 +1,66 @@
+# SPDX-License-Identifier: MIT
+---
+- name: Ensure enabled ATB doesn't conflict with SBD
+  hosts: all
+  vars_files: vars/main.yml
+  vars:
+    ha_cluster_sbd_enabled: true
+    ha_cluster_quorum:
+      options:
+        - name: auto_tie_breaker
+          value: 1
+
+  tasks:
+    - name: Run test
+      tags: tests::verify
+      when: ansible_play_hosts_all | length is even
+      block:
+        - name: Set up test environment
+          include_role:
+            name: redhat.rhel_system_roles.ha_cluster
+            tasks_from: test_setup.yml
+
+        - name: Set up test environment for SBD
+          include_role:
+            name: redhat.rhel_system_roles.ha_cluster
+            tasks_from: test_setup_sbd.yml
+
+        - name: Set SBD devices variable
+          set_fact:
+            ha_cluster:
+              sbd_devices: []
+
+        - name: Run the role
+          include_role:
+            name: redhat.rhel_system_roles.ha_cluster
+            public: true
+
+        - name: Fetch quorum configuration
+          command:
+            cmd: pcs quorum config
+          register: __test_quorum_config
+          changed_when: false
+
+        - name: Check auto tie breaker in quorum configuration
+          assert:
+            that:
+              - "'auto_tie_breaker: 1' in __test_quorum_lines"
+          vars:
+            __test_quorum_lines: "{{ __test_quorum_config.stdout_lines | map('trim') | list }}"
+
+        - name: Check firewall and selinux state
+          include_tasks: tasks/check_firewall_selinux.yml
+      always:
+        - name: Unset SBD devices variable
+          set_fact:
+            ha_cluster:
+
+        - name: Clean up test environment for SBD
+          include_role:
+            name: redhat.rhel_system_roles.ha_cluster
+            tasks_from: test_cleanup_sbd.yml
+
+    - name: Message
+      debug:
+        msg: This test needs even number of nodes
+      when: ansible_play_hosts_all | length is odd

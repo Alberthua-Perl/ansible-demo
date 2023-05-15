@@ -1,0 +1,135 @@
+---
+- name: Setup firewalld
+  include_tasks: firewalld.yml
+
+- name: Enable and start firewalld service
+  service:
+    name: "{{ __firewall_service }}"
+    state: started
+    enabled: true
+
+- name: Check if previous replaced is defined
+  set_fact:
+    __firewall_previous_replaced: "{{ firewall | d([]) | selectattr('previous', 'defined') | selectattr('previous', 'match', '^replaced$') | list | length > 0 }}"
+    __firewall_python_cmd: "{{ ansible_python_interpreter | d(discovered_interpreter_python) }}"
+
+- name: Get config files, checksums before and remove
+  script:
+    cmd: >
+      files/get_files_checksums.sh {{ __firewall_python_cmd | quote }}
+      {{ __firewall_firewalld_dir | quote }} {{ __firewall_service | quote }}
+      true
+  register: __firewall_config_files_before
+  changed_when: false
+  when: __firewall_previous_replaced | bool
+
+# Explanation of loop - `firewall` is a list of dict.  We want
+# to remove any key: value matching previous: replaced from every
+# dict in the firewall list.  The `difference` filter removes
+# items from lists, not dicts.  So we use `map` with `dict2items`
+# to convert each dict in the `firewall` list to a list of key/value
+# pairs.  Then, we use `map` with `difference` to remove all
+# occurrences of previous: replaced from all dicts.  The `select`
+# removes any lists which are now empty (e.g. the item contained
+# only previous: replaced).  Then we use `map` with `items2dict`
+# to convert each item in the list back to a dict.
+# Also handle the case where firewall is a dict instead of a list by
+# "casting" it into a list.
+- name: Configure firewall
+  vars:
+    __previous:
+      - key: previous
+        value: replaced
+    __detailed:
+      - key: detailed
+        value: true
+      - key: detailed
+        value: false
+  redhat.rhel_system_roles.firewall_lib:
+    zone: "{{ item.zone | default(omit) }}"
+    set_default_zone: "{{ item.set_default_zone | default(omit) }}"
+    service: "{{ item.service | default(omit) }}"
+    port: "{{ item.port | default(omit) }}"
+    source_port: "{{ item.source_port | default(omit) }}"
+    forward_port: "{{ item.forward_port | default(omit) }}"
+    masquerade: "{{ item.masquerade | default(omit) }}"
+    rich_rule: "{{ item.rich_rule | default(omit) }}"
+    source: "{{ item.source | default(omit) }}"
+    destination: "{{ item.destination | default(omit) }}"
+    interface: "{{ item.interface | default(omit) }}"
+    icmp_block: "{{ item.icmp_block | default(omit) }}"
+    icmp_block_inversion: "{{ item.icmp_block_inversion | default(omit) }}"
+    timeout: "{{ item.timeout | default(omit) }}"
+    target: "{{ item.target | default(omit) }}"
+    short: "{{ item.short | default(omit) }}"
+    description: "{{ item.description | default(omit) }}"
+    protocol: "{{ item.protocol | default(omit) }}"
+    helper_module: "{{ item.helper_module | default(omit) }}"
+    permanent: "{{ item.permanent | default(True) }}"
+    runtime: "{{ item.runtime | default(True) }}"
+    state: "{{ item.state | default(omit) }}"
+    __report_changed: "{{ not __firewall_previous_replaced }}"
+  loop: "{{ firewall is mapping | ternary([firewall], firewall) | map('dict2items') | map('difference', __previous) | map('difference', __detailed) | select | map('items2dict') | list }}"
+  register: firewall_lib_result
+
+- name: Gather firewall ansible fact with args
+  vars:
+    fw: "{{ firewall is mapping | ternary([firewall], firewall) }}"
+  when:
+    - firewall != None
+    - firewall | length == 1
+    - "'detailed' in fw[0]"
+  block:
+    - name: Gather firewall config information
+      vars:
+        __previous:
+          - key: previous
+            value: replaced
+      redhat.rhel_system_roles.firewall_lib_facts:
+        detailed: "{{ item.detailed | default(False) }}"
+      loop: "{{ fw | map('dict2items') | map('difference', __previous) | select | map('items2dict') | list }}"
+      register: __firewalld_facts
+
+    - name: Update firewalld_config fact
+      vars:
+        firewalld_facts: "{{ __firewalld_facts.results[0] }}"
+      set_fact:
+        firewall_config: "{{ firewalld_facts.firewall_config }}"
+
+- name: Gather firewall ansible fact if no args
+  when: firewall == None or firewall | length == 0
+  block:
+    - name: Gather firewall config if no arguments
+      redhat.rhel_system_roles.firewall_lib_facts:
+        detailed: false
+      register: __firewalld_facts
+
+    - name: Update firewalld_config fact
+      set_fact:
+        firewall_config: "{{ __firewalld_facts.firewall_config }}"
+
+- name: Check config files after removal
+  when: __firewall_previous_replaced | bool
+  block:
+    - name: Get config files, checksums after
+      script:
+        cmd: >
+          files/get_files_checksums.sh {{ __firewall_python_cmd | quote }}
+          {{ __firewall_firewalld_dir | quote }}
+      register: __firewall_config_files_after
+      changed_when: false
+
+    - name: Calculate what has changed
+      set_fact:
+        firewall_lib_result:
+          changed: "{{ __firewall_config_files_after.stdout_lines | symmetric_difference(__firewall_config_files_before.stdout_lines) | length > 0 }}"
+      changed_when: firewall_lib_result.changed
+
+    - name: Show diffs
+      when: __firewall_debug | d(false)
+      debug:
+        msg: |
+          __firewall_config_files_before {{
+            __firewall_config_files_before.stdout_lines | to_nice_json }}
+          __firewall_config_files_after {{
+            __firewall_config_files_after.stdout_lines | to_nice_json }}

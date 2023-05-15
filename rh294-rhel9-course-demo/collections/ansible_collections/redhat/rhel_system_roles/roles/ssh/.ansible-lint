@@ -1,0 +1,20 @@
+profile: production
+skip_list:
+  - fqcn-builtins
+exclude_paths:
+  - tests/ssh/roles/
+  - roles/ssh/.github/
+  - roles/ssh/examples/roles/
+kinds:
+  - yaml: "**/meta/collection-requirements.yml"
+  - yaml: "**/tests/collection-requirements.yml"
+  - playbook: "**/tests/tests_*.yml"
+  - playbook: "**/tests/setup-snapshot.yml"
+  - tasks: "**/tests/*.yml"
+  - playbook: "**/tests/playbooks/*.yml"
+  - tasks: "**/tests/tasks/*.yml"
+  - tasks: "**/tests/tasks/*/*.yml"
+  - vars: "**/tests/vars/*.yml"
+  - playbook: "**/examples/*.yml"
+mock_roles:
+  - rhel-system-roles.ssh

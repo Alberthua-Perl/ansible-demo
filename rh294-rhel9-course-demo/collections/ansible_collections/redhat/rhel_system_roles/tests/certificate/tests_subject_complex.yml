@@ -1,0 +1,46 @@
+---
+- name: Issue simple self-signed certificate
+  hosts: all
+  become: true
+
+  vars:
+    certificate_requests:
+      - name: mycert_subject_complex
+        dns: www.example.com
+        common_name: '# \\Every"thing+that,ne;eds<escap>ing\0 '
+        contact_email: admin@example.com
+        ca: self-sign
+  roles:
+    - redhat.rhel_system_roles.certificate
+
+- name: Verify certificate
+  hosts: all
+  become: true
+  gather_facts: true
+  vars:
+    certificates:
+      - path: /etc/pki/tls/certs/mycert_subject_complex.crt
+        key_path: /etc/pki/tls/private/mycert_subject_complex.key
+        subject:
+          - name: emailAddress
+            oid: 1.2.840.113549.1.9.1
+            value: admin@example.com
+          - name: commonName
+            oid: 2.5.4.3
+            value: '# \\Every"thing+that,ne;eds<escap>ing\0 '
+        subject_alt_name:
+          - name: DNS
+            value: www.example.com
+  tasks:
+    - name: Verify certs if not CentOS/RedHat 7
+      when: |
+        not (
+            ansible_distribution in ['CentOS', 'RedHat'] and
+            ansible_distribution_major_version == "7"
+        )
+      block:
+        - name: Verify each certificate
+          include_tasks: tasks/assert_certificate_parameters.yml
+          loop: "{{ certificates }}"
+          loop_control:
+            loop_var: cert

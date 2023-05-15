@@ -1,0 +1,73 @@
+# SPDX-License-Identifier: MIT
+---
+# List of pod specifications using Kubernetes YAML format
+podman_kube_specs: []
+
+# If this is true, the role will automatically create the host directories
+# specified in volume or mount.
+podman_create_host_directories: false
+
+# If you want the role to create and manage the host directories for
+# bind mounts, specify the parameters as path: {arguments for file: module}
+# To specify the default file properties, use DEFAULT for the name of the
+# directory.
+podman_host_directories: {}
+
+# If you want the role to manage the firewall on the ports you are
+# using, specify the arguments to pass to the firewall system role.
+# For example, if you want the podman role to open tcp port 8080
+# in the default zone:
+# podman_firewall:
+#   - port: 8080/tcp
+# to open a range of ports:
+# podman_firewall:
+#   - port: 8080-8082/tcp
+podman_firewall: []
+
+# If you want the role to manage the selinux policy on the ports
+# you are using, specify the arguments to pass to the selinux
+# system role.  For example, if you want to allow the opening
+# of port 8080 as an http port:
+# podman_selinux_ports:
+#   - ports: 8080
+#     setype: http_port_t
+podman_selinux_ports: []
+
+# The default user to run as - can be set per container to override
+# this in the podman_kube_specs list element using "run_as_user: username"
+podman_run_as_user: root
+
+# The default group to run as - can be set per container to override
+# this in the podman_kube_specs list element using "run_as_group: name"
+# The default 'null' means determine the group from the user information
+# from the managed host
+podman_run_as_group:
+
+# By default, the scope will be user for rootless containers, and
+# system for root containers.  You can override this for all containers
+# by setting podman_systemd_unit_scope.  You can also specify the scope
+# per container to override this and the default setting, by using
+# "system_unit_scope: value" in the podman_kube_specs list element.
+podman_systemd_unit_scope:
+
+# containers.conf(5) settings, these will be provided in a drop-in
+# TOML file at __podman_containers_conf_system
+podman_containers_conf: {}
+
+# containers-registries.conf(5) settings, these will be provided in a drop-in
+# If running as root, the configuration file will be created in
+# __podman_registries_conf_system or __podman_registries_conf_user
+# paths, respectively, depending on execution mode selected
+podman_registries_conf: {}
+
+# containers-storage.conf(5) settings
+# If running as root, the configuration file will be created in
+# __podman_storage_conf_system or __podman_storage_conf_user
+# paths, respectively, depending on execution mode selected
+podman_storage_conf: {}
+
+# containers-policy.json(5) settings
+# If running as root, the configuration file will be created in
+# __podman_policy_json_system or __podman_policy_json_user
+# paths, respectively, depending on execution mode selected
+podman_policy_json: {}

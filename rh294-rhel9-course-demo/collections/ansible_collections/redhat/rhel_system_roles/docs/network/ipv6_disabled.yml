@@ -1,0 +1,12 @@
+# SPDX-License-Identifier: BSD-3-Clause
+---
+- name: Disable ipv6
+  hosts: all
+  vars:
+    network_connections:
+      - name: eth0
+        type: ethernet
+        ip:
+          ipv6_disabled: true
+  roles:
+    - redhat.rhel_system_roles.network

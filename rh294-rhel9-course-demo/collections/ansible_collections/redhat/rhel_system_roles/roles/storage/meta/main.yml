@@ -1,0 +1,17 @@
+---
+galaxy_info:
+  author: David Lehman <dlehman@redhat.com>
+  description: Configure volumes and filesystems
+  galaxy_tags: ['system', 'lvm', 'storage', 'redhat', 'rhel', 'fedora', 'centos']
+  company: Red Hat, Inc.
+  license: MIT
+  min_ansible_version: "2.9"
+  platforms:
+    - name: Fedora
+      versions:
+        - all
+    - name: EL
+      versions:
+        - "7"
+        - "8"
+        - "9"

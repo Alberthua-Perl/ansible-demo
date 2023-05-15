@@ -1,0 +1,23 @@
+# SPDX-License-Identifier: MIT
+---
+- name: Ensure that the role runs with default parameters
+  hosts: all
+  roles:
+    - redhat.rhel_system_roles.crypto_policies
+  gather_facts: false
+  tasks:
+    - name: Verify the facts are correctly set
+      block:
+        - name: Flush handlers
+          meta: flush_handlers
+
+        - name: Check the current policy is DEFAULT and common variables
+          assert:
+            that:
+            # assuming clean installation
+              - crypto_policies_active == 'DEFAULT'
+              - "'DEFAULT' in crypto_policies_available_policies"
+              - "'FUTURE' in crypto_policies_available_policies"
+              - "'LEGACY' in crypto_policies_available_policies"
+              - "'AD-SUPPORT' in crypto_policies_available_modules"
+              - "'AD-SUPPORT' in crypto_policies_available_subpolicies"

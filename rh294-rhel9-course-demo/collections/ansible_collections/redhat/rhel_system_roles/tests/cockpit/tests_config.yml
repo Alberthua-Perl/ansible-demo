@@ -1,0 +1,75 @@
+---
+- name: Test cockpit_* role options
+  hosts: all
+  roles:
+    - role: redhat.rhel_system_roles.cockpit
+      vars:
+        cockpit_packages: minimal
+        cockpit_enabled: true
+        cockpit_started: false
+        cockpit_config:
+          WebService:
+            LoginTitle: "hello world"
+          Session:
+            IdleTimeout: 60
+        cockpit_manage_firewall: false
+        cockpit_manage_selinux: true
+      public: true
+
+  tasks:
+    - name: Tests
+      block:
+        - name: Flush handlers
+          meta: flush_handlers
+
+        - name: Test - socket is enabled
+        # noqa command-instead-of-module
+          command: systemctl is-enabled {{ __cockpit_daemon }}
+          changed_when: false
+
+        - name: Test - socket is not active
+        # noqa command-instead-of-module
+          command: systemctl is-active {{ __cockpit_daemon }}
+          register: result
+          failed_when: result is succeeded
+          changed_when: false
+
+        - name: Refresh package facts
+          package_facts:
+
+        - name: Test - cockpit-bridge is installed
+          fail:
+            msg: cockpit-bridge is not installed
+          when: "'cockpit-bridge' not in ansible_facts.packages"
+
+        - name: Test - cockpit metapackage is not installed
+          fail:
+            msg: cockpit is unexpectedly installed
+          when: "'cockpit' in ansible_facts.packages"
+
+        - name: Test - write expected configuration file
+          copy:
+            content: |+
+              #
+              # Ansible managed
+              #
+              [Session]
+              IdleTimeout = 60
+
+              [WebService]
+              LoginTitle = hello world
+
+            dest: /run/cockpit.conf.expected
+            mode: 0600
+
+        - name: Test - compare generated with expected configuration file
+          command: diff -u /run/cockpit.conf.expected /etc/cockpit/cockpit.conf
+          changed_when: false
+
+        - name: >-
+            Test - ensure cockpit_port is configured for firewall and selinux
+          include_tasks: tasks/check_port.yml
+
+      always:
+        - name: Cleanup
+          include_tasks: tasks/cleanup.yml

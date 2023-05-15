@@ -1,0 +1,14 @@
+---
+- name: Setup snapshot
+  hosts: all
+  tasks:
+    - name: Set platform/version specific variables
+      include_role:
+        name: redhat.rhel_system_roles.crypto_policies
+        tasks_from: set_vars.yml
+        public: true
+
+    - name: Install test packages
+      package:
+        name: "{{ __crypto_policies_packages }}"
+        state: present

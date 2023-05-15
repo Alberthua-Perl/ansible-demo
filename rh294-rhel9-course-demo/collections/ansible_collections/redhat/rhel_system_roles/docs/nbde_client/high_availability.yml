@@ -1,0 +1,15 @@
+---
+- name: Setup for high availability
+  hosts: all
+  vars:
+    nbde_client_bindings:
+      - device: /dev/sda1
+    # recommend vault encrypting the encryption_password
+    # see https://docs.ansible.com/ansible/latest/user_guide/vault.html
+        encryption_password: password
+        servers:
+          - http://server1.example.com
+          - http://server2.example.com
+  roles:
+    - redhat.rhel_system_roles.nbde_client
+# vim:set ts=2 sw=2 et:

@@ -1,0 +1,97 @@
+---
+- name: >-
+    Configure NTP with OS release non-default provider and
+    then change it to the default provider
+  hosts: all
+  gather_facts: true
+  vars:
+    is_ntp_default: "{{ ansible_distribution in ['RedHat', 'CentOS'] and ansible_distribution_version is version('7.0', '<') }}"
+    both_avail: true
+
+  tasks:
+    - name: See if both providers are available
+      check_mode: false
+      tags: tests::setup
+      block:
+        - name: Check for availability of both NTP providers
+          package:
+            name: "{{ item }}"
+            state: present
+          register: package_install
+          ignore_errors: true # noqa ignore-errors
+          with_items:
+            - chrony
+            - ntp
+
+      # meta doesn't pickup with_item in when conditional,
+      # following set_fact workarounds that
+      # see https://github.com/ansible/ansible/issues/35890
+        - name: Set the availability of both NTP providers
+          set_fact:
+            both_avail: false
+          when: item.failed
+          with_items:
+            - "{{ package_install.results }}"
+
+        - name: End test if not both available
+          meta: end_play
+          when: not both_avail
+
+        - name: Remove NTP providers
+          package:
+            name: "{{ item }}"
+            state: absent
+          with_items:
+            - chrony
+            - ntp
+
+    - name: Call role to change provider
+      include_role:
+        name: redhat.rhel_system_roles.timesync
+      vars:
+      # ntp is the default choice for RedHat and CentOS
+      # version < 7.0 - reverse it
+        timesync_ntp_provider: "{{ 'chrony' if is_ntp_default else 'ntp' }}"
+
+    - name: Verify provider set correctly
+      tags: tests::verify
+      block:
+        - name: Flush handlers
+          meta: flush_handlers
+
+        - name: Wait for services to start
+          wait_for:
+            timeout: 2
+
+        - name: Check chronyd service
+          command: chronyc -n tracking
+          when: is_ntp_default | bool
+          changed_when: false
+
+        - name: Check ntpd service
+          shell: ntpq -c rv | grep 'associd=0'
+          when: not is_ntp_default
+          changed_when: false
+
+    - name: Call role to reset default provider
+      include_role:
+        name: redhat.rhel_system_roles.timesync
+      vars:
+        timesync_ntp_provider: "{{ timesync_ntp_provider_os_default }}"
+
+    - name: Verify provider set correctly
+      tags: tests::verify
+      block:
+        - name: Wait for services to start
+          wait_for:
+            timeout: 2
+
+        - name: Check ntpd service
+          shell: ntpq -c rv | grep 'associd=0'
+          when: is_ntp_default | bool
+          changed_when: false
+
+        - name: Check chronyd service
+          command: chronyc -n tracking
+          when: not is_ntp_default
+          changed_when: false

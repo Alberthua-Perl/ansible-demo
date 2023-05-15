@@ -1,0 +1,138 @@
+# SPDX-License-Identifier: MIT
+---
+- name: Setup the test data
+  import_tasks: setup_test_data.yml
+
+- name: Deploy Candlepin
+  when: lsr_rhc_test_data_file | length == 0
+  block:
+    - name: Skip on OSes not supported by Candlepin
+      meta: end_play
+      when:
+        - ansible_distribution in ["CentOS", "RedHat"]
+        - ansible_distribution_major_version | int > 8
+
+    - name: Set helper fact for Candlepin base URL
+      set_fact:
+        _cp_url: "https://{{ lsr_rhc_test_data.candlepin_host }}:{{ lsr_rhc_test_data.candlepin_port }}{{ lsr_rhc_test_data.candlepin_prefix }}" # yamllint disable-line
+
+    - name: Clone ansible-role-candlepin repo
+      git:
+        repo: https://github.com/candlepin/ansible-role-candlepin.git
+      # wokeignore:rule=master
+        version: master
+        dest: "{{ playbook_dir }}/roles/candlepin"
+      delegate_to: 127.0.0.1
+      become: false
+
+    - name: Create 'candlepin' user
+      user:
+        name: candlepin
+
+    - name: Create sudoers configuration
+      copy:
+        dest: /etc/sudoers.d/candlepin
+        content: "candlepin ALL=(ALL) NOPASSWD: ALL\n"
+        mode: 0440
+
+    - name: Install needed packages
+      package:
+        name:
+          - expect
+        state: present
+
+    - name: Run Candlepin install
+      block:
+        - name: Include candlepin role
+          include_role:
+            name: candlepin
+          vars:
+            cp_configure_mariadb: false
+            cp_configure_ruby: false
+            cp_deploy_args: "-g -a -f -t -r"
+
+    - name: Enable tomcat
+      service:
+        name: tomcat
+        enabled: true
+
+    - name: Ensure directories exist
+      file:
+        path: "{{ item }}"
+        state: directory
+        mode: 0755
+      loop:
+        - /etc/pki/product
+        - /etc/pki/product-default
+        - /etc/rhsm/ca
+
+    - name: Copy product certificates
+      copy:
+        src: "/home/candlepin/devel/candlepin/generated_certs/{{ item }}.pem"
+        dest: "/etc/pki/product-default/{{ item }}.pem"
+        remote_src: true
+        mode: 0644
+      loop:
+        - "5050"
+
+    - name: Install GPG key for RPM repositories
+      get_url:
+        url: "http://{{ lsr_rhc_test_data.candlepin_host }}:8080/RPM-GPG-KEY-candlepin" # yamllint disable-line
+        dest: /etc/pki/rpm-gpg/RPM-GPG-KEY-candlepin
+        mode: 0644
+
+    - name: Copy Candlepin CA certificate for subscription-manager
+      copy:
+        src: /etc/candlepin/certs/candlepin-ca.crt
+        dest: /etc/rhsm/ca/candlepin-ca.pem
+        remote_src: true
+        mode: 0644
+
+    - name: Query for default_key activation key
+      uri:
+        url: "{{ _cp_url }}/owners/{{ lsr_rhc_test_data.reg_username }}/activation_keys?name={{ lsr_rhc_test_data.reg_activation_keys[0] }}" # yamllint disable-line
+        method: GET
+        url_username: "{{ lsr_rhc_test_data.reg_username }}"
+        url_password: "{{ lsr_rhc_test_data.reg_password }}"
+        validate_certs: false
+      register: default_key
+
+    - name: Get pools for product 5050
+      uri:
+        url: "{{ _cp_url }}/owners/{{ lsr_rhc_test_data.reg_username }}/pools?product=5050" # yamllint disable-line
+        method: GET
+        url_username: "{{ lsr_rhc_test_data.reg_username }}"
+        url_password: "{{ lsr_rhc_test_data.reg_password }}"
+        validate_certs: false
+      register: pools
+
+    - name: Add pools for product 5050 to default_key activation key
+      uri:
+        url: "{{ _cp_url }}/activation_keys/{{ default_key.json[0].id }}/pools/{{ item.id }}" # yamllint disable-line
+        method: POST
+        url_username: "{{ lsr_rhc_test_data.reg_username }}"
+        url_password: "{{ lsr_rhc_test_data.reg_password }}"
+        validate_certs: false
+      loop: "{{ pools.json }}"
+
+    - name: Configure environments
+      when: environments | d(false)
+      block:
+        - name: Add environments
+          uri:
+            url: "{{ _cp_url }}/owners/{{ lsr_rhc_test_data.reg_username }}/environments" # yamllint disable-line
+            method: POST
+            url_username: "{{ lsr_rhc_test_data.reg_username }}"
+            url_password: "{{ lsr_rhc_test_data.reg_password }}"
+            validate_certs: false
+            body_format: json
+            body:
+              name: "{{ item.name }}"
+              description: "{{ item.desc }}"
+              id: "{{ item.id }}"
+          loop:
+            - {name: "Environment 1", desc: "The environment 1", id: "envId1"}
+            - {name: "Environment 2", desc: "The environment 2", id: "envId2"}
+
+- name: Check Candlepin works
+  import_tasks: check_candlepin.yml

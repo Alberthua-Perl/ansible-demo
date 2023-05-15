@@ -1,0 +1,346 @@
+# SPDX-License-Identifier: MIT
+---
+- name: Basic proxy test
+  hosts: all
+  gather_facts: true
+  become: true
+  tags:
+    - tests::slow
+  vars:
+    __proxy_port_list:
+      - "{{ lsr_rhc_test_data.proxy_noauth_port }}"
+      - "{{ lsr_rhc_test_data.proxy_auth_port }}"
+      - "{{ lsr_rhc_test_data.proxy_nonworking_port }}"
+  tasks:
+    - name: Setup Candlepin
+      import_tasks: tasks/setup_candlepin.yml
+
+    - name: Setup Squid
+      import_tasks: tasks/setup_squid.yml
+
+  # The test proxy uses non-standard ports which are not
+  # in the default SELinux policy, so add them, and remove
+  # them at the end of the test
+    - name: Add SELinux policy for proxy ports
+      include_role:
+        name: redhat.rhel_system_roles.selinux
+      vars:
+        selinux_ports:
+          - ports: "{{ __proxy_port_list }}"
+            proto: tcp
+            setype: squid_port_t
+            state: present
+            local: true
+
+    - name: Try to register (wrong host, wrong port)
+      block:
+        - name: Register (wrong host, wrong port)
+          include_role:
+            name: redhat.rhel_system_roles.rhc
+          vars:
+            rhc_auth:
+              login:
+                username: "{{ lsr_rhc_test_data.reg_username }}"
+                password: "{{ lsr_rhc_test_data.reg_password }}"
+            rhc_insights:
+              state: absent
+            rhc_organization: "{{ lsr_rhc_test_data.reg_organization }}"
+            rhc_server:
+              hostname: "{{ lsr_rhc_test_data.candlepin_host }}"
+              port: "{{ lsr_rhc_test_data.candlepin_port }}"
+              prefix: "{{ lsr_rhc_test_data.candlepin_prefix }}"
+              insecure: "{{ lsr_rhc_test_data.candlepin_insecure }}"
+            rhc_proxy:
+              hostname: "{{ lsr_rhc_test_data.proxy_nonworking_hostname }}"
+              port: "{{ lsr_rhc_test_data.proxy_nonworking_port }}"
+
+        - name: Unreachable task
+          fail:
+            msg: The above task must fail
+      rescue:
+        - name: Assert registration failed
+          assert:
+            that: ansible_failed_result.msg != 'The above task must fail'
+
+    - name: Try to register (wrong host)
+      block:
+        - name: Register (wrong host)
+          include_role:
+            name: redhat.rhel_system_roles.rhc
+          vars:
+            rhc_auth:
+              login:
+                username: "{{ lsr_rhc_test_data.reg_username }}"
+                password: "{{ lsr_rhc_test_data.reg_password }}"
+            rhc_insights:
+              state: absent
+            rhc_organization: "{{ lsr_rhc_test_data.reg_organization }}"
+            rhc_server:
+              hostname: "{{ lsr_rhc_test_data.candlepin_host }}"
+              port: "{{ lsr_rhc_test_data.candlepin_port }}"
+              prefix: "{{ lsr_rhc_test_data.candlepin_prefix }}"
+              insecure: "{{ lsr_rhc_test_data.candlepin_insecure }}"
+            rhc_proxy:
+              hostname: "{{ lsr_rhc_test_data.proxy_nonworking_hostname }}"
+              port: "{{ lsr_rhc_test_data.proxy_noauth_port }}"
+
+        - name: Unreachable task
+          fail:
+            msg: The above task must fail
+      rescue:
+        - name: Assert registration failed
+          assert:
+            that: ansible_failed_result.msg != 'The above task must fail'
+
+    - name: Try to register (wrong port)
+      block:
+        - name: Register (wrong port)
+          include_role:
+            name: redhat.rhel_system_roles.rhc
+          vars:
+            rhc_auth:
+              login:
+                username: "{{ lsr_rhc_test_data.reg_username }}"
+                password: "{{ lsr_rhc_test_data.reg_password }}"
+            rhc_insights:
+              state: absent
+            rhc_organization: "{{ lsr_rhc_test_data.reg_organization }}"
+            rhc_server:
+              hostname: "{{ lsr_rhc_test_data.candlepin_host }}"
+              port: "{{ lsr_rhc_test_data.candlepin_port }}"
+              prefix: "{{ lsr_rhc_test_data.candlepin_prefix }}"
+              insecure: "{{ lsr_rhc_test_data.candlepin_insecure }}"
+            rhc_proxy:
+              hostname: "{{ lsr_rhc_test_data.proxy_noauth_hostname }}"
+              port: "{{ lsr_rhc_test_data.proxy_nonworking_port }}"
+
+        - name: Unreachable task
+          fail:
+            msg: The above task must fail
+      rescue:
+        - name: Assert registration failed
+          assert:
+            that: ansible_failed_result.msg != 'The above task must fail'
+
+    - name: Register (no authentication)
+      include_role:
+        name: redhat.rhel_system_roles.rhc
+      vars:
+        rhc_auth:
+          login:
+            username: "{{ lsr_rhc_test_data.reg_username }}"
+            password: "{{ lsr_rhc_test_data.reg_password }}"
+        rhc_insights:
+          state: absent
+        rhc_organization: "{{ lsr_rhc_test_data.reg_organization }}"
+        rhc_server:
+          hostname: "{{ lsr_rhc_test_data.candlepin_host }}"
+          port: "{{ lsr_rhc_test_data.candlepin_port }}"
+          prefix: "{{ lsr_rhc_test_data.candlepin_prefix }}"
+          insecure: "{{ lsr_rhc_test_data.candlepin_insecure }}"
+        rhc_baseurl: "{{ lsr_rhc_test_data.baseurl | d(omit) }}"
+        rhc_proxy:
+          hostname: "{{ lsr_rhc_test_data.proxy_noauth_hostname }}"
+          port: "{{ lsr_rhc_test_data.proxy_noauth_port }}"
+
+    - name: Unregister
+      include_role:
+        name: redhat.rhel_system_roles.rhc
+      vars:
+        rhc_state: absent
+
+    - name: Setup authenticated Squid
+      import_tasks: tasks/setup_squid.yml
+      vars:
+        authentication: true
+
+    - name: Try to register (missing credentials)
+      block:
+        - name: Register (missing credentials)
+          include_role:
+            name: redhat.rhel_system_roles.rhc
+          vars:
+            rhc_auth:
+              login:
+                username: "{{ lsr_rhc_test_data.reg_username }}"
+                password: "{{ lsr_rhc_test_data.reg_password }}"
+            rhc_insights:
+              state: absent
+            rhc_organization: "{{ lsr_rhc_test_data.reg_organization }}"
+            rhc_server:
+              hostname: "{{ lsr_rhc_test_data.candlepin_host }}"
+              port: "{{ lsr_rhc_test_data.candlepin_port }}"
+              prefix: "{{ lsr_rhc_test_data.candlepin_prefix }}"
+              insecure: "{{ lsr_rhc_test_data.candlepin_insecure }}"
+            rhc_proxy:
+              hostname: "{{ lsr_rhc_test_data.proxy_auth_hostname }}"
+              port: "{{ lsr_rhc_test_data.proxy_auth_port }}"
+
+        - name: Unreachable task
+          fail:
+            msg: The above task must fail
+      rescue:
+        - name: Assert registration failed
+          assert:
+            that: ansible_failed_result.msg != 'The above task must fail'
+
+    - name: Try to register (wrong username, wrong password)
+      block:
+        - name: Register (wrong username, wrong password)
+          include_role:
+            name: redhat.rhel_system_roles.rhc
+          vars:
+            rhc_auth:
+              login:
+                username: "{{ lsr_rhc_test_data.reg_username }}"
+                password: "{{ lsr_rhc_test_data.reg_password }}"
+            rhc_insights:
+              state: absent
+            rhc_organization: "{{ lsr_rhc_test_data.reg_organization }}"
+            rhc_server:
+              hostname: "{{ lsr_rhc_test_data.candlepin_host }}"
+              port: "{{ lsr_rhc_test_data.candlepin_port }}"
+              prefix: "{{ lsr_rhc_test_data.candlepin_prefix }}"
+              insecure: "{{ lsr_rhc_test_data.candlepin_insecure }}"
+            rhc_proxy:
+              hostname: "{{ lsr_rhc_test_data.proxy_auth_hostname }}"
+              port: "{{ lsr_rhc_test_data.proxy_auth_port }}"
+              username: "{{ lsr_rhc_test_data.proxy_nonworking_username }}"
+              password: "{{ lsr_rhc_test_data.proxy_nonworking_password }}"
+
+        - name: Unreachable task
+          fail:
+            msg: The above task must fail
+      rescue:
+        - name: Assert registration failed
+          assert:
+            that: ansible_failed_result.msg != 'The above task must fail'
+
+    - name: Try to register (wrong username)
+      block:
+        - name: Register (wrong username)
+          include_role:
+            name: redhat.rhel_system_roles.rhc
+          vars:
+            rhc_auth:
+              login:
+                username: "{{ lsr_rhc_test_data.reg_username }}"
+                password: "{{ lsr_rhc_test_data.reg_password }}"
+            rhc_insights:
+              state: absent
+            rhc_organization: "{{ lsr_rhc_test_data.reg_organization }}"
+            rhc_server:
+              hostname: "{{ lsr_rhc_test_data.candlepin_host }}"
+              port: "{{ lsr_rhc_test_data.candlepin_port }}"
+              prefix: "{{ lsr_rhc_test_data.candlepin_prefix }}"
+              insecure: "{{ lsr_rhc_test_data.candlepin_insecure }}"
+            rhc_proxy:
+              hostname: "{{ lsr_rhc_test_data.proxy_auth_hostname }}"
+              port: "{{ lsr_rhc_test_data.proxy_auth_port }}"
+              username: "{{ lsr_rhc_test_data.proxy_nonworking_username }}"
+              password: "{{ lsr_rhc_test_data.proxy_auth_password }}"
+
+        - name: Unreachable task
+          fail:
+            msg: The above task must fail
+      rescue:
+        - name: Assert registration failed
+          assert:
+            that: ansible_failed_result.msg != 'The above task must fail'
+
+    - name: Try to register (wrong password)
+      block:
+        - name: Register (wrong password)
+          include_role:
+            name: redhat.rhel_system_roles.rhc
+          vars:
+            rhc_auth:
+              login:
+                username: "{{ lsr_rhc_test_data.reg_username }}"
+                password: "{{ lsr_rhc_test_data.reg_password }}"
+            rhc_insights:
+              state: absent
+            rhc_organization: "{{ lsr_rhc_test_data.reg_organization }}"
+            rhc_server:
+              hostname: "{{ lsr_rhc_test_data.candlepin_host }}"
+              port: "{{ lsr_rhc_test_data.candlepin_port }}"
+              prefix: "{{ lsr_rhc_test_data.candlepin_prefix }}"
+              insecure: "{{ lsr_rhc_test_data.candlepin_insecure }}"
+            rhc_proxy:
+              hostname: "{{ lsr_rhc_test_data.proxy_auth_hostname }}"
+              port: "{{ lsr_rhc_test_data.proxy_auth_port }}"
+              username: "{{ lsr_rhc_test_data.proxy_auth_username }}"
+              password: "{{ lsr_rhc_test_data.proxy_nonworking_password }}"
+
+        - name: Unreachable task
+          fail:
+            msg: The above task must fail
+      rescue:
+        - name: Assert registration failed
+          assert:
+            that: ansible_failed_result.msg != 'The above task must fail'
+
+    - name: Register (authentication)
+      include_role:
+        name: redhat.rhel_system_roles.rhc
+      vars:
+        rhc_auth:
+          login:
+            username: "{{ lsr_rhc_test_data.reg_username }}"
+            password: "{{ lsr_rhc_test_data.reg_password }}"
+        rhc_insights:
+          state: absent
+        rhc_organization: "{{ lsr_rhc_test_data.reg_organization }}"
+        rhc_server:
+          hostname: "{{ lsr_rhc_test_data.candlepin_host }}"
+          port: "{{ lsr_rhc_test_data.candlepin_port }}"
+          prefix: "{{ lsr_rhc_test_data.candlepin_prefix }}"
+          insecure: "{{ lsr_rhc_test_data.candlepin_insecure }}"
+        rhc_baseurl: "{{ lsr_rhc_test_data.baseurl | d(omit) }}"
+        rhc_proxy:
+          hostname: "{{ lsr_rhc_test_data.proxy_auth_hostname }}"
+          port: "{{ lsr_rhc_test_data.proxy_auth_port }}"
+          username: "{{ lsr_rhc_test_data.proxy_auth_username }}"
+          password: "{{ lsr_rhc_test_data.proxy_auth_password }}"
+
+    - name: Unregister
+      include_role:
+        name: redhat.rhel_system_roles.rhc
+      vars:
+        rhc_state: absent
+
+    - name: Register (without proxy)
+      include_role:
+        name: redhat.rhel_system_roles.rhc
+      vars:
+        rhc_auth:
+          login:
+            username: "{{ lsr_rhc_test_data.reg_username }}"
+            password: "{{ lsr_rhc_test_data.reg_password }}"
+        rhc_insights:
+          state: absent
+        rhc_organization: "{{ lsr_rhc_test_data.reg_organization }}"
+        rhc_server:
+          hostname: "{{ lsr_rhc_test_data.candlepin_host }}"
+          port: "{{ lsr_rhc_test_data.candlepin_port }}"
+          prefix: "{{ lsr_rhc_test_data.candlepin_prefix }}"
+          insecure: "{{ lsr_rhc_test_data.candlepin_insecure }}"
+        rhc_baseurl: "{{ lsr_rhc_test_data.baseurl | d(omit) }}"
+        rhc_proxy: {"state": "absent"}
+
+    - name: Unregister
+      include_role:
+        name: redhat.rhel_system_roles.rhc
+      vars:
+        rhc_state: absent
+
+    - name: Remove SELinux policy for proxy ports
+      include_role:
+        name: redhat.rhel_system_roles.selinux
+      vars:
+        selinux_ports:
+          - ports: "{{ __proxy_port_list }}"
+            proto: tcp
+            setype: squid_port_t
+            state: absent
+            local: true

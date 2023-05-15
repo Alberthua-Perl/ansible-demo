@@ -1,0 +1,10 @@
+---
+- name: Setup snapshot
+  hosts: all
+  tasks:
+    - name: Set ansible_facts and install packages
+      vars:
+        __selinux_setup_snapshot: true
+      include_role:
+        name: redhat.rhel_system_roles.selinux
+        tasks_from: set_facts_packages.yml

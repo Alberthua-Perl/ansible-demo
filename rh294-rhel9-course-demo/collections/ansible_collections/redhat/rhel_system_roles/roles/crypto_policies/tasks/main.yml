@@ -1,0 +1,70 @@
+# SPDX-License-Identifier: MIT
+---
+- name: Set platform/version specific variables
+  include_tasks: set_vars.yml
+
+- name: Ensure required packages are installed
+  package:
+    name: "{{ __crypto_policies_packages }}"
+    state: present
+
+- name: Gather facts
+  include_tasks: gather_facts.yml
+
+- name: Find base policies files
+  find:
+    paths:
+      - /usr/share/crypto-policies/policies/
+      - /etc/crypto-policies/policies/
+    patterns: '*.pol'
+  register: __crypto_policies_base_policies
+
+- name: Set available base policies fact
+  set_fact:
+    crypto_policies_available_policies: >-
+      {{ __crypto_policies_base_policies.files | map(attribute='path')
+        | map('basename') | map('splitext') | map('first') | unique | list }}
+    cacheable: true
+
+- name: Find subpolicy files
+  find:
+    paths:
+      - /usr/share/crypto-policies/policies/modules/
+      - /etc/crypto-policies/policies/modules/
+    patterns: '*.pmod'
+  register: __crypto_policies_subpolicies
+
+- name: Set available subpolicies fact
+  set_fact:
+    crypto_policies_available_subpolicies: >-
+      {{ __crypto_policies_subpolicies.files | map(attribute='path')
+        | map('basename') | map('splitext') | map('first') | unique | list }}
+    cacheable: true
+
+- name: Set crypto_policies_available_modules fact (deprecated)
+  set_fact:
+    crypto_policies_available_modules: >-
+      {{ crypto_policies_available_subpolicies }}
+    cacheable: true
+
+- name: Update crypto policy if needed
+  command: >
+    update-crypto-policies
+      {{ '--no-reload' if not crypto_policies_reload else '' }}
+      --set {{ crypto_policies_policy }}
+  when:
+  # TODO check with available policies and subpolicies
+    - crypto_policies_policy is not none
+    - crypto_policies_policy != crypto_policies_active
+  notify: __crypto_policies_handler_modified
+
+- name: Set the reboot_required flag if needed
+  set_fact:
+    crypto_policies_reboot_required: true
+  when:
+  # TODO check with available policies and subpolicies
+    - crypto_policies_policy is not none
+    - crypto_policies_policy != crypto_policies_active
+
+- name: Update facts after applying policy
+  include_tasks: gather_facts.yml

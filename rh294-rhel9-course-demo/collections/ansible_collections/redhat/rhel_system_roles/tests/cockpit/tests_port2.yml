@@ -1,0 +1,51 @@
+---
+- name: Test cockpit_* role options
+  hosts: all
+  gather_facts: true
+  tasks:
+    - name: Tests
+      block:
+        - name: Run cockpit role
+          include_role:
+            name: redhat.rhel_system_roles.cockpit
+            public: true
+          vars:
+            cockpit_manage_firewall: true
+            cockpit_manage_selinux: true
+            cockpit_packages: minimal
+            cockpit_port: 443
+
+        - name: Flush handlers
+          meta: flush_handlers
+
+        - name: Test - cockpit works on customized port
+          get_url:
+            dest: /run/out
+            url: https://localhost
+            validate_certs: false
+            mode: 0600
+
+        - name: Test - HTTP response is something sensible
+          command: grep 'id="login-user-input"' /run/out
+          changed_when: false
+
+        - name: Test - cockpit does not listen on port 9090
+          get_url:
+            dest: /run/out
+            url: https://localhost:9090
+            validate_certs: false
+            mode: 0600
+          register: result
+          failed_when: result is succeeded
+
+        - name: Test - ensure cockpit_port is configured for firewall
+          include_tasks: tasks/check_port.yml
+
+        - name: Test - clean up output file
+          file:
+            path: /run/out
+            state: absent
+
+      always:
+        - name: Cleanup
+          include_tasks: tasks/cleanup.yml

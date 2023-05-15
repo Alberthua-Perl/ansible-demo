@@ -1,0 +1,32 @@
+---
+# SPDX-License-Identifier: GPL-3.0-only
+
+# Local file output configuration setting
+# ---------------------------------------
+
+# List of rpm packages for Files output.
+__rsyslog_files_output_packages: []
+
+# Files Rsyslog output configuration rules
+# ---------------------------------
+__rsyslog_files_output_rules:
+  - '{{ __rsyslog_conf_files_output_modules }}'
+
+# __rsyslog_conf_files_output_modules:
+__rsyslog_conf_files_output_modules:
+
+  - name: 'output-files-modules'
+    type: 'modules'
+    sections:
+
+      # yamllint disable rule:line-length
+      - comment: 'Log messages into files with traditional, syslog, or default format'
+        options: |-
+          {% if logging_files_template_format == "traditional" %}
+          module(load="builtin:omfile" Template="RSYSLOG_TraditionalFileFormat")
+          {% elif logging_files_template_format == "syslog" %}
+          module(load="builtin:omfile" Template="RSYSLOG_SyslogProtocol23Format")
+          {% else %}
+          module(load="builtin:omfile")
+          {% endif %}
+        # yamllint enable rule:line-length

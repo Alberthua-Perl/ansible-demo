@@ -1,0 +1,129 @@
+---
+- name: Ensure ansible_facts and variables used by role
+  include_tasks: tasks/set_vars.yml
+
+- name: Enable the Extras repository on RHEL 7
+  when:
+    - ansible_distribution == 'RedHat'
+    - ansible_distribution_major_version == '7'
+  block:
+    - name: List active RHEL repositories
+      command:
+        cmd: yum repolist # noqa command-instead-of-module
+      register: __cockpit_repolist
+      changed_when: false
+      check_mode: false
+
+    - name: Enable RHEL repositories
+      command: subscription-manager repos --enable rhel-7-server-extras-rpms
+      when: "'rhel-7-server-extras-rpms' not in __cockpit_repolist.stdout"
+
+- name: >-
+    Manage cockpit packages using platform specific package manager
+    if applicable
+  include_tasks: "{{ item }}"
+  with_first_found:
+    - "setup-{{ ansible_pkg_mgr }}.yml"
+    - "setup-default.yml"
+
+- name: Configure firewall
+  include_tasks: firewall.yml
+
+- name: Configure selinux
+  include_tasks: selinux.yml
+
+- name: Create custom port configuration file directory
+  file:
+  # noqa risky-file-permissions
+    path: /etc/systemd/system/cockpit.socket.d/
+    owner: root
+    group: root
+    state: directory
+  when: cockpit_port is not none
+
+- name: Create custom port configuration file
+  copy:
+    dest: /etc/systemd/system/cockpit.socket.d/listen.conf
+    mode: 0644
+    owner: root
+    group: root
+    content: |
+      [Socket]
+      ListenStream=
+      ListenStream={{ cockpit_port }}
+  when: cockpit_port is not none
+  notify:
+    - Reload systemd
+    - Restart cockpit
+
+- name: Clean up port configuration file for undefined custom port
+  file:
+    path: /etc/systemd/system/cockpit.socket.d/listen.conf
+    state: absent
+  when: cockpit_port is none
+  notify:
+    - Reload systemd
+    - Restart cockpit
+
+- name: Ensure Cockpit Web Console is started/stopped and enabled/disabled
+  service:
+    name: "{{ __cockpit_daemon }}"
+    enabled: "{{ cockpit_enabled | bool }}"
+    state: "{{ 'started' if cockpit_started | bool else 'stopped' }}"
+
+- name: Create cockpit.conf configuration file
+  template:
+    src: templates/cockpit.conf.j2
+    dest: /etc/cockpit/cockpit.conf
+    mode: 0644
+    owner: root
+    group: root
+    backup: true
+  when: cockpit_config is defined
+  notify: Restart cockpit
+
+- name: Create certificates
+  when:
+    - cockpit_certificates | length > 0
+    - ansible_facts['os_family'] == 'RedHat'
+  block:
+    - name: Check the OS version for self-sign
+      when:
+        - (ansible_facts['distribution_version'] | int == 7 and cockpit_certificates.0.ca == 'self-sign')
+      fail:
+        msg: >-
+          Creating a self-signed certificate is not supported on
+          {{ ansible_facts['distribution'] }}-{{
+             ansible_facts['distribution_version'] }}
+
+    - name: Create certificates using the certificate role
+      include_role:
+        name: redhat.rhel_system_roles.certificate
+      vars:
+        certificate_requests: "{{ cockpit_certificates }}"
+
+    - name: Set cockpit_cert and cockpit_private_key
+      set_fact:
+        cockpit_cert: "/etc/pki/tls/certs/{{ cockpit_certificates.0.name }}.crt"
+        cockpit_private_key: >-
+          /etc/pki/tls/private/{{ cockpit_certificates.0.name }}.key
+
+- name: Link to configured existing certificate
+  file:
+    src: "{{ cockpit_cert }}"
+    path: /etc/cockpit/ws-certs.d/50-system-role.crt
+    state: link
+    force: true
+  when:
+    - cockpit_cert is defined
+    - cockpit_private_key is defined
+
+- name: Link to configured existing certificate key
+  file:
+    src: "{{ cockpit_private_key }}"
+    path: /etc/cockpit/ws-certs.d/50-system-role.key
+    state: link
+    force: true
+  when:
+    - cockpit_cert is defined
+    - cockpit_private_key is defined

@@ -1,0 +1,9 @@
+# SPDX-License-Identifier: MIT
+---
+- name: Example simple ad_integration role invocation
+  hosts: all
+  vars:
+    ad_integration_realm: domain.example.com
+    ad_integration_password: Secret123 # use Ansible Vault for this
+  roles:
+    - redhat.rhel_system_roles.ad_integration

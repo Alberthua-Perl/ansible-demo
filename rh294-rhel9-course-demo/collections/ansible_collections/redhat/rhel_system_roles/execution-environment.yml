@@ -1,0 +1,10 @@
+---
+version: 1
+
+build_arg_defaults:
+  EE_BASE_IMAGE: quay.io/ansible/ansible-runner:latest
+
+ansible_config: 'ansible.cfg'
+
+dependencies:
+  system: bindep.txt

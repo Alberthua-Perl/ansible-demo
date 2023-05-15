@@ -1,0 +1,5 @@
+{{ ansible_managed | comment }}
+#
+# Include all config files in {{ __rsyslog_config_dir }}
+#
+$IncludeConfig {{ __rsyslog_config_dir }}/*.conf

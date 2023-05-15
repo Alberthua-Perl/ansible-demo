@@ -1,0 +1,352 @@
+---
+- name: Test the server/client configuration using tls relp
+  hosts: all
+  vars:
+    __test_cert_name: logging_cert
+    __test_ca_cert: "/etc/pki/tls/certs/{{ __test_cert_name }}.crt"
+    __test_key: "/etc/pki/tls/private/{{ __test_cert_name }}.key"
+    __test_cert: "/etc/pki/tls/certs/{{ __test_cert_name }}.crt"
+    __test_relp_server0: /etc/rsyslog.d/11-input-relp-relp_server0.conf
+    __test_relp_server1: /etc/rsyslog.d/11-input-relp-relp_server1.conf
+    __test_relp_client0: /etc/rsyslog.d/31-output-relp-relp_client0.conf
+    __test_relp_client1: /etc/rsyslog.d/31-output-relp-relp_client1.conf
+
+  tasks:
+  # TEST CASE 0
+  # Note: Create a self-signed cert just for the "unit" test.
+  #       In the real configuration, CA cert managed by IPA is required.
+    - name: "TEST CASE 0; Test the server configuration containing tls tcp, plain tcp and udp connection"
+      vars:
+        logging_manage_firewall: true
+        logging_manage_selinux: true
+        logging_certificates:
+          - name: logging_cert
+            dns: ['localhost', 'www.example.com']
+            ca: self-sign
+        logging_inputs:
+          - name: system_input
+            type: basics
+          - name: relp_server0
+            type: relp
+            port: 6514
+            tls: true
+            ca_cert: "{{ __test_ca_cert }}"
+            cert: "{{ __test_cert }}"
+            private_key: "{{ __test_key }}"
+            pki_authmode: name
+            permitted_clients:
+              - '*.client.com'
+              - '*.example.com'
+          - name: relp_server1
+            type: relp
+            port: 20514
+            tls: true
+            ca_cert: "{{ __test_ca_cert }}"
+            cert: "{{ __test_cert }}"
+            private_key: "{{ __test_key }}"
+            pki_authmode: name
+        logging_outputs:
+          - name: files_output
+            type: files
+          - name: forwards_output
+            type: forwards
+            target: host.domain
+            tcp_port: 1514
+        logging_flows:
+          - name: flows
+            inputs: [system_input, relp_server0, relp_server1]
+            outputs: [files_output, forwards_output]
+      include_role:
+        name: redhat.rhel_system_roles.logging
+        public: true
+
+  # notify Restart rsyslogd is executed at the end of this test task.
+  # thus we have to force to invoke handlers
+    - name: "Force all notified handlers to run at this point, not waiting for normal sync points"
+      meta: flush_handlers
+
+    - name: Ensure config file size and counts
+      vars:
+        __conf_count: 10
+        __conf_size: less
+        __conf_files:
+          - "{{ __test_relp_server0 }}"
+          - "{{ __test_relp_server1 }}"
+        __check_systemctl_status: true
+      include_tasks: tasks/check_daemon_config_files.yml
+
+    - name: Install lsof
+      package:
+        name: lsof
+        state: present
+
+    - name: Check lsof outputs for rsyslogd
+      shell: |-
+        set -euo pipefail
+        lsof -i -nP | grep rsyslogd
+      register: __result
+      changed_when: false
+
+    - name: Show lsof output
+      debug:
+        msg: "lsof returned {{ __result.stdout }}"
+
+    - name: Check port 6514, 20514 are open for TCP
+      shell: |-
+        set -euo pipefail
+        lsof -i -nP | grep rsyslogd | grep TCP | grep {{ item }}
+      loop: [6514, 20514]
+      changed_when: false
+
+  # yamllint disable rule:line-length
+    - name: Check the flows in relp_server0 - 0
+      shell: |-
+        set -euo pipefail
+        grep '$inputname == "relp_server0"' "{{ __test_relp_server0 }}" | wc -l
+      register: __result
+      changed_when: false
+      failed_when: __result.stdout != "2"
+
+    - name: Check the flows in relp_server0 - 1
+      shell: |-
+        set -euo pipefail
+        grep -A 2 '$inputname == "relp_server0"' "{{ __test_relp_server0 }}" | grep "call files_output" | wc -l
+      register: __result
+      changed_when: false
+      failed_when: __result.stdout != "1"
+
+    - name: Check the ca cert in relp_server0 - 0
+      shell: |-
+        set -euo pipefail
+        grep 'tls.cacert="{{ __test_ca_cert }}"' "{{ __test_relp_server0 }}" | wc -l
+      register: __result
+      changed_when: false
+      failed_when: __result.stdout != "1"
+
+    - name: Check the ca cert in relp_server0 - 1
+      stat:
+        path: "{{ __test_ca_cert }}"
+
+    - name: Check the cert in relp_server0 - 0
+      shell: |-
+        set -euo pipefail
+        grep 'tls.mycert="{{ __test_cert }}"' "{{ __test_relp_server0 }}" | wc -l
+      register: __result
+      changed_when: false
+      failed_when: __result.stdout != "1"
+
+    - name: Check the cert in relp_server0 - 1
+      stat:
+        path: "{{ __test_cert }}"
+
+    - name: Check the private key in relp_server0 - 0
+      shell: |-
+        set -euo pipefail
+        grep 'tls.myprivkey="{{ __test_key }}"' "{{ __test_relp_server0 }}" | wc -l
+      register: __result
+      changed_when: false
+      failed_when: __result.stdout != "1"
+
+    - name: Check the private key in relp_server0 - 1
+      stat:
+        path: "{{ __test_key }}"
+
+    - name: Check tls.permittedpeer in relp_server0
+      shell: |-
+        set -euo pipefail
+        grep 'tls.permittedpeer=\["\*.client.com","\*.example.com"\]' "{{ __test_relp_server0 }}" | wc -l
+      register: __result
+      changed_when: false
+      failed_when: __result.stdout != "1"
+
+    - name: Check tls.permittedpeer in relp_server1
+      shell: >-
+        set -euo pipefail;
+        grep
+        "tls.permittedpeer=\[\"\*.{{ logging_domain }}\"\]" "{{ __test_relp_server1 }}" | wc -l
+      register: __result
+      changed_when: false
+      failed_when: __result.stdout != "1"
+  # yamllint enable rule:line-length
+
+    - name: Check ports managed by firewall and selinux
+      include_tasks: tasks/check_firewall_selinux.yml
+
+    - name: END TEST CASE 0; Clean up the deployed config
+      vars:
+        logging_purge_confs: true
+        logging_manage_firewall: false
+        logging_manage_selinux: false
+        logging_inputs: []
+        logging_outputs: []
+        logging_flows: []
+      include_role:
+        name: redhat.rhel_system_roles.logging
+        public: true
+
+  # notify Restart rsyslogd is executed at the end of this test task.
+  # thus we have to force to invoke handlers
+    - name: "Force all notified handlers to run at this point, not waiting for normal sync points"
+      meta: flush_handlers
+
+    - name: Check ports managed by firewall and selinux
+      include_tasks: tasks/check_firewall_selinux.yml
+
+  # TEST CASE 1
+  # Note: Create a self-signed cert just for the "unit" test.
+  #       In the real configuration, CA cert managed by IPA is required.
+    - name: TEST CASE 1; Test the client configuration using tls relp
+      vars:
+        logging_enabled: true
+        logging_manage_firewall: true
+        logging_manage_selinux: false
+        logging_certificates:
+          - name: logging_cert
+            dns: ['localhost', 'www.example.com']
+            ca: self-sign
+        logging_inputs:
+          - name: system_input
+            type: basics
+        logging_outputs:
+          - name: relp_client0
+            type: relp
+            target: localhost
+            port: 6514
+            tls: true
+            ca_cert: "{{ __test_ca_cert }}"
+            cert: "{{ __test_cert }}"
+            private_key: "{{ __test_key }}"
+            pki_authmode: name
+            permitted_servers:
+              - '*.server.com'
+              - '*.example.com'
+          - name: relp_client1
+            type: relp
+            target: localhost
+            port: 7514
+            tls: true
+            ca_cert: "{{ __test_ca_cert }}"
+            cert: "{{ __test_cert }}"
+            private_key: "{{ __test_key }}"
+            pki_authmode: name
+        logging_flows:
+          - name: flows
+            inputs: [system_input]
+            outputs: [relp_client0, relp_client1]
+      include_role:
+        name: redhat.rhel_system_roles.logging
+        public: true
+
+  # notify Restart rsyslogd is executed at the end of this test task.
+  # thus we have to force to invoke handlers
+    - name: "Force all notified handlers to run at this point, not waiting for normal sync points"
+      meta: flush_handlers
+
+    - name: Ensure config file size and counts
+      vars:
+        __conf_count: 8
+        __conf_size: less
+        __conf_files:
+          - "{{ __test_relp_client0 }}"
+          - "{{ __test_relp_client1 }}"
+        __check_systemctl_status: false
+      include_tasks: tasks/check_daemon_config_files.yml
+
+    - name: Check the port in relp_client1
+      shell: |-
+        set -euo pipefail
+        grep "7514" "{{ __test_relp_client1 }}" | wc -l
+      register: __result
+      changed_when: false
+      failed_when: __result.stdout != "1"
+
+  # yamllint disable rule:line-length
+    - name: Check the ca cert in relp_client0 - 0
+      shell: |-
+        set -euo pipefail
+        grep 'tls.cacert="{{ __test_ca_cert }}"' "{{ __test_relp_client0 }}" | wc -l
+      register: __result
+      changed_when: false
+      failed_when: __result.stdout != "1"
+
+    - name: Check the ca cert in relp_client0 - 1
+      stat:
+        path: "{{ __test_ca_cert }}"
+
+    - name: Check the cert in relp_client0 - 0
+      shell: |-
+        set -euo pipefail
+        grep 'tls.mycert="{{ __test_cert }}"' "{{ __test_relp_client0 }}" | wc -l
+      register: __result
+      changed_when: false
+      failed_when: __result.stdout != "1"
+
+    - name: Check the cert in relp_client0 - 1
+      stat:
+        path: "{{ __test_cert }}"
+
+    - name: Check the private key in relp_client0 - 0
+      shell: |-
+        set -euo pipefail
+        grep 'tls.myprivkey="{{ __test_key }}"' "{{ __test_relp_client0 }}" | wc -l
+      register: __result
+      changed_when: false
+      failed_when: __result.stdout != "1"
+
+    - name: Check the private key in relp_client0 - 1
+      stat:
+        path: "{{ __test_key }}"
+
+    - name: Check tls.permittedpeer in relp_client0
+      shell: |-
+        set -euo pipefail
+        grep 'tls.permittedpeer=\["\*.server.com","\*.example.com"\]' "{{ __test_relp_client0 }}" | wc -l
+      register: __result
+      changed_when: false
+      failed_when: __result.stdout != "1"
+
+    - name: Check tls.permittedpeer in relp_client1
+      shell: >-
+        set -euo pipefail;
+        grep
+        "tls.permittedpeer=\[\"\*.{{ logging_domain }}\"\]" "{{ __test_relp_client1 }}" | wc -l
+      register: __result
+      changed_when: false
+      failed_when: __result.stdout != "1"
+  # yamllint enable rule:line-length
+
+    - name: Check ports managed by firewall and selinux
+      include_tasks: tasks/check_firewall_selinux.yml
+
+    - name: END TEST CASE 1; Clean up the deployed config
+      vars:
+        logging_purge_confs: true
+        logging_manage_firewall: false
+        logging_manage_selinux: false
+        logging_inputs: []
+        logging_outputs: []
+        logging_flows: []
+      include_role:
+        name: redhat.rhel_system_roles.logging
+        public: true
+
+  # notify Restart rsyslogd is executed at the end of this test task.
+  # thus we have to force to invoke handlers
+    - name: "Force all notified handlers to run at this point, not waiting for normal sync points"
+      meta: flush_handlers
+
+    - name: Stop tracking certificate
+      command: getcert stop-tracking -f {{ __test_ca_cert }}
+      changed_when: false
+
+    - name: Clean up pki files
+      file:
+        path: "{{ item }}"
+        state: absent
+      loop:
+        - "{{ __test_ca_cert }}"
+        - "{{ __test_key }}"
+        - "{{ __test_cert }}"
+
+    - name: Check ports managed by firewall and selinux
+      include_tasks: tasks/check_firewall_selinux.yml

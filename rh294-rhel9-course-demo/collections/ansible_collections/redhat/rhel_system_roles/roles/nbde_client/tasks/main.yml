@@ -1,0 +1,8 @@
+# SPDX-License-Identifier: MIT
+---
+# Set up internal variables.
+- name: Set version specific variables
+  include_tasks: set_vars.yml
+
+- name: Include the appropriate provider tasks
+  include_tasks: "main-{{ nbde_client_provider }}.yml"

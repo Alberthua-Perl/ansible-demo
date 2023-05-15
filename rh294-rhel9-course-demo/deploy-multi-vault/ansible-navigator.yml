@@ -1,0 +1,20 @@
+---
+ansible-navigator:
+  ansible:
+    config:
+      path: ./ansible.cfg
+  execution-environment:
+    container-engine: podman
+    enabled: true
+    environment-variables:
+      set:
+        ANSIBLE_CONFIG: ansible.cfg
+    image: registry.redhat.io/ansible-automation-platform-22/ee-supported-rhel8:latest
+    pull:
+      policy: missing
+  logging:
+    level: critical
+  #mode: stdout
+  playbook-artifact:
+    enable: false
+

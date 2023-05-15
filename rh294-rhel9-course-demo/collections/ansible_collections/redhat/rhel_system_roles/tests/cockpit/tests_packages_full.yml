@@ -1,0 +1,52 @@
+---
+- name: "Test cockpit_packages: full"
+  hosts: all
+  tasks:
+    - name: Tests
+      block:
+        - name: Include cockpit role
+          include_role:
+            name: redhat.rhel_system_roles.cockpit
+            public: true
+          vars:
+            cockpit_packages: full
+            cockpit_manage_firewall: true
+            cockpit_manage_selinux: false
+
+        - name: Flush handlers
+          meta: flush_handlers
+
+        - name: Refresh package facts
+          package_facts:
+
+      # basic package (part of minimal)
+        - name: Test - cockpit-system is installed
+          fail:
+            msg: cockpit-system is not installed
+          when: "'cockpit-system' not in ansible_facts.packages"
+
+      # metapackage (part of default)
+        - name: Test - cockpit metapackage is installed
+          fail:
+            msg: cockpit is not installed
+          when: "'cockpit' not in ansible_facts.packages"
+
+      # extra package (part of full)
+        - name: Test - cockpit-pcp is installed
+          fail:
+            msg: cockpit-pcp is not installed
+          when: "'cockpit-pcp' not in ansible_facts.packages"
+
+      # another extra package (part of full)
+        - name: Test - cockpit-doc is installed
+          fail:
+            msg: cockpit-doc is not installed
+          when: "'cockpit-doc' not in ansible_facts.packages"
+
+        - name: >-
+            Test - ensure cockpit_port is configured for firewall and selinux
+          include_tasks: tasks/check_port.yml
+
+      always:
+        - name: Cleanup
+          include_tasks: tasks/cleanup.yml

@@ -1,0 +1,14 @@
+# SPDX-License-Identifier: MIT
+---
+- name: List active CentOS repositories
+  command:
+    cmd: dnf repolist
+  register: __ha_cluster_repolist
+  changed_when: false
+  check_mode: false
+
+- name: Enable CentOS repositories
+  command:
+    cmd: dnf config-manager --set-enabled {{ item.id | quote }}
+  loop: "{{ __ha_cluster_repos }}"
+  when: item.name not in __ha_cluster_repolist.stdout

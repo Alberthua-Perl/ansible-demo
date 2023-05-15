@@ -1,0 +1,13 @@
+# SPDX-License-Identifier: MIT
+---
+- name: Ensure the service and the ports status with the firewall role
+  include_role:
+    name: redhat.rhel_system_roles.firewall
+  vars:
+    __arch: "{{ ansible_facts['architecture'] }}"
+    __use_fence_fw_port: "{{ __arch == 'x86_64' and ('fence-virt' in ha_cluster_fence_agent_packages or 'fence-virt' in ha_cluster_extra_packages or 'fence-agents-all' in ha_cluster_fence_agent_packages or 'fence-agents-all' in ha_cluster_extra_packages) }}"
+    __fence_fw_port: "{{ [{'port': '1229/tcp', 'state': 'enabled'}] if __use_fence_fw_port else [] }}"
+    __ha_fw_service: [{'service': 'high-availability', 'state': 'enabled'}]
+    firewall: "{{ __ha_fw_service + __fence_fw_port }}"
+  when:
+    - ha_cluster_manage_firewall | bool

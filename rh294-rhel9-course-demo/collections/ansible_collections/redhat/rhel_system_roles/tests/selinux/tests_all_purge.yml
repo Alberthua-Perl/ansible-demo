@@ -1,0 +1,86 @@
+---
+- name: Test that selinux_all_purge drops local modifications, defaults to no
+  hosts: all
+  gather_facts: true
+  vars:
+    semanage_change: |
+      boolean -m --on samba_enable_home_dirs
+      port -a -p tcp -t ssh_port_t 22100
+      fcontext -a -t user_home_dir_t /tmp/test_dir
+      login -a -s staff_u sar-user
+
+  tasks:
+    - name: Ensure SELinux tool semanage
+      package:
+        name:
+          - policycoreutils-python-utils
+        state: present
+      when: ansible_distribution == "Fedora" or (ansible_distribution_major_version | int > 7 and ansible_distribution in ["CentOS", "RedHat", "Rocky"])
+
+    - name: Ensure SELinux tool semanage on EL7
+      package:
+        name:
+          - policycoreutils-python
+        state: present
+      when:
+        - ansible_distribution_major_version | int == 7
+        - ansible_os_family == "RedHat"
+
+    - name: Add a Linux System Roles SELinux User
+      user:
+        comment: Linux System Roles SELinux User
+        name: sar-user
+
+    - name: Add some mapping
+      shell: |-
+        set -euo pipefail
+        echo -e -n "{{ semanage_change }}" | /usr/sbin/semanage -i -
+      changed_when: false
+
+    - name: Apply role with defaults, should not drop local modifications
+      include_role:
+        name: redhat.rhel_system_roles.selinux
+
+    - name: Include test variables
+      import_tasks: set_selinux_variables.yml
+
+    - name: Check if local modifications are not empty - booleans
+      assert:
+        that: selinux_role_boolean.stdout | length > 0
+    - name: Check if local modifications are not empty - port
+      assert:
+        that: selinux_role_port.stdout | length > 0
+    - name: Check if local modifications are not empty - login
+      assert:
+        that: selinux_role_login.stdout | length > 0
+    - name: Check if local modifications are not empty - fcontext
+      assert:
+        that: selinux_role_fcontext.stdout | length > 0
+
+    - name: Apply the role to drop local modifications
+      include_role:
+        name: redhat.rhel_system_roles.selinux
+      vars:
+        selinux_all_purge: true
+
+    - name: Include test variables
+      import_tasks: set_selinux_variables.yml
+
+    - name: Check if local modifications are empty - booleans
+      assert:
+        that: selinux_role_boolean.stdout | length == 0
+    - name: Check if local modifications are empty - port
+      assert:
+        that: selinux_role_port.stdout | length == 0
+    - name: Check if local modifications are empty - login
+      assert:
+        that: selinux_role_login.stdout | length == 0
+    - name: Check if local modifications are empty - fcontext
+      assert:
+        that: selinux_role_fcontext.stdout | length == 0
+
+    - name: Remove Linux System Roles SELinux User
+      user:
+        name: sar-user
+        remove: true
+        state: absent

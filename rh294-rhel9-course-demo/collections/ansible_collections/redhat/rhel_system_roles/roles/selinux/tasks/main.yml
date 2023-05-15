@@ -1,0 +1,121 @@
+---
+- name: Set ansible_facts required by role and install packages
+  include_tasks: set_facts_packages.yml
+
+- name: Set permanent SELinux state if enabled
+# noqa args[module] fqcn[action]
+  redhat.rhel_system_roles.selinux:
+    state: "{{ selinux_state | default(ansible_selinux.config_mode, true) }}"
+    policy: "{{ selinux_policy | default(ansible_selinux.type, true) }}"
+  register: selinux_mod_output_enabled
+  when: ansible_selinux.status == "enabled" and (selinux_state or selinux_policy)
+
+- name: Set permanent SELinux state if disabled
+# noqa args[module] fqcn[action]
+  redhat.rhel_system_roles.selinux:
+    state: "{{ selinux_state }}"
+    policy: "{{ selinux_policy | default('targeted', true) }}"
+  register: selinux_mod_output_disabled
+  when: ansible_selinux.status == "disabled" and selinux_state
+
+- name: Set selinux_reboot_required
+  set_fact:
+    selinux_reboot_required: "{{ selinux_mod_output_enabled.reboot_required if (selinux_mod_output_enabled.reboot_required is defined) else (selinux_mod_output_disabled.reboot_required | default(false)) }}"
+
+- name: Fail if reboot is required
+  fail:
+    msg: "Reboot is required to apply changes. Re-execute the role after boot."
+  when: selinux_reboot_required
+
+- name: Warn if SELinux is disabled
+  debug:
+    msg: "SELinux is disabled on system - some SELinux modules can crash"
+  when: ansible_selinux.status == "disabled"
+
+- name: Drop all local modifications
+  command: /usr/sbin/semanage -i -
+  args:
+    stdin: "{{ drop_local_modifications }}"
+  when: selinux_all_purge | bool
+  notify: __selinux_reload_policy
+
+- name: Purge all SELinux boolean local modifications
+  command: /usr/sbin/semanage boolean -D
+  when: selinux_booleans_purge | bool
+
+- name: Purge all SELinux file context local modifications
+  command: /usr/sbin/semanage fcontext -D
+  when: selinux_fcontexts_purge | bool
+
+- name: Purge all SELinux port local modifications
+  command: /usr/sbin/semanage port -D
+  when: selinux_ports_purge | bool
+
+- name: Purge all SELinux login local modifications
+  command: /usr/sbin/semanage login -D
+  when: selinux_logins_purge | bool
+
+- name: Set SELinux booleans
+# noqa fqcn[action]
+  redhat.rhel_system_roles.seboolean:
+    name: "{{ item.name }}"
+    state: "{{ item.state }}"
+    persistent: "{{ item.persistent | default('no') }}"
+  with_items: "{{ selinux_booleans }}"
+
+- name: Set SELinux file contexts
+  redhat.rhel_system_roles.sefcontext:
+    target: "{{ item.target }}"
+    setype: "{{ item.setype }}"
+    ftype: "{{ item.ftype | default('a') }}"
+    state: "{{ item.state | default('present') }}"
+    selevel: "{{ item.selevel | default(omit) }}"
+    seuser: "{{ item.seuser | default(omit) }}"
+  with_items: "{{ selinux_fcontexts }}"
+
+- name: Restore SELinux labels on filesystem tree
+  command: /sbin/restorecon -R -F -v {{ item }}
+  with_items: "{{ selinux_restore_dirs }}"
+  register: restorecon_cmd
+  changed_when: '"Relabeled" in restorecon_cmd.stdout'
+
+- name: Restore SELinux labels on filesystem tree in check mode
+  command: /sbin/restorecon -R -F -v -n {{ item }}
+  with_items: "{{ selinux_restore_dirs }}"
+  register: restorecon_cmd
+  changed_when: '"Would relabel" in restorecon_cmd.stdout'
+  check_mode: false
+  when: ansible_check_mode
+
+- name: Set an SELinux label on a port
+  redhat.rhel_system_roles.local_seport:
+    ports: "{{ item.ports }}"
+    proto: "{{ item.proto | default('tcp') }}"
+    setype: "{{ item.setype }}"
+    state: "{{ item.state | default('present') }}"
+    local: "{{ item.local | default(False) }}"
+  with_items: "{{ selinux_ports }}"
+
+- name: Set linux user to SELinux user mapping
+  redhat.rhel_system_roles.selogin:
+    login: "{{ item.login }}"
+    seuser: "{{ item.seuser }}"
+    serange: "{{ item.serange | default('s0') }}"
+    state: "{{ item.state | default('present') }}"
+    reload: "{{ item.reload | default(False) }}"
+  with_items: "{{ selinux_logins }}"
+  notify: __selinux_reload_policy
+
+- name: Get SELinux modules facts
+  redhat.rhel_system_roles.selinux_modules_facts:
+
+- name: Load SELinux modules
+  include_tasks: selinux_load_module.yml
+  vars:
+    name: "{{ item.name | default(item.path | basename | splitext | first) }}"
+    state: "{{ item.state | default('enabled') }}"
+    priority: "{{ item.priority | default('400') }}"
+  # yamllint disable rule:line-length
+    checksum: "{{ selinux_installed_modules[name][priority]['checksum'] | default('sha256:') }}"
+  when: selinux_modules is defined
+  loop: "{{ selinux_modules | flatten(levels=1) }}"

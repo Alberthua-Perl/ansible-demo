@@ -1,0 +1,182 @@
+# SPDX-License-Identifier: MIT
+---
+- name: Basic release test
+  hosts: all
+  gather_facts: true
+  become: true
+  tags:
+    - tests::slow
+  tasks:
+  # A local Candlepin deployment has no concept of "releases",
+  # so only setup the test data.
+    - name: Setup test data
+      import_tasks: tasks/setup_test_data.yml
+
+    - name: Skip if no test release is set
+      meta: end_play
+      when:
+        - lsr_rhc_test_data.release | d(none) is none
+
+    - name: Check Candlepin works
+      import_tasks: tasks/check_candlepin.yml
+
+    - name: Test release
+      block:
+        - name: Register
+          include_role:
+            name: redhat.rhel_system_roles.rhc
+          vars:
+            rhc_auth:
+              login:
+                username: "{{ lsr_rhc_test_data.reg_username }}"
+                password: "{{ lsr_rhc_test_data.reg_password }}"
+            rhc_insights:
+              state: absent
+            rhc_organization: "{{ lsr_rhc_test_data.reg_organization }}"
+            rhc_server:
+              hostname: "{{ lsr_rhc_test_data.candlepin_host }}"
+              port: "{{ lsr_rhc_test_data.candlepin_port }}"
+              prefix: "{{ lsr_rhc_test_data.candlepin_prefix }}"
+              insecure: "{{ lsr_rhc_test_data.candlepin_insecure }}"
+            rhc_baseurl: "{{ lsr_rhc_test_data.baseurl | d(omit) }}"
+            rhc_release: "{{ lsr_rhc_test_data.release }}"
+
+        - name: Get set release
+          include_tasks: tasks/get_release.yml
+
+        - name: Check wanted release is set
+          assert:
+            that:
+              - lsr_rhc_test_data.release == test_release.stdout
+
+        - name: Unset the release
+          include_role:
+            name: redhat.rhel_system_roles.rhc
+          vars:
+            rhc_insights:
+              state: absent
+            rhc_release: {"state": "absent"}
+
+        - name: Get set release
+          include_tasks: tasks/get_release.yml
+
+        - name: Check no release is set
+          assert:
+            that:
+              - test_release.stdout | length == 0
+
+        - name: Unset the release (noop)
+          include_role:
+            name: redhat.rhel_system_roles.rhc
+          vars:
+            rhc_insights:
+              state: absent
+            rhc_release: {"state": "absent"}
+
+        - name: Check invalid releases cannot be set
+          block:
+            - name: Set an invalid release
+              include_role:
+                name: redhat.rhel_system_roles.rhc
+              vars:
+                rhc_insights:
+                  state: absent
+              # look like a valid release number, hopefully it will never
+              # be used!
+                rhc_release: "1.99"
+
+            - name: Unreachable task
+              fail:
+                msg: The above task must fail
+          rescue:
+            - name: Assert that the role failed
+              assert:
+                that: >-
+                  'No releases match ' in ansible_failed_result.msg
+
+        - name: Set the release when not registering
+          include_role:
+            name: redhat.rhel_system_roles.rhc
+          vars:
+            rhc_insights:
+              state: absent
+            rhc_release: "{{ lsr_rhc_test_data.release }}"
+
+        - name: Get set release
+          include_tasks: tasks/get_release.yml
+
+        - name: Check wanted release is set
+          assert:
+            that:
+              - lsr_rhc_test_data.release == test_release.stdout
+
+        - name: Set the release when not registering (noop)
+          include_role:
+            name: redhat.rhel_system_roles.rhc
+          vars:
+            rhc_insights:
+              state: absent
+            rhc_release: "{{ lsr_rhc_test_data.release }}"
+
+        - name: Register (forced, without release)
+          include_role:
+            name: redhat.rhel_system_roles.rhc
+          vars:
+            rhc_auth:
+              login:
+                username: "{{ lsr_rhc_test_data.reg_username }}"
+                password: "{{ lsr_rhc_test_data.reg_password }}"
+            rhc_insights:
+              state: absent
+            rhc_organization: "{{ lsr_rhc_test_data.reg_organization }}"
+            rhc_server:
+              hostname: "{{ lsr_rhc_test_data.candlepin_host }}"
+              port: "{{ lsr_rhc_test_data.candlepin_port }}"
+              prefix: "{{ lsr_rhc_test_data.candlepin_prefix }}"
+              insecure: "{{ lsr_rhc_test_data.candlepin_insecure }}"
+            rhc_baseurl: "{{ lsr_rhc_test_data.baseurl | d(omit) }}"
+            rhc_release: {"state": "absent"}
+            rhc_state: reconnect
+
+        - name: Get set release
+          include_tasks: tasks/get_release.yml
+
+        - name: Check no release is set
+          assert:
+            that:
+              - test_release.stdout | length == 0
+
+        - name: Register (forced, with release)
+          include_role:
+            name: redhat.rhel_system_roles.rhc
+          vars:
+            rhc_auth:
+              login:
+                username: "{{ lsr_rhc_test_data.reg_username }}"
+                password: "{{ lsr_rhc_test_data.reg_password }}"
+            rhc_insights:
+              state: absent
+            rhc_organization: "{{ lsr_rhc_test_data.reg_organization }}"
+            rhc_server:
+              hostname: "{{ lsr_rhc_test_data.candlepin_host }}"
+              port: "{{ lsr_rhc_test_data.candlepin_port }}"
+              prefix: "{{ lsr_rhc_test_data.candlepin_prefix }}"
+              insecure: "{{ lsr_rhc_test_data.candlepin_insecure }}"
+            rhc_baseurl: "{{ lsr_rhc_test_data.baseurl | d(omit) }}"
+            rhc_release: "{{ lsr_rhc_test_data.release }}"
+            rhc_state: reconnect
+
+        - name: Get set release
+          include_tasks: tasks/get_release.yml
+
+        - name: Check wanted release is set
+          assert:
+            that:
+              - lsr_rhc_test_data.release == test_release.stdout
+
+      always:
+        - name: Unregister
+          include_role:
+            name: redhat.rhel_system_roles.rhc
+          vars:
+            rhc_state: absent

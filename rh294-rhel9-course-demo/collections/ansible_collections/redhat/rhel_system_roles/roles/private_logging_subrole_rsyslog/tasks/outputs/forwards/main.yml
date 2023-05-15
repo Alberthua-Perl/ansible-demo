@@ -1,0 +1,20 @@
+---
+# Deploy configuration files
+- name: "Install/Update forwards output packages and generate configuration files in /etc/rsyslog.d"
+  vars:
+    __rsyslog_packages: "{{ __rsyslog_forwards_output_packages }}"
+    __rsyslog_rules: "{{ __rsyslog_forwards_output_rules }}"
+  include_tasks:
+    file: "{{ role_path }}/tasks/deploy.yml"
+
+- name: "Create forwards output configuration file /etc/rsyslog.d/output-forwards-{{ __rsyslog_output.name }}"
+  vars:
+    __rsyslog_packages: []
+    __rsyslog_rules:
+      - name: "output-forwards-{{ __rsyslog_output.name }}"
+        type: "output"
+        state: "{{ __rsyslog_output.state | d('present') }}"
+        sections:
+          - options: "{{ lookup('template', 'output_forwards.j2') }}"
+  include_tasks:
+    file: "{{ role_path }}/tasks/deploy.yml"

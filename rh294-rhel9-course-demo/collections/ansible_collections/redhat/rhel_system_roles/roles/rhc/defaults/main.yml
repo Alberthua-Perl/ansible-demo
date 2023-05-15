@@ -1,0 +1,16 @@
+# SPDX-License-Identifier: MIT
+---
+rhc_auth: {}
+rhc_baseurl:
+rhc_environments: []
+rhc_insights:
+  autoupdate: true
+  remediation: present
+  state: present
+  tags: {}
+rhc_organization:
+rhc_proxy: {}
+rhc_release:
+rhc_repositories: []
+rhc_server: {}
+rhc_state: "present"

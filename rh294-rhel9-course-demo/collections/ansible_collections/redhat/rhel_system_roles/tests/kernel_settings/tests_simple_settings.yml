@@ -1,0 +1,53 @@
+---
+- name: Test simple kernel settings
+  hosts: all
+  gather_facts: true
+  tags:
+    - tests::reboot
+  tasks:
+    - name: Set platform independent vars used by this test
+      include_vars:
+        file: vars/vars_simple_settings.yml
+
+    - name: Disable bootloader cmdline testing on Fedora
+      set_fact:
+        kernel_settings_bootloader_cmdline:
+        __kernel_settings_blcmdline_value:
+        __kernel_settings_check_reboot: false
+      when: ansible_distribution == "Fedora"
+
+  # use public: true here so that the private role
+  # variables will be exported - we use
+  # __kernel_settings_profile_filename to verify
+  # that the settings were applied correctly
+    - name: Apply the settings - call the role
+      include_role:
+        name: redhat.rhel_system_roles.kernel_settings
+        public: true
+
+    - name: Verify that settings were applied correctly
+      include_tasks: tasks/assert_kernel_settings.yml
+      vars:
+        __kernel_settings_test_verify: false
+
+  # reboot if a reboot is needed AND we did not tell the role
+  # to reboot the machine if needed
+    - name: Reboot the machine - see if settings persist after reboot
+      reboot:
+        test_command: tuned-adm active
+      when:
+        - kernel_settings_reboot_required | d(false)
+        - not kernel_settings_test_reboot_ok | d(false)
+
+    - name: Verify that settings were applied correctly after reboot
+      include_tasks: tasks/assert_kernel_settings.yml
+      vars:
+        __kernel_settings_check_reboot: false
+        __kernel_settings_test_verify: true
+      when:
+        - kernel_settings_reboot_required | d(false)
+        - not kernel_settings_test_reboot_ok | d(false)
+
+    - name: Show contents of tuned.conf
+      command: cat /etc/tuned/kernel_settings/tuned.conf
+      changed_when: false

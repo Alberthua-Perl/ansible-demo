@@ -1,0 +1,14 @@
+# SPDX-License-Identifier: BSD-3-Clause
+---
+- name: Test executing the role with default parameters
+  hosts: all
+  gather_facts: false
+  roles:
+    - redhat.rhel_system_roles.network
+  tasks:
+    - include_tasks: tasks/el_repo_setup.yml
+    - name: Test warning and info logs
+      assert:
+        that:
+          - "'warnings' not in __network_connections_result"
+        msg: "There are warnings"

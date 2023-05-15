@@ -1,0 +1,44 @@
+{
+ "collection_info": {
+  "namespace": "redhat",
+  "name": "rhel_system_roles",
+  "version": "1.21.1",
+  "authors": [
+   "System Roles Owners <systemroles@lists.fedorahosted.org>"
+  ],
+  "readme": "README.md",
+  "tags": [
+   "system",
+   "collection",
+   "infrastructure",
+   "linux",
+   "monitoring",
+   "networking",
+   "security",
+   "storage"
+  ],
+  "description": "Red Hat Enterprise Linux System Roles Ansible Collection",
+  "license": [
+   "GPL-2.0-or-later",
+   "GPL-3.0-only",
+   "GPL-3.0-or-later",
+   "LGPL-3.0-only",
+   "MIT",
+   "BSD-3-Clause"
+  ],
+  "license_file": null,
+  "dependencies": {},
+  "repository": "https://linux-system-roles.github.io",
+  "documentation": "https://access.redhat.com/documentation/en-us/red_hat_enterprise_linux/8/html/administration_and_configuration_tasks_using_system_roles_in_rhel",
+  "homepage": "https://access.redhat.com/articles/3050101",
+  "issues": "https://bugzilla.redhat.com/enter_bug.cgi?product=Red%20Hat%20Enterprise%20Linux%208&component=rhel-system-roles"
+ },
+ "file_manifest_file": {
+  "name": "FILES.json",
+  "ftype": "file",
+  "chksum_type": "sha256",
+  "chksum_sha256": "6eeb37f6a6d70b20253ef545adad0bab22b19cc3eeae7257e45eb3a30a7d4c9c",
+  "format": 1
+ },
+ "format": 1
+}

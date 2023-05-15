@@ -1,0 +1,23 @@
+---
+galaxy_info:
+  author: Terry Bowling <tbowling@redhat.com>
+  description: Install and enable the Cockpit Web Console
+  company: Red Hat, Inc.
+  license: GPLv3
+  min_ansible_version: "2.9"
+  platforms:
+    - name: Fedora
+      versions:
+        - all
+    - name: EL
+      versions:
+        - "7"
+        - "8"
+        - "9"
+  galaxy_tags:
+    - rhel
+    - redhat
+    - fedora
+    - centos
+    - cockpit
+dependencies: []

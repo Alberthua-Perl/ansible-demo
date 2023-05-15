@@ -1,0 +1,81 @@
+# SPDX-License-Identifier: MIT
+---
+- name: Ensure required packages are installed
+  package:
+    name: "subscription-manager"
+    state: present
+  when: rhc_state | d('present') == "present"
+
+- name: Get subscription status
+  command:
+    argv:
+      - subscription-manager
+      - identity
+  when:
+    - rhc_state | d("present") == "present"
+  register: __rhc_subman_identity
+  changed_when: false
+  failed_when: __rhc_subman_identity.rc not in [0, 1]
+
+- name: Change rhsm.baseurl
+  command:
+    argv:
+      - subscription-manager
+      - config
+      - "--rhsm.baseurl={{ rhc_baseurl }}"
+  changed_when: false
+  when:
+    - rhc_state | d("present") in ["present", "reconnect"]
+    - rhc_baseurl is not none
+    - rhc_baseurl != omit
+    - rhc_baseurl | string | length > 0
+
+- name: Call subscription-manager
+# noqa jinja[spacing]
+  redhat.rhel_system_roles.redhat_subscription:
+    state: "{{ 'present' if (rhc_state | d('present') == 'reconnect') else rhc_state | d('present') }}"
+    username: "{{ __rhc_fake_credential if (rhc_state | d('present') == 'present' and __rhc_subman_identity.rc == 0) else (rhc_auth.login.username | d(omit)) }}"
+    password: "{{ __rhc_fake_credential if (rhc_state | d('present') == 'present' and __rhc_subman_identity.rc == 0) else (rhc_auth.login.password | d(omit)) }}"
+    activationkey: "{{ rhc_auth.activation_keys['keys'] | join(',') if ('keys' in rhc_auth.activation_keys | d({})) else omit }}"
+    org_id: "{{ rhc_organization | d(omit) }}"
+    server_hostname: "{{ rhc_server.hostname | d(omit) }}"
+    server_port: "{{ rhc_server.port | d(omit) }}"
+    server_prefix: "{{ rhc_server.prefix | d(omit) }}"
+    server_insecure: "{{ omit if (rhc_server.insecure | d(omit) == omit) else rhc_server.insecure | ternary('1', '0') }}"
+    auto_attach: "{{ true if (rhc_state | d('present') in ['present', 'reconnect'] and not 'keys' in rhc_auth.activation_keys | d({})) else omit }}"
+    release: "{{ rhc_release if (rhc_state | d('present') != 'absent' and rhc_release != __rhc_state_absent) else omit }}"
+    server_proxy_hostname: "{% if rhc_proxy == __rhc_state_absent -%} {{ __rhc_empty_string }} {%-   elif 'hostname' not in rhc_proxy -%} {{ omit }} {%-   else -%} {{ rhc_proxy.hostname }} {%- endif %}"
+    server_proxy_port: "{% if rhc_proxy == __rhc_state_absent -%} {{ __rhc_empty_string }} {%-   elif 'port' not in rhc_proxy -%} {{ omit }} {%-   else -%} {{ rhc_proxy.port }} {%- endif %}"
+    server_proxy_user: "{% if rhc_proxy == __rhc_state_absent -%} {{ __rhc_empty_string }} {%-   elif 'username' not in rhc_proxy -%} {{ omit }} {%-   else -%} {{ rhc_proxy.username }} {%- endif %}"
+    server_proxy_password: "{% if rhc_proxy == __rhc_state_absent -%} {{ __rhc_empty_string }} {%-   elif 'password' not in rhc_proxy -%} {{ omit }} {%-   else -%} {{ rhc_proxy.password }} {%- endif %}"
+    force_register: "{{ rhc_state | d('present') == 'reconnect' }}"
+    environment: "{{ rhc_environments | join(',') if (rhc_environments | length > 0 and rhc_state | d('present') != 'absent') else omit }}"
+
+- name: Configure subscribed system
+  when:
+    - rhc_state | d("present") in ["present", "reconnect"]
+  block:
+    - name: Set the release
+      redhat.rhel_system_roles.rhsm_release:
+        release: "{{ rhc_release }}"
+      when:
+        - rhc_state | d("present") == "present"
+        - __rhc_subman_identity.rc == 0
+        - rhc_release != __rhc_state_absent
+
+    - name: Unset the release
+      redhat.rhel_system_roles.rhsm_release:
+        release:
+      when:
+        - rhc_state | d("present") == "present"
+        - __rhc_subman_identity.rc == 0
+        - rhc_release == __rhc_state_absent
+
+    - name: Configure repositories
+      redhat.rhel_system_roles.rhsm_repository:
+        name: "{{ item.name }}"
+        state: "{{ item.state | d('enabled') }}"
+        purge: false
+      loop: "{{ rhc_repositories }}"
+      when:
+        - ( rhc_repositories | d([]) ) | length > 0

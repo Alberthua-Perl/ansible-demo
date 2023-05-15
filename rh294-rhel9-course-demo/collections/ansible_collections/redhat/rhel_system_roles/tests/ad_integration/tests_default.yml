@@ -1,0 +1,17 @@
+# SPDX-License-Identifier: MIT
+---
+- name: Ensure role behaviour with default parameters
+  hosts: all,!ad
+  gather_facts: false # test that role works in this case
+  tasks:
+    - name: Verify that the role fails without ad_integration_realm variable
+      block:
+        - name: Include the role
+          include_role:
+            name: redhat.rhel_system_roles.ad_integration
+
+      rescue:
+        - name: Assert that user is notified about missing variables
+          assert:
+            that:
+              - '"Variable ad_integration_realm" in ansible_failed_result.msg'

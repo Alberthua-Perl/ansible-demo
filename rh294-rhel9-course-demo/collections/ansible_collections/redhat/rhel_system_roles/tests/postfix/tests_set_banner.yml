@@ -1,0 +1,27 @@
+---
+- name: Set smtpd banner
+  hosts: all
+
+  vars:
+    postfix_conf:
+      smtpd_banner: test
+    postfix_manage_firewall: false
+    postfix_manage_selinux: true
+
+  tasks:
+    - name: Run the role with test smtpd_banner
+      include_role:
+        name: redhat.rhel_system_roles.postfix
+        public: true
+
+    - name: Get smtpd banner
+      command: postconf smtpd_banner
+      register: smtpd_banner
+      changed_when: false
+
+    - name: Assert smtpd banner is valid
+      assert:
+        that: smtpd_banner.stdout_lines[0] == 'smtpd_banner = ' ~ postfix_conf.smtpd_banner
+
+    - name: Check firewall and selinux status
+      include_tasks: check_firewall_selinux.yml

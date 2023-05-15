@@ -1,0 +1,33 @@
+---
+# General configuration
+# ---------------------
+
+# rsyslog_in_image
+#
+# true if the target host is a container and use rsyslog in the image.
+rsyslog_in_image: false
+
+# rsyslog_message_reduction
+#
+# Enable or disable message reduction.
+# This is disabled by default so that log parsers
+# like :program:`fail2ban` can work correctly.
+rsyslog_message_reduction: false
+
+# rpm packages
+# adding rsyslog packages
+# ------------------
+
+# rsyslog_extra_packages
+#
+# List of extra rpm packages to install.
+# If custom configurations are to be installed,
+# which requires additional rsyslog packages,
+# this variable can be used to install them.
+rsyslog_extra_packages: []
+
+# rsyslog_custom_config_files
+#
+# List of additional custom config files.
+# Each element: full paths to the files to be deployed.
+rsyslog_custom_config_files: []

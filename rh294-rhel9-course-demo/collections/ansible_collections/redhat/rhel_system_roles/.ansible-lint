@@ -1,0 +1,25 @@
+exclude_paths: [tests/roles/, .github/, examples/roles/, tests/, tests/roles/candlepin/,
+  vendor/]
+extra_vars: {targets: targets}
+kinds:
+- {yaml: '**/meta/collection-requirements.yml'}
+- {yaml: '**/tests/collection-requirements.yml'}
+- {playbook: '**/tests/tests_*.yml'}
+- {playbook: '**/tests/setup-snapshot.yml'}
+- {tasks: '**/tests/*.yml'}
+- {playbook: '**/tests/playbooks/*.yml'}
+- {tasks: '**/tests/tasks/*.yml'}
+- {tasks: '**/tests/tasks/*/*.yml'}
+- {vars: '**/tests/vars/*.yml'}
+- {playbook: '**/examples/*.yml'}
+- {playbook: '**/tests/get_coverage.yml'}
+mock_modules: [sefcontext, selogin, ini_file, win_domain_group, win_domain_user]
+mock_roles: [rhel-system-roles.ssh, rhel-system-roles.nbde_server, rhel-system-roles.firewall,
+  rhel-system-roles.storage, rhel-system-roles.rhc, rhel-system-roles.postfix, rhel-system-roles.vpn,
+  rhel-system-roles.selinux, rhel-system-roles.nbde_client, rhel-system-roles.certificate,
+  rhel-system-roles.journald, rhel-system-roles.podman, rhel-system-roles.metrics,
+  rhel-system-roles.ha_cluster, rhel-system-roles.network, rhel-system-roles.timesync,
+  rhel-system-roles.ad_integration]
+profile: production
+skip_list: ['yaml[line-length]', fqcn-builtins]
+warn_list: ['306', load-failure]

@@ -1,0 +1,19 @@
+---
+- name: Setup snapshot
+  hosts: all
+  tasks:
+    - name: Set platform/version specific variables
+      include_role:
+        name: redhat.rhel_system_roles.storage
+        tasks_from: set_vars.yml
+        public: true
+
+    - name: Install test packages
+      package:
+        name: "{{ blivet_package_list }}"
+        state: present
+
+    - name: Install cryptsetup
+      package:
+        name: cryptsetup
+        state: present

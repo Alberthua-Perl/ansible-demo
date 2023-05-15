@@ -1,0 +1,130 @@
+---
+- name: Test a creation of configuration file in the user directory
+  hosts: all
+  gather_facts: true
+  vars:
+    __ssh_test_backup_files:
+      - /etc/ssh/ssh_config.d/00-ansible.conf
+      - /etc/ssh/ssh_config
+    username: tester123
+  tasks:
+    - name: Backup configuration files
+      include_tasks: tasks/backup.yml
+
+    - name: Create a test group (with the same name as user)
+      group:
+        name: "{{ username }}"
+
+    - name: Create a test user
+      user:
+        name: "{{ username }}"
+        group: "{{ username }}"
+
+    - name: Run role
+      include_role:
+        name: redhat.rhel_system_roles.ssh
+      vars:
+        ssh_user: "{{ username }}"
+        ssh:
+          GSSAPIAuthentication: false
+          Host:
+            Condition: example
+            Hostname: example.com
+            User: somebody
+
+    - name: Gather information about the user
+      getent:
+        database: passwd
+        key: "{{ username }}"
+
+    - name: Verify the configuration file was created with right content
+      vars:
+        ssh_test_config_file: "{{ getent_passwd[username][4] }}/.ssh/config"
+
+      block:
+        - name: Download the created configuration file
+          slurp:
+            src: "{{ ssh_test_config_file }}"
+          register: config
+
+        - name: Stat the .ssh dir
+          become: true
+          become_user: "{{ username }}"
+          become_method: su
+          stat:
+            path: "/home/{{ username }}/.ssh"
+          register: ssh_dir_mode
+
+        - name: Verify the ~/.ssh has sensible permissions
+          assert:
+            that:
+              - ssh_dir_mode.stat.exists
+              - "ssh_dir_mode.stat.pw_name == '{{ username }}'"
+              - "ssh_dir_mode.stat.gr_name == '{{ username }}'"
+              - ssh_dir_mode.stat.mode == '0700'
+
+        - name: Make sure the file is readable by user
+          become: true
+          become_user: "{{ username }}"
+          become_method: su
+          stat:
+            path: "/home/{{ username }}/.ssh/config"
+
+        - name: Stat the configuration file
+          stat:
+            path: "{{ ssh_test_config_file }}"
+          register: config_mode
+
+        - name: Verify the options are in the file
+          assert:
+            that:
+              - "'\nGSSAPIAuthentication no' in config.content | b64decode"
+              - "'Host example' in config.content | b64decode"
+              - "'Hostname example.com' in config.content | b64decode"
+              - "'User somebody' in config.content | b64decode"
+            # common defaults should be skipped (ssh_skip_defaults=auto)
+              - "'Include' not in config.content | b64decode"
+              - "'SendEnv' not in config.content | b64decode"
+
+        - name: Verify the file has sensible permissions
+          assert:
+            that:
+              - config_mode.stat.exists
+              - "config_mode.stat.pw_name == '{{ username }}'"
+              - "config_mode.stat.gr_name == '{{ username }}'"
+              - config_mode.stat.mode == '0600'
+
+        - name: Test the effective configuration using ssh
+          become: true
+          become_user: "{{ username }}"
+          become_method: su
+          command: ssh -vvv -G example
+          register: effective
+          when:
+            - ansible_facts['distribution'] not in ['CentOS', 'RedHat'] or ansible_facts['distribution_version'] | int > 6
+
+        - name: Make sure the effective configuration is expected
+          assert:
+            that:
+              - "'hostname example.com' in effective.stdout"
+              - "'user somebody' in effective.stdout"
+          when:
+            - ansible_facts['distribution'] not in ['CentOS', 'RedHat'] or ansible_facts['distribution_version'] | int > 6
+
+        - name: Download the global configuration files too
+          slurp:
+            src: /etc/ssh/ssh_config
+          register: global_config
+
+        - name: Verify the options are NOT in the global configuration file
+          assert:
+            that:
+              - "'\nGSSAPIAuthentication no' not in content"
+              - "'Host example' not in content"
+              - "'Hostname example.com' not in content"
+              - "'User somebody' not in content"
+          vars:
+            content: "{{ global_config.content | b64decode }}"
+
+    - name: Restore configuration files
+      include_tasks: tasks/restore.yml

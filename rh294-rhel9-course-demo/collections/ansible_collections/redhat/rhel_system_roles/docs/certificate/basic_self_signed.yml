@@ -1,0 +1,10 @@
+---
+- name: Example role usage
+  hosts: all
+  vars:
+    certificate_requests:
+      - name: mycert
+        dns: www.example.com
+        ca: self-sign
+  roles:
+    - redhat.rhel_system_roles.certificate

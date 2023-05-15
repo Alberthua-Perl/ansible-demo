@@ -1,0 +1,7 @@
+# SPDX-License-Identifier: MIT
+---
+- name: Handler for ad_integration to restart services
+  service:
+    name: "{{ item }}"
+    state: restarted
+  loop: "{{ __ad_integration_services }}"

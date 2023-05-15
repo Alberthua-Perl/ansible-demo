@@ -1,0 +1,55 @@
+---
+- name: Set version specific variables
+  include_vars: "{{ lookup('first_found', ffparams) }}"
+  vars:
+    ffparams:
+      files:
+        - "tests_{{ ansible_distribution }}_{{ ansible_distribution_major_version }}.yml"
+        - "tests_default.yml"
+      paths:
+        - vars
+
+- name: Reset settings success flag
+  set_fact:
+    __kernel_settings_success: true
+
+- name: Check tuned-adm verify
+  command: tuned-adm verify -i
+  register: __kernel_settings_register_verify
+  ignore_errors: true
+  when: __kernel_settings_test_verify
+
+- name: Check for verify errors
+  command: tail /var/log/tuned/tuned.log
+  when:
+    - __kernel_settings_register_verify is defined
+    - __kernel_settings_register_verify is failed
+
+- name: Check /proc/cmdline
+  command: cat /proc/cmdline
+  when:
+    - __kernel_settings_register_verify is defined
+    - __kernel_settings_register_verify is failed
+
+- name: Set error flag based on verify
+  set_fact:
+    __kernel_settings_success: false
+  when:
+    - __kernel_settings_register_verify is defined
+    - __kernel_settings_register_verify is failed
+
+- name: Check config files
+  include_tasks: assert_kernel_settings_conf_files.yml
+  when: __kernel_settings_profile_file is defined
+
+- name: Check if kernel_settings_reboot_required is set if needed
+  set_fact:
+    __kernel_settings_success: false
+  when:
+    - __kernel_settings_check_reboot | d(false)
+    - not kernel_settings_reboot_required | d(false)
+
+- name: Assert success
+  assert:
+    that: __kernel_settings_success | d(false)
+    msg: Found errors checking kernel settings

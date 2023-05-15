@@ -1,0 +1,71 @@
+---
+# defaults file for template
+storage_provider: "blivet"
+storage_use_partitions:
+# yamllint disable-line rule:line-length
+storage_disklabel_type:       # leave unset to allow the role to select an appropriate label type
+# yamllint disable-line rule:line-length
+storage_safe_mode: true  # fail instead of implicitly/automatically removing devices or formatting
+# yamllint enable-line rule:line-length
+
+storage_pool_defaults:
+  state: "present"
+  type: lvm
+  disks: []
+  volumes: []
+
+  encryption: false
+  encryption_password:
+  encryption_key:
+  encryption_cipher:
+  encryption_key_size:
+  encryption_luks_version:
+
+  raid_level:
+  raid_device_count:
+  raid_spare_count:
+  raid_chunk_size:
+  raid_metadata_version:
+
+storage_volume_defaults:
+  state: "present"
+  type: lvm
+  size: 0
+  disks: []
+
+  fs_type: "xfs"
+  fs_label: ""
+  fs_create_options: ""
+  fs_overwrite_existing: true
+
+  mount_point: ""
+  mount_options: "defaults"
+  mount_check: 0
+  mount_passno: 0
+  mount_device_identifier: "uuid"  # uuid|label|path
+
+  raid_level:
+  raid_device_count:
+  raid_spare_count:
+  raid_chunk_size:
+  raid_metadata_version:
+
+  encryption: false
+  encryption_password:
+  encryption_key:
+  encryption_cipher:
+  encryption_key_size:
+  encryption_luks_version:
+
+  compression:
+  deduplication:
+  vdo_pool_size:
+
+  thin:
+  thin_pool_name:
+  thin_pool_size:
+
+  cached: false
+  cache_size: 0
+  cache_mode:
+  cache_devices: []

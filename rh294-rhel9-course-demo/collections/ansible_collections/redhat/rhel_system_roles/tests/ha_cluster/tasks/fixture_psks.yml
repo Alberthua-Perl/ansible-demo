@@ -1,0 +1,48 @@
+# SPDX-License-Identifier: MIT
+---
+- name: Generate pre-shared keys and certificates on the controller
+  delegate_to: localhost
+  run_once: true # noqa: run_once[task]
+  vars:
+    __test_pcsd_private_key_path: "{{ __ha_cluster_work_dir.path }}/pcsd.key"
+    __test_pcsd_public_key_path: "{{ __ha_cluster_work_dir.path }}/pcsd.crt"
+    __test_corosync_key_path: >-
+      {{ __ha_cluster_work_dir.path }}/corosync-authkey
+    __test_pacemaker_key_path: >-
+      {{ __ha_cluster_work_dir.path }}/pacemaker-authkey
+    __test_fence_xvm_key_path: "{{ __ha_cluster_work_dir.path }}/fence_xvm.key"
+  block:
+    - name: List packages on the controller to see if OpenSSL is installed
+      package_facts:
+
+    - name: Ensure OpenSSL is installed on the controller
+      package:
+        name: openssl
+        state: present
+      when: "'openssl' not in ansible_facts.packages"
+
+    - name: Generate a self signed pcsd cert and the pcsd key
+      command: >-
+        openssl req -x509 -newkey rsa:2048 -nodes
+        -keyout "{{ __test_pcsd_private_key_path }}"
+        -out "{{ __test_pcsd_public_key_path }}"
+        -subj "/CN={{ ansible_host }}"
+      changed_when: false
+
+    - name: Generate corosync key
+      copy:
+        content: "{{ lookup('pipe', 'openssl rand -base64 256') | b64decode }}"
+        dest: "{{ __test_corosync_key_path }}"
+        mode: 0400
+
+    - name: Generate pacemaker key
+      copy:
+        content: "{{ lookup('pipe', 'openssl rand -base64 256') | b64decode }}"
+        dest: "{{ __test_pacemaker_key_path }}"
+        mode: 0400
+
+    - name: Generate fence_xvm key
+      copy:
+        content: "{{ lookup('pipe', 'openssl rand -base64 512') | b64decode }}"
+        dest: "{{ __test_fence_xvm_key_path }}"
+        mode: 0400

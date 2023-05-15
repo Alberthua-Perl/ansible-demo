@@ -1,0 +1,17 @@
+# SPDX-License-Identifier: BSD-3-Clause
+---
+- name: Include network role
+  include_role:
+    name: redhat.rhel_system_roles.network
+  vars:
+    network_connections:
+      - name: "{{ interface }}"
+        state: up
+        type: dummy
+        ip:
+          address:
+            - "192.0.2.42/30"
+- name: Show result
+  debug:
+    var: __network_connections_result
+...

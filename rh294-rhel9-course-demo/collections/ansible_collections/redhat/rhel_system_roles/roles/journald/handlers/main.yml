@@ -1,0 +1,7 @@
+# SPDX-License-Identifier: MIT
+---
+- name: Restart journald services
+  service:
+    name: "{{ item }}"
+    state: restarted
+  loop: "{{ __journald_services }}"

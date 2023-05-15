@@ -1,0 +1,27 @@
+# SPDX-License-Identifier: MIT
+---
+- name: Example ha_cluster role invocation - cluster with SBD
+  hosts: node1 node2
+  vars:
+    ha_cluster_manage_firewall: true
+    ha_cluster_manage_selinux: true
+    ha_cluster_cluster_name: my-new-cluster
+    ha_cluster_hacluster_password: password
+    ha_cluster_sbd_enabled: true
+    ha_cluster_sbd_options:
+      - name: delay-start
+        value: 'no'
+      - name: startmode
+        value: always
+      - name: timeout-action
+        value: 'flush,reboot'
+      - name: watchdog-timeout
+        value: 5
+#  if you need to set stonith-watchdog-timeout property as well:
+    ha_cluster_cluster_properties:
+      - attrs:
+          - name: stonith-watchdog-timeout
+            value: 10
+
+  roles:
+    - redhat.rhel_system_roles.ha_cluster

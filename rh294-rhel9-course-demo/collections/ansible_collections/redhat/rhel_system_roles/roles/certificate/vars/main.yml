@@ -1,0 +1,29 @@
+# SPDX-License-Identifier: MIT
+---
+# Put the role's internal variables here that are not distribution specific.
+
+__certificate_provider_default: certmonger
+
+__certificate_provider_vars:
+  certmonger:
+    packages:
+      - certmonger
+    service: certmonger
+    config_dir: /etc/certmonger/
+    hooks_dirs_owner: root
+    hooks_dirs_group: root
+    hooks_dirs_mode: "0700"
+
+__certificate_packages:
+  - python3-pyasn1
+  - python3-cryptography
+  - python3-dbus
+
+__certificate_default_directory: /etc/pki/tls
+
+# ansible_facts required by the role
+__certificate_required_facts:
+  - distribution
+  - distribution_major_version
+  - distribution_version
+  - os_family

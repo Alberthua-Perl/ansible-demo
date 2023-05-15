@@ -1,0 +1,134 @@
+# SPDX-License-Identifier: MIT
+---
+- name: Example ha_cluster role invocation - resource constraints definition
+  hosts: all
+  vars:
+    ha_cluster_manage_firewall: true
+    ha_cluster_manage_selinux: true
+    ha_cluster_cluster_name: my-new-cluster
+    ha_cluster_hacluster_password: password
+# In order to use constraints, we need resources the constraints will apply
+# to.
+    ha_cluster_resource_primitives:
+      - id: xvm-fencing
+        agent: 'stonith:fence_xvm'
+        instance_attrs:
+          - attrs:
+              - name: pcmk_host_list
+                value: node1 node2
+      - id: example-1
+    # wokeignore:rule=dummy
+        agent: 'ocf:pacemaker:Dummy'
+      - id: example-2
+    # wokeignore:rule=dummy
+        agent: 'ocf:pacemaker:Dummy'
+      - id: example-3
+    # wokeignore:rule=dummy
+        agent: 'ocf:pacemaker:Dummy'
+      - id: example-4
+    # wokeignore:rule=dummy
+        agent: 'ocf:pacemaker:Dummy'
+      - id: example-5
+    # wokeignore:rule=dummy
+        agent: 'ocf:pacemaker:Dummy'
+      - id: example-6
+    # wokeignore:rule=dummy
+        agent: 'ocf:pacemaker:Dummy'
+# location constraints
+    ha_cluster_constraints_location:
+  # resource ID and node name
+      - resource:
+          id: example-1
+        node: node1
+        options:
+          - name: score
+            value: 20
+  # resource pattern and node name
+      - resource:
+          pattern: example-\d+
+        node: node1
+        options:
+          - name: score
+            value: 10
+  # resource ID and rule
+      - resource:
+          id: example-2
+        rule: '#uname eq node2 and date in_range 2022-01-01 to 2022-02-28'
+  # resource pattern and rule
+      - resource:
+          pattern: example-\d+
+        rule: node-type eq weekend and date-spec weekdays=6-7
+# colocation constraints
+    ha_cluster_constraints_colocation:
+  # simple constraint
+      - resource_leader:
+          id: example-3
+        resource_follower:
+          id: example-4
+        options:
+          - name: score
+            value: -5
+  # set constraint
+      - resource_sets:
+          - resource_ids:
+              - example-1
+              - example-2
+          - resource_ids:
+              - example-5
+              - example-6
+            options:
+              - name: sequential
+                value: "false"
+        options:
+          - name: score
+            value: 20
+# order constraints
+    ha_cluster_constraints_order:
+  # simple constraint
+      - resource_first:
+          id: example-1
+        resource_then:
+          id: example-6
+        options:
+          - name: symmetrical
+            value: "false"
+  # set constraint
+      - resource_sets:
+          - resource_ids:
+              - example-1
+              - example-2
+            options:
+              - name: require-all
+                value: "false"
+              - name: sequential
+                value: "false"
+          - resource_ids:
+              - example-3
+          - resource_ids:
+              - example-4
+              - example-5
+            options:
+              - name: sequential
+                value: "false"
+# ticket constraints
+    ha_cluster_constraints_ticket:
+  # simple constraint
+      - resource:
+          id: example-1
+        ticket: ticket1
+        options:
+          - name: loss-policy
+            value: stop
+  # set constraint
+      - resource_sets:
+          - resource_ids:
+              - example-3
+              - example-4
+              - example-5
+        ticket: ticket2
+        options:
+          - name: loss-policy
+            value: fence
+
+  roles:
+    - redhat.rhel_system_roles.ha_cluster

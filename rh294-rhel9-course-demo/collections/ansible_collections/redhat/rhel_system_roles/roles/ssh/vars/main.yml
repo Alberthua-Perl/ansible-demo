@@ -1,0 +1,21 @@
+---
+########## Internal defaults ##########
+# default list of mandatory packages
+__ssh_packages: ['openssh', 'openssh-clients']
+__ssh_drop_in_template: /etc/ssh/ssh_config.d/{name}.conf
+
+__ssh_drop_in_name:
+
+# support flags
+__ssh_supports_drop_in: false
+__ssh_supports_validate: true
+
+# The default options found in the main configuration file
+__ssh_defaults: {}
+
+# ansible_facts required by the role
+__ssh_required_facts:
+  - distribution
+  - distribution_major_version
+  - distribution_version
+  - os_family

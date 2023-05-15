@@ -1,0 +1,103 @@
+---
+- name: Set Rsyslog facts then include rsyslog role
+  when:
+    - logging_provider == 'rsyslog'
+    - __snapshot_gather_vars is not defined or not __snapshot_gather_vars | bool
+  block:
+    - name: "Set files output if files output is not defined and logging_inputs is not empty"
+      set_fact:
+        __rsyslog_output_files: [{"name": "default_files", "type": "files"}]
+      when:
+        - logging_outputs | d([]) | selectattr('name', 'defined') | selectattr('type', 'defined') | selectattr('type', 'match', '^files$') | list | length == 0
+        - logging_inputs | d([])
+
+    - name: Set rsyslog_outputs
+      set_fact:
+        rsyslog_outputs: "{{ (logging_outputs | d([]) | selectattr('name', 'defined') | selectattr('type', 'defined') | list) + (__rsyslog_output_files | d([])) }}"
+
+    - name: Set rsyslog_inputs
+      set_fact:
+        rsyslog_inputs: "{{ logging_inputs | d([]) | selectattr('name', 'defined') | selectattr('type', 'defined') | list }}"
+
+    - name: Set custom_config_files fact
+      set_fact:
+        rsyslog_custom_config_files: "{{ item.custom_config_files }}"
+      with_items: "{{ logging_outputs }}"
+      when:
+        - item.type | d('') == 'custom'
+        - logging_enabled | d(true)
+
+    - name: Check logging inputs
+      vars:
+        __logging_input_names: "{{ logging_inputs | map(attribute='name') | list }}"
+      block:
+        - name: Check logging_inputs item in logging_flows.inputs
+          fail:
+            msg: >
+              Error: {{ item.inputs }} includes undefined logging_inputs item.
+          loop: "{{ logging_flows }}"
+          when:
+            - logging_enabled | d(true)
+            - item.inputs | intersect(__logging_input_names) | length != item.inputs | length
+
+  # Manage firewall for the ports configured as logging role parameters
+    - name: Gather ports specified in the logging_inputs and outputs vars
+      include_tasks: gather_ports.yml
+
+    - name: Manage firewall on the gathered ports
+      include_tasks: firewall.yml
+
+    - name: Manage selinux on the gathered ports
+      include_tasks: selinux.yml
+
+  # Configure certificates
+    - name: Generate certificates
+      include_tasks: certificate.yml
+
+    - name: Manage debugging the logging role
+      when: logging_debug | d(false)
+      block:
+        - name: Re-read facts after adding custom fact
+          setup:
+            filter: ansible_local
+
+        - name: Create rsyslog debug dir
+          file:
+            path: "{{ role_path }}/debug"
+            state: directory
+            mode: 0700
+
+        - name: Delete debug file
+          file:
+            path: "{{ role_path }}/debug/main.yml"
+            state: absent
+
+        - name: Create rsyslog debug file
+          lineinfile:
+            path: "{{ role_path }}/debug/main.yml"
+            create: true
+            line: "#ANSIBLE MANAGED VARIABLES FILE"
+            mode: 0600
+
+        - name: Use a debug var to avoid an empty dict in with_dict
+          set_fact:
+            __logging_debug_hostname: "{{ hostvars[inventory_hostname] }}"
+
+        - name: Populate rsyslog debug file
+          when:
+            - __logging_debug_hostname | length > 0
+            - item.key is match("rsyslog*")
+          lineinfile:
+            path: "{{ role_path }}/debug/main.yml"
+            create: true
+            line: "{{ item.key }}: {{ item.value | d() | to_nice_json(indent=2) }}"
+            mode: 0600
+          with_dict: "{{ __logging_debug_hostname }}"
+
+- name: Include Rsyslog role
+  vars:
+    __rsyslog_enabled: "{{ logging_enabled }}"
+    __rsyslog_system_log_dir: "{{ logging_system_log_dir }}"
+  include_role:
+    name: "redhat.rhel_system_roles.private_logging_subrole_rsyslog" # noqa role-name[path]
+  when: logging_provider == 'rsyslog'

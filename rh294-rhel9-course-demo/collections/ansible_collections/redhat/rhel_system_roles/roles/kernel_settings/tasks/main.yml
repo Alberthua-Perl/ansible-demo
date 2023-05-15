@@ -1,0 +1,87 @@
+---
+- name: Set version specific variables
+  include_tasks: set_vars.yml
+
+- name: Ensure required packages are installed
+  package:
+    name: "{{ __kernel_settings_packages }}"
+    state: present
+
+- name: Ensure required services are enabled and started
+  service:
+    name: "{{ item }}"
+    state: started
+    enabled: true
+  loop: "{{ __kernel_settings_services }}"
+
+- name: Ensure kernel settings profile directory exists
+  file:
+    path: "{{ __kernel_settings_profile_dir }}"
+    state: directory
+    mode: 0755
+
+- name: Generate a configuration for kernel settings
+  template:
+    src: "{{ __kernel_settings_profile_src }}.j2"
+    dest: "{{ __kernel_settings_profile_filename }}"
+    force: false
+    mode: 0644
+
+- name: Get current config
+  slurp:
+    src: "{{ __kernel_settings_profile_filename }}"
+  register: __kernel_settings_profile_contents_b64
+  changed_when: false
+
+- name: Apply kernel settings
+  redhat.rhel_system_roles.kernel_settings:
+    sysctl: "{{ kernel_settings_sysctl if kernel_settings_sysctl else omit }}"
+    sysfs: "{{ kernel_settings_sysfs if kernel_settings_sysfs else omit }}"
+    systemd:
+      - name: "{{ 'cpu_affinity' if kernel_settings_systemd_cpu_affinity else none }}"
+        value: "{{ kernel_settings_systemd_cpu_affinity if kernel_settings_systemd_cpu_affinity != __kernel_settings_state_absent else none }}"
+        state: "{{ 'absent' if kernel_settings_systemd_cpu_affinity == __kernel_settings_state_absent else none }}"
+    vm:
+      - name: "{{ 'transparent_hugepages' if kernel_settings_transparent_hugepages else none }}"
+        value: "{{ kernel_settings_transparent_hugepages if kernel_settings_transparent_hugepages != __kernel_settings_state_absent else none }}"
+        state: "{{ 'absent' if kernel_settings_transparent_hugepages == __kernel_settings_state_absent else none }}"
+      - name: "{{ 'transparent_hugepage.defrag' if kernel_settings_transparent_hugepages_defrag else none }}"
+        value: "{{ kernel_settings_transparent_hugepages_defrag if kernel_settings_transparent_hugepages_defrag != __kernel_settings_state_absent else none }}"
+        state: "{{ 'absent' if kernel_settings_transparent_hugepages_defrag == __kernel_settings_state_absent else none }}"
+    bootloader:
+      - name: "{{ 'cmdline' if kernel_settings_bootloader_cmdline | d({}) else none }}"
+        value: "{{ kernel_settings_bootloader_cmdline | d([]) }}"
+    purge: "{{ kernel_settings_purge }}"
+    ansible_managed_new: "{{ __kernel_settings_new_header }}"
+    ansible_managed_current: "{{ __kernel_settings_cur_header }}"
+  notify: __kernel_settings_handler_modified
+  register: __kernel_settings_register_module
+  when:
+    - kernel_settings_sysctl or kernel_settings_sysfs or kernel_settings_systemd_cpu_affinity or kernel_settings_transparent_hugepages or kernel_settings_transparent_hugepages_defrag or kernel_settings_bootloader_cmdline | d({}) or kernel_settings_purge or __kernel_settings_cur_header != __kernel_settings_new_header
+  vars:
+    __kernel_settings_cur_header: "{{ __kernel_settings_profile_contents_b64.content | b64decode | regex_replace('(?sm)^\\[.*$', '') }}"
+    __kernel_settings_new_header: "{{ lookup('template', 'get_ansible_managed.j2') }}"
+
+- name: Tuned apply settings
+  command: >
+    tuned-adm profile '{{ __kernel_settings_register_module.active_profile }}'
+  when: __kernel_settings_register_module is changed # noqa no-handler
+
+- name: Verify settings
+  include_tasks: verify_settings.yml
+  when: __kernel_settings_register_module is changed # noqa no-handler
+
+- name: Notify user that reboot is needed to apply changes
+  debug:
+    msg: >
+      kernel_settings have been modified.
+      A reboot is required in order to apply the changes.
+  when:
+    - __kernel_settings_register_module.reboot_required | d(false)
+    - not kernel_settings_reboot_ok | d(false)
+
+- name: Set the flag that reboot is needed to apply changes
+  set_fact:
+    kernel_settings_reboot_required: true
+  when:
+    - __kernel_settings_register_module.reboot_required | d(false)

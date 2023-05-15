@@ -1,0 +1,43 @@
+---
+- name: Regenerate default configuration file
+  hosts: all
+  gather_facts: true
+  vars:
+    __ssh_test_backup_files:
+      - /etc/ssh/ssh_config.d/00-ansible.conf
+      - /etc/ssh/ssh_config
+  tasks:
+    - name: RHEL6 does not support test mode for ssh
+      meta: end_host
+      when:
+        - ansible_facts['distribution'] in ['CentOS', 'RedHat'] and ansible_facts['distribution_version'] | int < 7
+
+    - name: Backup configuration files
+      include_tasks: tasks/backup.yml
+
+    - name: Record default values from configuration file
+      command: ssh -G localhost -F /etc/ssh/ssh_config
+      register: options_before
+      changed_when: false
+
+    - name: Truncate configuration file
+      file:
+        state: absent
+        path: /etc/ssh/ssh_config
+
+    - name: Run role
+      include_role:
+        name: redhat.rhel_system_roles.ssh
+      vars:
+        ssh_config_file: /etc/ssh/ssh_config
+        ssh_skip_defaults: false
+
+    - name: Record values in new configuration file
+      command: ssh -G localhost -F /etc/ssh/ssh_config
+      register: options_after
+      changed_when: false
+
+    - name: Verify configuration is same
+      assert:
+        that:
+          - options_before.stdout == options_after.stdout

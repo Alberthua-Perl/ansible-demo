@@ -1,0 +1,143 @@
+---
+- name: Test management of swap
+  hosts: all
+  vars:
+    storage_safe_mode: false
+    mount_location: /opt/test
+    volume_size: '5g'
+
+  tasks:
+    - name: Include role to ensure packages are installed
+      include_role:
+        name: redhat.rhel_system_roles.storage
+
+    - name: Mark tasks to be skipped
+      set_fact:
+        storage_skip_checks:
+          - blivet_available
+          - packages_installed
+          - service_facts
+
+  # rhel7 has a limitation of 128g swap size
+    - name: Get unused disks for swap
+      include_tasks: get_unused_disk.yml
+      vars:
+        min_size: "{{ volume_size }}"
+        max_return: 1
+        disks_needed: 1
+        max_size: "{{ '127g' if (ansible_facts['os_family'] == 'RedHat' and ansible_facts['distribution_major_version'] is version('8', '<')) else '0' }}"
+
+    - name: Save disk used for swap
+      set_fact:
+        __swap_disk: "{{ unused_disks[0] }}"
+
+    - name: Create a disk device with swap
+      include_role:
+        name: redhat.rhel_system_roles.storage
+      vars:
+        storage_volumes:
+          - name: test1
+            type: disk
+            disks: "{{ [__swap_disk] }}"
+            fs_type: swap
+
+    - name: Verify results
+      include_tasks: verify-role-results.yml
+
+    - name: Get disk to use for non-swap device
+      include_tasks: get_unused_disk.yml
+      vars:
+        min_size: "{{ volume_size }}"
+        max_return: 1
+        disks_needed: 1
+
+    - name: Save non-swap disk
+      set_fact:
+        __non_swap_disk: "{{ unused_disks[0] }}"
+
+    - name: Format second disk as ext3
+      include_role:
+        name: redhat.rhel_system_roles.storage
+      vars:
+        storage_volumes:
+          - name: test2
+            type: disk
+            mount_point: none
+            fs_type: ext3
+            disks: "{{ [__non_swap_disk] }}"
+
+    - name: Verify results
+      include_tasks: verify-role-results.yml
+
+    - name: Change the disk device file system type from swap to ext3
+      include_role:
+        name: redhat.rhel_system_roles.storage
+      vars:
+        storage_volumes:
+          - name: test1
+            type: disk
+            mount_point: "{{ mount_location }}"
+            fs_type: ext3
+            disks: "{{ [__swap_disk] }}"
+
+    - name: Verify results
+      include_tasks: verify-role-results.yml
+
+    - name: Repeat the previous invocation to verify idempotence
+      include_role:
+        name: redhat.rhel_system_roles.storage
+      vars:
+        storage_volumes:
+          - name: test1
+            type: disk
+            mount_point: "{{ mount_location }}"
+            fs_type: ext3
+            disks: "{{ [__swap_disk] }}"
+
+    - name: Verify results
+      include_tasks: verify-role-results.yml
+
+    - name: Change it back to swap
+      include_role:
+        name: redhat.rhel_system_roles.storage
+      vars:
+        storage_volumes:
+          - name: test1
+            type: disk
+            disks: "{{ [__swap_disk] }}"
+            fs_type: swap
+
+    - name: Verify results
+      include_tasks: verify-role-results.yml
+
+    - name: Repeat the previous invocation to verify idempotence
+      include_role:
+        name: redhat.rhel_system_roles.storage
+      vars:
+        storage_volumes:
+          - name: test1
+            type: disk
+            disks: "{{ [__swap_disk] }}"
+            fs_type: swap
+
+    - name: Verify results
+      include_tasks: verify-role-results.yml
+
+    - name: Clean up
+      include_role:
+        name: redhat.rhel_system_roles.storage
+      vars:
+        storage_volumes:
+          - name: test1
+            type: disk
+            disks: "{{ [__swap_disk] }}"
+            mount_point: "{{ mount_location }}"
+            state: absent
+          - name: test2
+            type: disk
+            disks: "{{ [__non_swap_disk] }}"
+            mount_point: none
+            state: absent
+
+    - name: Verify results
+      include_tasks: verify-role-results.yml

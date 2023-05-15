@@ -1,0 +1,26 @@
+# SPDX-License-Identifier: BSD-3-Clause
+---
+- name: Manage inifiniband example
+  hosts: network-test
+  vars:
+    network_connections:
+      - name: ib0
+        type: infiniband
+        interface_name: ib0
+
+  # Create a simple infiniband profile
+      - name: ib0-10
+        interface_name: ib0.000a
+        type: infiniband
+        autoconnect: true
+        infiniband_p_key: 10
+        parent: ib0
+        state: up
+        ip:
+          dhcp4: false
+          auto6: false
+          address:
+            - 198.51.100.133/30
+
+  roles:
+    - redhat.rhel_system_roles.network

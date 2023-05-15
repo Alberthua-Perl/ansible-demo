@@ -1,0 +1,54 @@
+---
+- name: Cleanup - packages
+  package:
+    name:
+    # everything else depends on one of these two, so will be removed along
+      - cockpit-bridge
+      - cockpit-ws
+      - cockpit-doc
+    state: absent
+  tags:
+    - always
+    - tests::cleanup
+
+- name: Cleanup - find certificates
+  find:
+    paths: /etc/cockpit/ws-certs.d/
+    file_type: any
+    patterns: "*"
+  register: certs_to_delete
+  tags:
+    - always
+    - tests::cleanup
+
+- name: Cleanup - certificates
+  file:
+    path: "{{ item.path }}"
+    state: absent
+  with_items: "{{ certs_to_delete.files }}"
+  tags:
+    - always
+    - tests::cleanup
+
+- name: Cleanup - config file
+  file:
+    path: /etc/cockpit/cockpit.conf
+    state: absent
+  tags:
+    - always
+    - tests::cleanup
+
+- name: Cleanup - port customization
+  file:
+    path: /etc/systemd/system/cockpit.socket.d/
+    state: absent
+  tags:
+    - always
+    - tests::cleanup
+
+- name: Cleanup - Reload systemd
+  systemd:
+    daemon_reload: true
+  tags:
+    - always
+    - tests::cleanup

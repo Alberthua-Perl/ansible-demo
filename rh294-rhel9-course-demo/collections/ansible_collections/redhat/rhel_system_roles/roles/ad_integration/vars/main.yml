@@ -1,0 +1,22 @@
+# SPDX-License-Identifier: MIT
+---
+# Put the role's internal variables here that are not distribution specific.
+# You can override these by defining the same variable with a different
+# value in a platform/version specific file in vars/
+
+# Examples of non-distribution specific (generic) internal variables:
+__ad_integration_realmd_config: realmd.conf
+__ad_integration_packages:
+  - realmd
+  - PackageKit
+__ad_integration_services: [realmd]
+# ansible_facts required by the role
+__ad_integration_required_facts:
+  - distribution
+  - distribution_major_version
+  - distribution_version
+  - os_family
+# Sample realm used for system tests without available real AD
+__ad_integration_sample_realm: sample-realm.com
+# Sample dc server used for system tests without available real AD
+__ad_integration_sample_dc: sample-dc.sample-realm.com

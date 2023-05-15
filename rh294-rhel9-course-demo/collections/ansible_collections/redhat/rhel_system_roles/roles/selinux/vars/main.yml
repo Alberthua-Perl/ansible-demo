@@ -1,0 +1,12 @@
+---
+drop_local_modifications: |
+  boolean -D -N
+  login -D -N
+  port -D -N
+  fcontext -D -N
+
+# ansible_facts required by the role
+__selinux_required_facts:
+  - distribution
+  - distribution_major_version
+  - python_version

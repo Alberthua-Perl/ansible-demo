@@ -1,0 +1,105 @@
+# SPDX-License-Identifier: MIT
+---
+- name: Basic test for insights tags
+  hosts: all
+  gather_facts: true
+
+  tasks:
+    - name: Setup Insights
+      import_tasks: tasks/setup_insights.yml
+
+    - name: Test insights tags
+      block:
+        - name: Configure tags and register insights
+          include_role:
+            name: redhat.rhel_system_roles.rhc
+          vars:
+            rhc_auth:
+              login:
+                username: "{{ lsr_rhc_test_data.reg_username }}"
+                password: "{{ lsr_rhc_test_data.reg_password }}"
+            rhc_insights:
+              remediation: absent
+              state: present
+              tags:
+                group: ansible
+                activity: test
+            rhc_organization: "{{ lsr_rhc_test_data.reg_organization }}"
+            rhc_server:
+              hostname: "{{ lsr_rhc_test_data.candlepin_host }}"
+              port: "{{ lsr_rhc_test_data.candlepin_port }}"
+              prefix: "{{ lsr_rhc_test_data.candlepin_prefix }}"
+              insecure: "{{ lsr_rhc_test_data.candlepin_insecure }}"
+            rhc_baseurl: "{{ lsr_rhc_test_data.baseurl | d(omit) }}"
+
+        - name: Get state of insights tags.yml file
+          include_tasks: tasks/get_insights_tags.yml
+
+        - name: Rename the tags to test_tags_modified
+          set_fact:
+            test_tags_new: "{{ test_tags }}"
+
+        - name: Check if tags.yml file exists and its size is > 0
+          assert:
+            that: test_tags_new.stat.size > 0
+
+        - name: Change tags
+          include_role:
+            name: redhat.rhel_system_roles.rhc
+          vars:
+            rhc_insights:
+              remediation: absent
+              tags:
+                group:
+                  - ansible
+                  - rhc
+
+        - name: Get state of insights tags.yml file
+          include_tasks: tasks/get_insights_tags.yml
+
+        - name: Rename the tags to test_tags_chg
+          set_fact:
+            test_tags_chg: "{{ test_tags }}"
+
+        - name: Check if tags.yml file exists and its size has changed
+          assert:
+            that:
+              - test_tags_new.stat.size != test_tags_chg.stat.size
+
+        - name: Do nothing
+          include_role:
+            name: redhat.rhel_system_roles.rhc
+          vars:
+            rhc_insights:
+              remediation: absent
+
+        - name: Get state of insights tags.yml file
+          include_tasks: tasks/get_insights_tags.yml
+
+        - name: Check if tags.yml file exists and its size is the same
+          assert:
+            that:
+              - test_tags.stat.size == test_tags_chg.stat.size
+
+        - name: Remove all tags
+          include_role:
+            name: redhat.rhel_system_roles.rhc
+          vars:
+            rhc_insights:
+              remediation: absent
+              tags:
+                state: absent
+
+        - name: Get state of insights tags.yml file
+          include_tasks: tasks/get_insights_tags.yml
+
+        - name: Check that insights tags.yml file does not exists
+          assert:
+            that: not test_tags.stat.exists
+
+      always:
+        - name: Unregister
+          include_role:
+            name: redhat.rhel_system_roles.rhc
+          vars:
+            rhc_state: absent

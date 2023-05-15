@@ -1,0 +1,17 @@
+---
+selinux_state:
+selinux_policy:
+
+# Set up empty lists for SELinux changes.
+selinux_booleans: []
+selinux_fcontexts: []
+selinux_logins: []
+selinux_ports: []
+selinux_restore_dirs: []
+
+# Purging local modifications is disabled by default.
+selinux_all_purge: false
+selinux_booleans_purge: false
+selinux_fcontexts_purge: false
+selinux_ports_purge: false
+selinux_logins_purge: false

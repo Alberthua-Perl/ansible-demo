@@ -1,0 +1,87 @@
+# SPDX-License-Identifier: BSD-3-Clause
+# This test is supposed to check that checkpoints are properly cleaned-up after
+# failures in the module. This test currently uses the initscripts provider to
+# mark a device as unmanaged for NM and then tries to activiate it using NM.
+# This failed without removing the checkpoint.
+---
+- hosts: all
+  vars:
+    interface: cptstbr
+    profile: "{{ interface }}"
+    network_provider: nm
+  pre_tasks:
+    - name: Show test banner
+      debug:
+        msg: Inside states tests
+    - include_tasks: tasks/show_interfaces.yml
+    - include_tasks: tasks/assert_device_absent.yml
+  roles:
+    - redhat.rhel_system_roles.network
+  tasks:
+    - block:
+      # Workaround for https://bugzilla.redhat.com/show_bug.cgi?id=1832897
+        - name: install dbus-tools
+          package:
+            name: dbus-tools
+            state: present
+      # create test profile
+        - name: Include network role
+          include_role:
+            name: redhat.rhel_system_roles.network
+          vars:
+            network_provider: initscripts
+            network_connections:
+              - name: "{{ interface }}"
+                state: up
+                type: bridge
+                ip:
+                  dhcp4: false
+                  auto6: false
+        - include_tasks: tasks/assert_device_present.yml
+        - include_tasks: tasks/assert_profile_present.yml
+      # Use internal module directly for speedup
+        - name: use network_connections
+          redhat.rhel_system_roles.network_connections:
+            provider: nm
+            connections:
+              - name: "{{ interface }}"
+                state: up
+                type: bridge
+                ip:
+                  dhcp4: false
+                  auto6: false
+          ignore_errors: true
+          register: error_trigger
+        - name: assert that the module call did not fail
+          assert:
+            fail_msg: The module call did not fail. Therefore the test condition was not triggered. This test needs to be adjusted or dropped.
+            that: error_trigger.failed
+      # yamllint disable-line rule:line-length
+        - name: get NM dbus objects
+          command: busctl --system tree --list org.freedesktop.NetworkManager
+          register: nm_dbus_objects
+        - name: Show nm_dbus_objects
+          debug:
+            var: nm_dbus_objects
+        - name: Assert that no checkpoints are left
+          assert:
+            fail_msg: Checkpoints not cleaned up
+            that: >
+              '/org/freedesktop/NetworkManager/Checkpoint/' not in
+              nm_dbus_objects.stdout_lines
+      always:
+        - block:
+          # Use internal module directly for speedup
+            - redhat.rhel_system_roles.network_connections:
+                provider: nm
+                connections:
+                  - name: "{{ interface }}"
+                    persistent_state: absent
+                    state: down
+            - file:
+                dest: "/etc/sysconfig/network-scripts/ifcfg-{{ interface }}"
+                state: absent
+            - command: ip link del "{{ interface }}"
+          ignore_errors: true
+          tags:
+            - "tests::cleanup"

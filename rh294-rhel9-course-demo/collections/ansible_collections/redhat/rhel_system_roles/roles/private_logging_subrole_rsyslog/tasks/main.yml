@@ -1,0 +1,9 @@
+---
+# SPDX-License-Identifier: GPL-3.0-only
+
+- name: Set platform/version specific variables
+  include_tasks: set_vars.yml
+
+- name: Main rsyslog subrole
+  include_tasks: main_core.yml
+  when: __snapshot_gather_vars is not defined or not __snapshot_gather_vars | bool

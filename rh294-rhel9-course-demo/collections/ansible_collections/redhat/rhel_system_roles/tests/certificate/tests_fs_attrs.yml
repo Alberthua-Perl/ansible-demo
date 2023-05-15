@@ -1,0 +1,64 @@
+---
+- name: Ensure UID and GID exists
+  hosts: all
+  tasks:
+    - name: Ensure user exists
+      user:
+        name: user1
+        uid: 1040
+    - name: Ensure group "somegroup" exists
+      group:
+        name: somegroup
+        gid: 1041
+- name: Issue certificate setting user/group
+  hosts: all
+  vars:
+    certificate_requests:
+      - name: mycert_fs_attrs
+        dns: www.example.com
+        owner: ftp
+        group: ftp
+        ca: self-sign
+      - name: certid
+        dns: www.example.com
+        owner: 1040
+        group: 1041
+        ca: self-sign
+
+  roles:
+    - redhat.rhel_system_roles.certificate
+
+- name: Verify certificate
+  hosts: all
+  vars:
+    certificates:
+      - path: /etc/pki/tls/certs/mycert_fs_attrs.crt
+        key_path: /etc/pki/tls/private/mycert_fs_attrs.key
+        subject:
+          - name: commonName
+            oid: 2.5.4.3
+            value: www.example.com
+        subject_alt_name:
+          - name: DNS
+            value: www.example.com
+        owner: ftp
+        group: ftp
+        mode: "0640"
+      - path: /etc/pki/tls/certs/certid.crt
+        key_path: /etc/pki/tls/private/certid.key
+        subject:
+          - name: commonName
+            oid: 2.5.4.3
+            value: www.example.com
+        subject_alt_name:
+          - name: DNS
+            value: www.example.com
+        owner: 1040
+        group: 1041
+        mode: "0640"
+  tasks:
+    - name: Verify each certificate
+      include_tasks: tasks/assert_certificate_parameters.yml
+      loop: "{{ certificates }}"
+      loop_control:
+        loop_var: cert

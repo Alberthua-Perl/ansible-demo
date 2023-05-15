@@ -1,0 +1,8 @@
+---
+- name: Restart kdump
+  service:
+    name: kdump
+    state: restarted
+  when:
+    - not __kdump_service_start.changed | d(false)
+    - not kdump_reboot_required

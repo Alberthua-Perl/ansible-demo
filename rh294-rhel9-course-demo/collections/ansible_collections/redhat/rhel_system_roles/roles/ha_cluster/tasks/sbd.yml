@@ -1,0 +1,99 @@
+# SPDX-License-Identifier: MIT
+---
+- name: Manage SBD
+  when: ha_cluster_sbd_enabled
+  block:
+    - name: Manage SBD
+    # Ideally, the block as a whole should run one node at a time. This does
+    # not seem to be possible with Ansible yet. Instead, we at least make the
+    # block's tasks run one by one. This way, we avoid possible issues caused
+    # by initializing one device from multiple host at the same time. Devices
+    # initialized before the role started will not be reinitialized. Devices
+    # not initialized before the role started will be initialized as many
+    # times as there are nodes. That, however, has no other side effect than
+    # suboptimal performance of the role.
+      throttle: 1
+      block:
+        - name: Probe SBD devices
+          command:
+            cmd: sbd -d {{ item | quote }} dump
+          loop: "{{ ha_cluster.sbd_devices | d([]) }}"
+          register: __ha_cluster_check_sbd_devices_result
+          changed_when: false
+        # return_code == 0 means the disk is initialized already
+        # return_code != 0 means the disk is not initialized yet
+          failed_when: false
+        # This command doesn't do any changes and so can safely be executed
+        # even in check_mode.
+          check_mode: false
+
+        - name: Initialize SBD devices
+          command:
+          # use --force to skip interactive confirmation
+            cmd: >
+              pcs --force -- stonith sbd device setup
+              device={{ item.item | quote }}
+              {% for option in ha_cluster_sbd_options | d([]) %}
+                {% if option.name == 'watchdog-timeout' %}
+                  watchdog-timeout={{ option.value | quote }}
+                  msgwait-timeout={{ option.value * 2 }}
+                {% endif %}
+              {% endfor %}
+        # The initialization is done only if a device has not been
+        # initialized already. Therefore this task always makes a change.
+          changed_when: true
+          loop: "{{ __ha_cluster_check_sbd_devices_result.results }}"
+          when: item.rc != 0
+
+    - name: Distribute SBD config
+      template:
+        src: templates/sbd
+        dest: /etc/sysconfig/sbd
+        owner: root
+        group: root
+        mode: 0644
+      vars:
+        options: "{{ ha_cluster_sbd_options | d([]) }}"
+        node_name: "{{ __ha_cluster_node_name }}"
+        node_watchdog: "{{ ha_cluster.sbd_watchdog | d('/dev/watchdog') }}"
+        node_devices: "{{ ha_cluster.sbd_devices | d([]) }}"
+      register: __ha_cluster_distribute_sbd_config
+
+- name: Get services status - detect pacemaker
+  service_facts:
+
+- name: Set stonith-watchdog-timeout cluster property
+  vars:
+    pacemaker_running: "{{ ansible_facts.services['pacemaker.service']['state'] | d('') == 'running' }}"
+  block:
+    - name: Set stonith-watchdog-timeout cluster property in CIB
+      command:
+        cmd: >
+          pcs --force
+          {{
+            pacemaker_running | ternary('', '-f /var/lib/pacemaker/cib/cib.xml')
+          }}
+          -- property set
+          stonith-watchdog-timeout={{
+            ha_cluster_sbd_enabled | ternary('', '0') }}
+      changed_when: true
+
+  # In case cib.xml just got created by the task above, fix its permissions.
+    - name: Correct cib.xml ownership
+      file:
+        path: /var/lib/pacemaker/cib/cib.xml
+        state: file
+        owner: hacluster
+        group: haclient
+        mode: 0600
+      when:
+        - not pacemaker_running
+
+  # In case of modifying cib.xml file, delete its (now unmatching) signature
+  # so that pacemaker accepts the new cib.xml content.
+    - name: Clean cib.xml.sig
+      file:
+        path: /var/lib/pacemaker/cib/cib.xml.sig
+        state: absent
+      when:
+        - not pacemaker_running

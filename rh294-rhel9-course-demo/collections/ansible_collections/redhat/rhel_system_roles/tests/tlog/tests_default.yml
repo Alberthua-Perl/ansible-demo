@@ -1,0 +1,7 @@
+---
+- name: Ensure that the role runs with default parameters
+  hosts: all
+
+  roles:
+    - redhat.rhel_system_roles.tlog
+  gather_facts: false

@@ -1,0 +1,65 @@
+{% if __rsyslog_output.remote_log_path | d() or __rsyslog_output.remote_sub_path | d() %}
+{%   if __rsyslog_output.remote_log_path | d() %}
+{%     set __remote_log_path = __rsyslog_output.remote_log_path %}
+{%   else %}
+{%     set __remote_log_path = __rsyslog_system_log_dir ~ __rsyslog_output.remote_sub_path %}
+{%   endif %}
+{%   if __rsyslog_output.comment | d() %}
+# {{ __rsyslog_output.comment }}
+{%   endif %}
+template(
+  name="{{ __rsyslog_output.name }}_template"
+  type="string"
+  string="{{ __remote_log_path }}"
+)
+ruleset(name="{{ __rsyslog_output.name }}"
+        queue.type="{{ logging_server_queue_type }}"
+        queue.size="{{ logging_server_queue_size }}"
+        queue.workerThreads="{{ logging_server_threads }}") {
+    # Store remote logs in separate logfiles
+{%   if __rsyslog_output.property | d() %}
+    :{{ __rsyslog_output.property }}, {{ __rsyslog_output.property_op | d('contains') }}, "{{ __rsyslog_output.property_value | d('error') }}" action(name="{{ __rsyslog_output.name }}" type="omfile" DynaFile="{{ __rsyslog_output.name }}_template" DynaFileCacheSize="{{ __rsyslog_output.client_count | d(10) }}" ioBufferSize="{{ __rsyslog_output.io_buffer_size | d('65536') }}" asyncWriting="{{ 'on' if __rsyslog_output.async_writing | d(false) | bool else 'off' }}")
+{%   elif __rsyslog_output.exclude | d([]) %}
+    {{ __rsyslog_output.facility | d('*') }}.{{ __rsyslog_output.severity | d('*') }};{{ __rsyslog_output.exclude | join(';') }} action(name="{{ __rsyslog_output.name }}" type="omfile" DynaFile="{{ __rsyslog_output.name }}_template" DynaFileCacheSize="{{ __rsyslog_output.client_count | d(10) }}" ioBufferSize="{{ __rsyslog_output.io_buffer_size | d('65536') }}" asyncWriting="{{ 'on' if __rsyslog_output.async_writing | d(false) | bool else 'off' }}")
+{%   else %}
+    {{ __rsyslog_output.facility | d('*') }}.{{ __rsyslog_output.severity | d('*') }} action(name="{{ __rsyslog_output.name }}" type="omfile" DynaFile="{{ __rsyslog_output.name }}_template" DynaFileCacheSize="{{ __rsyslog_output.client_count | d(10) }}" ioBufferSize="{{ __rsyslog_output.io_buffer_size | d('65536') }}" asyncWriting="{{ 'on' if __rsyslog_output.async_writing | d(false) | bool else 'off' }}")
+{%   endif %}
+}
+{% else %}
+{%   set __remote_log_path = __rsyslog_system_log_dir ~ '/remote' %}
+# Per-Host Templates for Remote Systems
+template(
+  name="RemoteMessage"
+  type="string"
+  string="{{ __remote_log_path }}/msg/%FROMHOST%/%PROGRAMNAME:::secpath-replace%.log"
+)
+
+# Template for Remote host auth logs
+template(
+  name="RemoteHostAuthLog"
+  type="string"
+  string="{{ __remote_log_path }}/auth/%FROMHOST%/%PROGRAMNAME:::secpath-replace%.log"
+)
+
+# Template for Remote host cron logs
+template(
+  name="RemoteHostCronLog"
+  type="string"
+  string="{{ __remote_log_path }}/cron/%FROMHOST%/%PROGRAMNAME:::secpath-replace%.log"
+)
+
+# Template for Remote service mail logs
+template(
+  name="RemoteHostMailLog"
+  type="string"
+  string="{{ __remote_log_path }}/mail/%FROMHOST%/%PROGRAMNAME:::secpath-replace%.log"
+)
+
+ruleset(name="{{ __rsyslog_output.name }}") {
+    # Store remote logs in separate logfiles
+    authpriv.*   action(name="remote_authpriv_host_log" type="omfile" DynaFile="RemoteHostAuthLog")
+    *.info;mail.none;authpriv.none;cron.none action(name="remote_message" type="omfile" DynaFile="RemoteMessage")
+    cron.*       action(name="remote_cron_log" type="omfile" DynaFile="RemoteHostCronLog")
+    mail.*       action(name="remote_mail_service_log" type="omfile" DynaFile="RemoteHostMailLog")
+}
+{% endif %}

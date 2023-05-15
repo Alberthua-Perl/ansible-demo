@@ -1,0 +1,7 @@
+---
+# Note:
+#   $ ansible-galaxy collection install -p collections/ -r collections/requirements.yml
+#   # install collections according to requirements.yml
+collections:
+  - name: http://foundation0.ilt.example.com/redhat-rhel_system_roles-1.21.1.tar.gz
+

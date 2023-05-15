@@ -1,0 +1,140 @@
+# SPDX-License-Identifier: BSD-3-Clause
+# get service facts, used in defaults/main.yml
+---
+- name: Ensure ansible_facts used by role
+  include_tasks: tasks/set_facts.yml
+
+- name: Print network provider
+  debug:
+    msg: "Using network provider: {{ network_provider }}"
+
+- name: Abort applying the network state configuration if using the `network_state` variable with the initscripts provider
+  fail:
+    msg: Only the `nm` provider supports using the `network_state` variable
+  when:
+    - network_state is defined
+    - network_provider == "initscripts"
+
+- name: Abort applying the network state configuration if the system version of the managed host is below 8
+  fail:
+    msg: The `network_state` variable uses nmstate backend which is only supported since RHEL-8
+  when:
+    - network_state is defined
+    - ansible_distribution_major_version | int < 8
+# Depending on the plugins, checking installed packages might be slow
+# for example subscription manager might slow this down
+# Therefore install packages only when rpm does not find them
+- name: Install packages
+  package:
+    name: "{{ network_packages }}"
+    state: present
+  when:
+    - not network_packages is subset(ansible_facts.packages.keys())
+  register: __network_package_install
+
+- name: Install NetworkManager and nmstate when using network_state variable
+  package:
+    name:
+      - NetworkManager
+      - nmstate
+    state: present
+  when:
+    - network_state is defined
+    - ansible_distribution == 'Fedora' and ansible_distribution_major_version | int > 27 or ansible_distribution != 'Fedora' and ansible_distribution_major_version | int > 7
+
+- name: Install python3-libnmstate when using network_state variable
+  package:
+    name:
+      - python3-libnmstate
+    state: present
+  when:
+    - network_state is defined
+    - ansible_distribution == 'Fedora' and ansible_distribution_major_version | int > 34 or ansible_distribution != 'Fedora' and ansible_distribution_major_version | int > 8
+
+# If network packages changed and wireless or team connections are specified,
+# NetworkManager must be restarted
+- name: Restart NetworkManager due to wireless or team interfaces
+  service:
+    name: NetworkManager
+    state: restarted
+  when:
+    - __network_wireless_connections_defined or __network_team_connections_defined
+    - network_provider == "nm"
+    - network_allow_restart
+  # ansible-lint wants this to be a handler, but this is not appropriate as
+  # NetworkManager must be restarted prior to the connections being created.
+  # see (https://docs.ansible.com/ansible-lint/rules/default_rules.html)
+    - __network_package_install.changed # noqa no-handler
+
+- name: Enable and start NetworkManager
+  service:
+    name: "{{ network_service_name }}"
+    state: started
+    enabled: true
+  when:
+    - network_provider == "nm" or network_state is defined
+  no_log: true
+
+# If any 802.1x connections are used, the wpa_supplicant
+# service is required to be running
+- name: Enable and start wpa_supplicant
+  service:
+    name: wpa_supplicant
+    state: started
+    enabled: true
+  when:
+    - network_provider == "nm"
+    - __network_wpa_supplicant_required
+
+- name: Enable network service
+  service:
+    name: "{{ network_service_name }}"
+    enabled: true
+  when:
+    - network_provider == "initscripts"
+  no_log: true
+
+- name: Ensure initscripts network file dependency is present
+  copy:
+    dest: /etc/sysconfig/network
+    content: "# Created by network system role"
+    mode: "0644"
+    force: false
+  when:
+    - network_provider == "initscripts"
+
+- name: Configure networking connection profiles
+  redhat.rhel_system_roles.network_connections:
+    provider: "{{ network_provider | mandatory }}"
+    ignore_errors: "{{ network_ignore_errors | default(omit) }}"
+    force_state_change: "{{ network_force_state_change | default(omit) }}"
+    connections: "{{ network_connections | default([]) }}"
+    __debug_flags: "{{ __network_debug_flags | default(omit) }}"
+    __header: "{{ __lsr_ansible_managed }}"
+  vars:
+    __lsr_ansible_managed: "{{ lookup('template', 'get_ansible_managed.j2') }}"
+  register: __network_connections_result
+
+- name: Configure networking state
+  redhat.rhel_system_roles.network_state:
+    desired_state: "{{ network_state | default([]) }}"
+  register: __network_state_result
+  when: network_state is defined
+
+- name: Show stderr messages for the network_connections
+  debug:
+    var: __network_connections_result.stderr_lines
+
+- name: Show debug messages for the network_connections
+  debug:
+    var: __network_connections_result
+    verbosity: 1
+
+- name: Show debug messages for the network_state
+  debug:
+    var: __network_state_result
+    verbosity: 1
+  when: network_state is defined
+
+- name: Re-test connectivity
+  ping:

@@ -1,0 +1,131 @@
+---
+- name: Test management of SELinux modules
+  hosts: all
+  tasks:
+    - name: Execute the role and catch errors
+      vars:
+        selinux_modules:
+          - {path: "selinux_modules/linux-system-roles-selinux-test-a.pp"}
+          - {name: "linux-system-roles-selinux-test-a", state: "disabled"}
+          - {name: "linux-system-roles-selinux-test-a", state: "enabled"}
+          - {path: "linux-system-roles-selinux-test-b.pp", priority: "500"}
+          - {name: "linux-system-roles-selinux-test-b", priority: "500", state: "disabled"}
+        # yamllint disable rule:line-length
+          - {path: "{{ playbook_dir }}/files/selinux_modules/linux-system-roles-selinux-test-c.pp", priority: "600"}
+          - {name: "linux-system-roles-selinux-test-c", priority: "600", state: "absent"}
+      when: ansible_distribution == "Fedora" or (ansible_distribution_major_version | int >= 7 and ansible_distribution in ["CentOS", "RedHat", "Rocky"])
+      block:
+        - name: Execute the role
+          include_role:
+            name: redhat.rhel_system_roles.selinux
+      rescue:
+        - name: Cleanup modules
+          command: "{{ item }}"
+          loop:
+            - "semodule -r linux-system-roles-selinux-test-a"
+            - "semodule -X 500 -r linux-system-roles-selinux-test-b"
+            - "semodule -X 600 -r linux-system-roles-selinux-test-c"
+          ignore_errors: true # noqa ignore-errors
+          changed_when: false
+        - name: Report role rhel-system-roles.selinux failed
+          fail:
+            msg: "rhel-system-roles.selinux failed"
+
+    - name: Check module states
+      vars:
+      # noqa jinja[spacing]
+        test_module_c: "{{ selinux_installed_modules ['linux-system-roles-selinux-test-c']['600'] | default('absent') }}"
+      when: ansible_distribution == "Fedora" or (ansible_distribution_major_version | int >= 7 and ansible_distribution in ["CentOS", "RedHat", "Rocky"])
+      block:
+        - name: "Check if linux-system-roles-selinux-test-a is installed and enabled"
+          assert:
+            that: selinux_installed_modules['linux-system-roles-selinux-test-a']['400']['enabled']
+
+        - name: "Check if linux-system-roles-selinux-test-b is installed and disabled"
+          assert:
+            that: not selinux_installed_modules['linux-system-roles-selinux-test-b']['500']['enabled']
+
+        - name: Check if linux-system-roles-selinux-test-c is absent
+          assert:
+            that: test_module_c == 'absent'
+      always:
+        - name: Cleanup modules
+          command: "{{ item }}"
+          loop:
+            - "semodule -r linux-system-roles-selinux-test-a"
+            - "semodule -X 500 -r linux-system-roles-selinux-test-b"
+            - "semodule -X 600 -r linux-system-roles-selinux-test-c"
+          ignore_errors: true # noqa ignore-errors
+          changed_when: false
+
+    - name: Execute the role and catch errors
+      vars:
+        selinux_modules:
+          - {path: "selinux_modules/linux-system-roles-selinux-test-a.pp"}
+          - {name: "linux-system-roles-selinux-test-a", state: "disabled"}
+          - {name: "linux-system-roles-selinux-test-a", state: "enabled"}
+          - {path: "linux-system-roles-selinux-test-b.pp", priority: "400"}
+          - {name: "linux-system-roles-selinux-test-b", state: "disabled"}
+        # yamllint disable rule:line-length
+          - {path: "{{ playbook_dir }}/files/selinux_modules/linux-system-roles-selinux-test-c.pp", priority: "200"}
+          - {name: "linux-system-roles-selinux-test-c", priority: "300", state: "absent"}
+      when: ansible_distribution_major_version | int < 7 and ansible_distribution in ["CentOS", "RedHat"]
+      block:
+        - name: Execute the role
+          include_role:
+            name: redhat.rhel_system_roles.selinux
+      rescue:
+        - name: Cleanup modules
+          command: "{{ item }}"
+          loop:
+            - "semodule -r linux-system-roles-selinux-test-a"
+            - "semodule -r linux-system-roles-selinux-test-b"
+            - "semodule -r linux-system-roles-selinux-test-c"
+          ignore_errors: true # noqa ignore-errors
+          changed_when: false
+        - name: Report role rhel-system-roles.selinux failed
+          fail:
+            msg: "rhel-system-roles.selinux failed"
+
+    - name: Check module states
+      vars:
+      # noqa jinja[spacing]
+        test_module_c: "{{ selinux_installed_modules ['linux-system-roles-selinux-test-c']['0'] | default('absent') }}"
+      when: ansible_distribution_major_version | int < 7 and ansible_distribution in ["CentOS", "RedHat"]
+      block:
+        - name: "Check if linux-system-roles-selinux-test-a is installed and enabled"
+          assert:
+            that: selinux_installed_modules['linux-system-roles-selinux-test-a']['0']['enabled']
+
+        - name: "Check if linux-system-roles-selinux-test-b is installed and disabled"
+          assert:
+            that: not selinux_installed_modules['linux-system-roles-selinux-test-b']['0']['enabled']
+
+        - name: Check if linux-system-roles-selinux-test-c is absent
+          assert:
+            that: test_module_c == 'absent'
+      always:
+        - name: Cleanup modules
+          command: "{{ item }}"
+          loop:
+            - "semodule -r linux-system-roles-selinux-test-a"
+            - "semodule -r linux-system-roles-selinux-test-b"
+            - "semodule -r linux-system-roles-selinux-test-c"
+          ignore_errors: true # noqa ignore-errors
+          changed_when: false
+    - name: Ensure file glob patterns do not work
+      block:
+        - name: Call the role with a fileglob pattern
+          include_role:
+            name: redhat.rhel_system_roles.selinux
+          vars:
+            selinux_modules:
+              - {path: "selinux_modules/[lmno]?nux-system-roles-selinux-test-*.pp"}
+
+        - name: Should not get here
+          fail:
+            msg: UNREACH
+      rescue:
+        - name: Check the returned error
+          assert:
+            that: ansible_failed_result.msg != "UNREACH"

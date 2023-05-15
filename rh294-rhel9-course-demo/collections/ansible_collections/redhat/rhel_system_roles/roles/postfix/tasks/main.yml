@@ -1,0 +1,111 @@
+---
+- name: Ensure ansible_facts required by role
+  include_tasks: set_facts.yml
+
+# Distribution defaults are different from the postfix defaults, hence need to
+# reinstall the package
+- name: Remove postfix package(s) to restore config {{ __postfix_packages }}
+  when:
+    - postfix_conf.previous is defined
+    - postfix_conf.previous == "replaced"
+  block:
+  # It is assumed that the only package providing config files that might
+  # be modified is postfix - if this is not so, then additional
+  # packages need to be added to this check
+    - name: Get status of package(s) {{ __postfix_packages }}
+      command: rpm -V {{ item }} # noqa command-instead-of-module
+      loop: "{{ __postfix_packages }}"
+      register: __postfix_packages_status
+      failed_when: false
+      changed_when: false
+
+    - name: Remove package(s) to reset original confs {{ __postfix_packages }}
+      package:
+        name: "{{ __postfix_packages }}"
+        state: absent
+      register: __postfix_erased
+      when: __postfix_packages_status.results | rejectattr('stdout', 'match', '^package .* is not installed') | selectattr('stdout', 'search', ' /etc/postfix/.*[.]cf($|\n)') | list | length > 0
+
+- name: Configure firewall
+  include_tasks: firewall.yml
+
+- name: Configure selinux
+  include_tasks: selinux.yml
+
+- name: Install Postfix
+  package:
+    name: "{{ __postfix_packages }}"
+    state: present
+
+- name: Enable Postfix
+  service:
+    name: postfix
+    state: started
+    enabled: true
+
+- name: Get current config
+  command: postconf
+  register: __postfix_register_config
+  changed_when: false
+  when: postfix_conf | dict2items | rejectattr('key', 'match', '^previous$') | list | items2dict | d({}) | length > 0
+
+- name: Check given config against current config
+  changed_when: false
+  when:
+    - postfix_conf | dict2items | rejectattr('key', 'match', '^previous$') | list | items2dict | d({}) | length > 0
+    - __postfix_register_config is defined
+    - __postfix_register_config.stdout_lines is defined
+  set_fact:
+    __postfix_has_config_changed: |-
+      {% for key, val in postfix_conf.items() %}
+      {%   if key != 'previous' %}
+      {%     set space = ' ' if val else '' %}
+      {%     set itemstr = '{} ={}{}'.format(key, space, val) %}
+      {%     if itemstr not in __postfix_register_config.stdout_lines %}
+      True itemstr {{ itemstr }} is not in __postfix_register_config
+      {%     endif %}
+      {%   endif %}
+      {% endfor %}
+
+- name: Apply changes
+  when: __postfix_has_config_changed | d("") is search("True")
+  block:
+    - name: Backup configuration
+      shell: >-
+        set -euo pipefail;
+        cp /etc/postfix/main.cf
+        /etc/postfix/main.cf.{{ postfix_backup_multiple |
+        ternary("$(date -Iseconds)", "backup") }}
+      when: postfix_backup or postfix_backup_multiple
+
+    - name: Ensure Last modified header is absent
+      lineinfile:
+        path: /etc/postfix/main.cf
+        regexp: '# Last modified:'
+        state: absent
+
+  # Previously, the role inserted a plain-text comment at the top of main.cf.
+  # This task removes this outdated header for compatibility.
+    - name: Ensure the outdated ansible managed header is absent
+      lineinfile:
+        path: /etc/postfix/main.cf
+        regexp: "# This file is managed by [aA]nsible"
+        state: absent
+
+    - name: Ensure ansible_managed header in configuration file
+      vars:
+        __lsr_ansible_managed: "{{ lookup('template', 'get_ansible_managed.j2') }}"
+      blockinfile:
+        path: /etc/postfix/main.cf
+        block: "{{ __lsr_ansible_managed }}"
+        insertbefore: BOF
+
+    - name: Configure Postfix
+      command: postconf -e {{ item.key | quote }}={{ item.value | quote }}
+      notify:
+        - Check postfix
+        - Restart postfix
+      with_dict: "{{ postfix_conf }}"
+      when:
+        - item.key not in ['previous']
+        - __postfix_has_config_changed | d("") is search("True itemstr " ~ item.key)

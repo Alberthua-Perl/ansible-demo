@@ -1,0 +1,15 @@
+# SPDX-License-Identifier: MIT
+---
+__journald_config: /etc/systemd/journald.conf
+__journald_dropin_dir: /etc/systemd/journald.conf.d
+__journald_dropin_conf: 99-linux-system-roles-journald.conf
+__journald_tmpfiles: /usr/lib/tmpfiles.d/systemd.conf
+__journald_persistent_path: /var/log/journal
+__journald_volatile_path: /run/log/journal
+__journald_packages: [systemd]
+__journald_services: [systemd-journald.service, systemd-journal-flush.service]
+__journald_required_facts:
+  - distribution
+  - distribution_major_version
+  - distribution_version
+  - os_family

@@ -1,0 +1,73 @@
+---
+- name: Test tangd_custom_port
+  hosts: all
+  vars:
+    nbde_server_port: 7500
+    nbde_server_firewall_zone: public
+    nbde_server_manage_firewall: true
+    nbde_server_manage_selinux: true
+  tasks:
+    - name: Install with custom port and firewall zone
+      include_role:
+        name: redhat.rhel_system_roles.nbde_server
+
+    - name: Check if port is open
+      shell:
+        cmd: |-
+          set -euo pipefail
+          ss -tulpn | grep ':{{ nbde_server_port }} ' | awk -F' ' '{print $5}'
+      register: __open_ports_output
+      failed_when: not __open_ports_output.stdout is search(':' ~ (nbde_server_port | string) ~ '$')
+      changed_when: false
+
+    - name: Check if port TCP is open
+      shell:
+        cmd: |-
+          set -euo pipefail
+          ss -tulpn | grep ':{{ nbde_server_port }} ' | awk -F' ' '{print $1}'
+      register: __open_ports_output
+      failed_when: __open_ports_output.stdout != "tcp"
+      changed_when: false
+
+    - name: Check if port is opened in firewall
+      command: >-
+        firewall-cmd --zone {{ nbde_server_firewall_zone }} --query-port
+        {{ nbde_server_port }}/tcp
+      register: __firewall_output
+      changed_when: false
+
+    - name: Install with default port and firewall zone
+      include_role:
+        name: redhat.rhel_system_roles.nbde_server
+      vars:
+        nbde_server_port: 80
+        nbde_server_firewall_zone: public
+        nbde_server_manage_firewall: true
+        nbde_server_manage_selinux: true
+
+    - name: Check if port is open
+      shell:
+        cmd: |-
+          set -euo pipefail
+          ss -tulpn | grep ':80 ' | awk -F' ' '{print $5}'
+      register: __open_ports_output
+      failed_when: not __open_ports_output.stdout is search(':80$')
+      changed_when: false
+
+    - name: Check if port TCP is open
+      shell:
+        cmd: |-
+          set -euo pipefail
+          ss -tulpn | grep ':80 ' | awk -F' ' '{print $1}'
+      register: __open_ports_output
+      failed_when: __open_ports_output.stdout != "tcp"
+      changed_when: false
+
+    - name: Check if port is opened in firewall
+      command: >-
+        firewall-cmd --zone {{ nbde_server_firewall_zone }} --query-port
+        80/tcp
+      register: __firewall_output
+      changed_when: false
+
+# vim:set ts=2 sw=2 et:

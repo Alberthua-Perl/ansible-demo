@@ -1,0 +1,181 @@
+---
+- name: Make sure blivet is available
+  package:
+    name: "{{ blivet_package_list }}"
+    state: present
+  when: storage_skip_checks is not defined or not "blivet_available" in storage_skip_checks
+
+- name: Show storage_pools
+  debug:
+    var: storage_pools
+    verbosity: 1
+
+- name: Show storage_volumes
+  debug:
+    var: storage_volumes
+    verbosity: 1
+
+- name: Get required packages
+  redhat.rhel_system_roles.blivet:
+    pools: "{{ storage_pools | default([]) }}"
+    volumes: "{{ storage_volumes | default([]) }}"
+    use_partitions: "{{ storage_use_partitions }}"
+    disklabel_type: "{{ storage_disklabel_type }}"
+    pool_defaults: "{{ storage_pool_defaults }}"
+    volume_defaults: "{{ storage_volume_defaults }}"
+    packages_only: true
+  register: package_info
+  when: storage_skip_checks is not defined or not "packages_installed" in storage_skip_checks
+
+- name: Enable copr repositories if needed
+  include_tasks: enable_coprs.yml
+  vars:
+    copr_packages: "{{ package_info.packages }}"
+  when: storage_skip_checks is not defined or not "packages_installed" in storage_skip_checks
+
+- name: Make sure required packages are installed
+  package:
+    name: "{{ package_info.packages }}"
+    state: present
+  when: storage_skip_checks is not defined or not "packages_installed" in storage_skip_checks
+
+- name: Get service facts
+  service_facts:
+  when: storage_skip_checks is not defined or not "service_facts" in storage_skip_checks
+
+# rejectattr required because the fix to service_facts is on Ansible > 2.12 only
+# https://github.com/ansible/ansible/pull/75326
+- name: Set storage_cryptsetup_services
+  set_fact:
+    storage_cryptsetup_services: "{{ ansible_facts.services.values() | selectattr('name', 'defined') | rejectattr('status', 'match', '^not-found$') | rejectattr('status', 'match', '^masked$') | rejectattr('status', 'match', '^failed$') | map(attribute='name') | select('match', '^systemd-cryptsetup@') | list }}"
+
+- name: Manage storage devices and check for errors
+  block:
+    - name: Mask the systemd cryptsetup services
+      systemd:
+        name: "{{ item }}"
+        masked: true
+      loop: "{{ storage_cryptsetup_services }}"
+
+    - name: Manage the pools and volumes to match the specified state
+      redhat.rhel_system_roles.blivet:
+        pools: "{{ storage_pools | default([]) }}"
+        volumes: "{{ storage_volumes | default([]) }}"
+        use_partitions: "{{ storage_use_partitions }}"
+        disklabel_type: "{{ storage_disklabel_type }}"
+        pool_defaults: "{{ storage_pool_defaults }}"
+        volume_defaults: "{{ storage_volume_defaults }}"
+        safe_mode: "{{ storage_safe_mode }}"
+      # yamllint disable-line rule:line-length
+        diskvolume_mkfs_option_map: "{{ __storage_blivet_diskvolume_mkfs_option_map | d(omit) }}"
+      # yamllint enable rule:line-length
+      register: blivet_output
+
+    - name: Workaround for udev issue on some platforms
+      command: udevadm trigger --subsystem-match=block
+      changed_when: false
+      when:
+        - storage_udevadm_trigger | d(false)
+        - blivet_output is changed
+
+  rescue:
+    - name: Failed message
+      fail:
+        msg: "{{ ansible_failed_result }}"
+  always:
+    - name: Unmask the systemd cryptsetup services
+      systemd:
+        name: "{{ item }}"
+        masked: false
+      loop: "{{ storage_cryptsetup_services }}"
+
+- name: Show blivet_output
+  debug:
+    var: blivet_output
+    verbosity: 1
+
+- name: Set the list of pools for test verification
+  set_fact:
+    _storage_pools_list: "{{ blivet_output.pools }}"
+
+- name: Set the list of volumes for test verification
+  set_fact:
+    _storage_volumes_list: "{{ blivet_output.volumes }}"
+
+# Mount Management
+#
+# remove obsolete mounts
+#  removed
+#  reformatted (just add w/ new settings?)
+#  changed options? (just add w/ new settings?)
+# add new mounts
+#
+# XXX Apparently we have to do the removals, then tell systemd to
+#     update its view, then set up the new mounts. Otherwise,
+#     systemd will forcibly prevent mounting a new volume to an
+#     existing mount point.
+- name: Remove obsolete mounts
+  redhat.rhel_system_roles.mount: # noqa fqcn
+    src: "{{ mount_info['src'] | default(omit) }}"
+    path: "{{ mount_info['path'] }}"
+    fstype: "{{ mount_info['fstype'] | default(omit) }}"
+    opts: "{{ mount_info['opts'] | default(omit) }}"
+    state: "{{ mount_info['state'] }}"
+  loop: "{{ blivet_output.mounts | selectattr('state', 'defined') | selectattr('state', 'match', '^absent$') | list }}"
+  loop_control:
+    loop_var: mount_info
+
+- name: Tell systemd to refresh its view of /etc/fstab
+  systemd:
+    daemon_reload: true
+  when: blivet_output['mounts']
+
+- name: Set up new/current mounts
+  redhat.rhel_system_roles.mount: # noqa fqcn
+    src: "{{ mount_info['src'] | default(omit) }}"
+    path: "{{ mount_info['path'] }}"
+    fstype: "{{ mount_info['fstype'] | default(omit) }}"
+    opts: "{{ mount_info['opts'] | default(omit) }}"
+    state: "{{ mount_info['state'] }}"
+  loop: "{{ blivet_output.mounts | selectattr('state', 'defined') | rejectattr('state', 'match', '^absent$') | list }}"
+  loop_control:
+    loop_var: mount_info
+
+- name: Tell systemd to refresh its view of /etc/fstab
+  systemd:
+    daemon_reload: true
+  when: blivet_output['mounts']
+
+#
+# Manage /etc/crypttab
+#
+- name: Retrieve facts for the /etc/crypttab file
+  stat:
+    path: /etc/crypttab
+  register: __storage_crypttab
+
+- name: Manage /etc/crypttab to account for changes we just made
+  lineinfile:
+    path: /etc/crypttab
+  # The line option is used when `state: present`
+    line: "{{ entry.name }} {{ entry.backing_device }} {{ entry.password }}"
+  # The regexp option is used when `state: absent` to remove entries
+  # regardless of password
+    regexp: ^{{ entry.name }} {{ entry.backing_device }}
+    state: "{{ entry.state }}"
+    create: true
+    mode: "{{ __storage_crypttab.stat.mode | d('0600') }}"
+    owner: "{{ __storage_crypttab.stat.owner | d('root') }}"
+    group: "{{ __storage_crypttab.stat.group | d('root') }}"
+  loop: "{{ blivet_output.crypts }}"
+  loop_control:
+    loop_var: entry
+
+#
+# Update facts since we may have changed system state.
+#
+# Should this be in a handler instead?
+#
+- name: Update facts
+  setup:
+  when: not ansible_check_mode
