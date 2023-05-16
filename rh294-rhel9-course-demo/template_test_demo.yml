@@ -9,11 +9,11 @@
 
   tasks:
     - name: Transfer user template to hosts
-      template:
+      ansible.builtin.template:
         src: templates/user_demo.j2
         dest: /tmp/user_list.txt
 
     - name: Deploy hosts file
-      template:
+      ansible.builtin.template:
         src: templates/hosts.j2
         dest: /tmp/hosts.txt

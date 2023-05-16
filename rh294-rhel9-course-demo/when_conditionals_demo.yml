@@ -9,7 +9,7 @@
 
   tasks:
     - name: Install httpd using yum, where supported
-      yum:
+      ansible.builtin.yum:
         name: httpd
         state: present
       when: ansible_distribution in supported_distros

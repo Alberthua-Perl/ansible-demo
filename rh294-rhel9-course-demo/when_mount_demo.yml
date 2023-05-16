@@ -4,7 +4,7 @@
 
   tasks:
     - name: Install mariadb-server if enough space on root
-      yum:
+      ansible.builtin.yum:
         name: mariadb-server
         state: latest
       loop: "{{ ansible_mounts }}"

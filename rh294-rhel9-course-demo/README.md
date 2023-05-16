@@ -11,3 +11,10 @@
   - Podman 4.0.2
 
   - `registry.redhat.io/ansible-automation-platform-22/ee-supported-rhel8:latest` container image
+
+- Userful collections and roles url:
+
+  - [Red Hat Certified Ansible Content Collections from the Red Hat hosted automation hub](https://console.redhat.com/)
+
+  - [Community from Ansible Galaxy](https://galaxy.ansible.com)
+

@@ -1,7 +1,9 @@
 ---
 # Note:
-#   sefcontext module not found in Ansible Core and execution environment,
-#   so don't use this module in playbook.
+#   1.sefcontext module not found in Ansible Core and execution environment,
+#     so don't use this module in playbook.
+#   2.run playbook as following command:
+#     $ ansible-navigator run -m stdout --vault-password-file=vars/sec-file1 file_modules_demo.yml
 - name: Create associated accounts
   hosts: all
   #gather_facts: no

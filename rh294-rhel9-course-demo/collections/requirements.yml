@@ -2,6 +2,10 @@
 # Note:
 #   $ ansible-galaxy collection install -p collections/ -r collections/requirements.yml
 #   # install collections according to requirements.yml
+
 collections:
   - name: http://foundation0.ilt.example.com/redhat-rhel_system_roles-1.21.1.tar.gz
-
+    # download from internal webserver and install collection tarball
+  - name: community.general
+    version: 7.0.0
+    # download and install from https://galaxy.ansible.com/community/general

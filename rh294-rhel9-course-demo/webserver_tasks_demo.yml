@@ -1,9 +1,10 @@
 - name: Installs the httpd package
-  yum:
+  ansible.builtin.yum:
     name: httpd
     state: latest
 
 - name: Starts the httpd service
-  service:
+  ansible.builtin.service:
     name: httpd
     state: started
+
