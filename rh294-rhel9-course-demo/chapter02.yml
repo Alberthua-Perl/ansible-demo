@@ -1,6 +1,7 @@
 ---
 - name: Deploy Apache HTTPD Web Server
   hosts: managed_nodes,!servera.lab.example.com
+
   tasks:
     - name: install httpd packages
       ansible.builtin.yum:

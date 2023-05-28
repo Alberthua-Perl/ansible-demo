@@ -12,9 +12,9 @@
         - two
       register: echo_results
 
-#     - name: Show echo_results variable
-#       ansible.builtin.debug:
-#         var: echo_results
+    - name: Show echo_results variable
+      ansible.builtin.debug:
+        var: echo_results
 
     - name: Show stdout from the previous task.
       ansible.builtin.debug:

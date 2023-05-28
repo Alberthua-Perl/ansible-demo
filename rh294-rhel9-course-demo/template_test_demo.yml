@@ -17,3 +17,4 @@
       ansible.builtin.template:
         src: templates/hosts.j2
         dest: /tmp/hosts.txt
+

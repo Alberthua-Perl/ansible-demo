@@ -1,0 +1,19 @@
+---
+- name: Variables defined tast
+  hosts: localhost
+  gather_facts: no
+  vars:
+    test_def:
+      - my_service: ''
+      - my_service: ""
+      - my_service: ' '
+      - my_service: " "
+      - my_service:
+
+  tasks:
+    - name: Test varisbles is null and space
+      ansible.builtin.shell: "echo >>{{ item.service }}<<"
+      #when: item.service is defined
+      when: item.service is not defined
+      loop: "{{ test_def }}"
+

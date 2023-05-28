@@ -8,4 +8,4 @@
     - role: motd
       # vars:
       #  system_owner: someone@host.example.com
-      system_owner: someone@host.example.com
+      #system_owner: someone@host.example.com
