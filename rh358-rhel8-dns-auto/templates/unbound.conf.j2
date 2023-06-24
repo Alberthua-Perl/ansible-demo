@@ -1,0 +1,11 @@
+server:
+        interface: {{ interface }}
+        interface-automatic: {{ interface_automatic }}
+{% for acl in access_control %}
+        access-control: {{ acl }}
+{% endfor %}
+        domain-insecure: "{{ domain_insecure }}"
+
+forward-zone:
+        name: "{{ forward_zone_name }}"
+        forward-addr: {{ forward_zone_addr }}

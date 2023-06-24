@@ -1,0 +1,15 @@
+$TTL 300
+@ IN SOA serverb.backend.lab.example.com. root.serverb.backend.lab.example.com. (
+                    2020041805    ;serial number
+                    1H            ;refresh secondary
+                    5M            ;retry refresh
+                    1W            ;expire zone
+                    1M )          ;cache time-to-live for negative answers
+
+; owner                   TTL   CL  type    RDATA
+                          600   IN  NS      serverb.backend.lab.example.com.
+
+10.0.168.192.IN-ADDR.ARPA.      IN  PTR     servera.backend.lab.example.com.
+11                              IN  PTR     serverb.backend.lab.example.com.
+12                              IN  PTR     serverc.backend.lab.example.com.
+13                              IN  PTR     serverd.backend.lab.example.com.

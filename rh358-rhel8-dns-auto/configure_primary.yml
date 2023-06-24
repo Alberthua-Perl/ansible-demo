@@ -1,0 +1,71 @@
+---
+- name: Configure primary nameserver
+  hosts: primary_dns
+  remote_user: devops
+  become: yes
+
+  tasks:
+    - name: Install BIND9
+      yum:
+        name: bind-9.11.4-26.P2.el8.x86_64
+        state: present
+
+    - name: Copy primary config file
+      copy:
+        src: files/primary-named.conf
+        dest: /etc/named.conf
+        owner: root
+        group: named
+        mode: 0640
+      notify:
+        - reload_named
+
+    - name: Copy forward zone file to primary
+      copy:
+        src: files/primary-backend.lab.example.com.zone
+        dest: /var/named/backend.lab.example.com.zone
+        owner: root
+        group: named
+        mode: 0640
+      notify:
+        - reload_named
+
+    - name: Copy reverse zone file to primary
+      copy:
+        src: files/primary-192.168.0.zone
+        dest: /var/named/192.168.0.zone
+        owner: root
+        group: named
+        mode: 0640
+      notify:
+        - reload_named
+
+    - name: Copy backend config file (for zones)
+      copy:
+        src: files/primary-named.backend.conf
+        dest: /etc/named.backend.conf
+        owner: root
+        group: named
+        mode: 0640
+      notify:
+        - reload_named
+
+    - name: Allow dns service on firewall
+      firewalld:
+        service: dns
+        state: enabled
+        immediate: yes
+        permanent: yes
+
+    - name: Ensure named is running and enabled
+      service:
+        name: named
+        state: started
+        enabled: yes
+
+  handlers:
+    - name: reload_named
+      service:
+        name: named
+        state: reloaded
+...        

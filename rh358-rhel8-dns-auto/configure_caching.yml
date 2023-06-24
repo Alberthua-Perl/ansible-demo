@@ -1,0 +1,46 @@
+---
+- name: Install cache only nameserver
+  hosts: caching_dns
+  remote_user: devops
+  become: yes
+
+  vars:
+    interface: 0.0.0.0
+    interface_automatic: "yes"
+    access_control:
+      - "172.25.250.0/24 allow"
+    domain_insecure: example.com
+    forward_zone_name: .
+    forward_zone_addr: "172.25.250.254"
+    # 172.25.250.254 on bastion configured BIND named server
+
+  tasks:
+    - name: Install cache only nameserver
+      yum:
+        name: unbound
+        state: present
+
+    - name: Create configuration file on caching server host
+      template:
+        src: unbound.conf.j2
+        dest: /etc/unbound/conf.d/unbound.conf
+
+    - name: Allow dns service on firewall
+      firewalld:
+        service: dns
+        state: enabled
+        immediate: yes
+        permanent: yes
+
+    - name: Ensure unbound is running and enabled
+      service:
+        name: unbound
+        state: started
+        enabled: yes
+
+  handlers:
+    - name: restart_unbound
+      service:
+        name: unbound
+        state: restarted
+...        

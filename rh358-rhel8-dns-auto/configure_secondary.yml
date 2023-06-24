@@ -1,0 +1,51 @@
+---
+- name: Configure secondary nameserver
+  hosts: secondary_dns
+  remote_user: devops
+  become: yes
+
+  tasks:
+    - name: Install BIND9
+      yum:
+        name: bind-9.11.4-26.P2.el8.x86_64
+        state: present
+
+    - name: Copy secondary config file
+      copy:
+        src: files/secondary-named.conf
+        dest: /etc/named.conf
+        owner: root
+        group: named
+        mode: 0640
+      notify:
+        - reload_named
+
+    - name: Copy backend config file (for zones)
+      copy:
+        src: files/secondary-named.backend.conf
+        dest: /etc/named.backend.conf
+        owner: root
+        group: named
+        mode: 0640
+      notify:
+        - reload_named
+
+    - name: Allow dns service on firewall
+      firewalld:
+        service: dns
+        state: enabled
+        immediate: yes
+        permanent: yes
+
+    - name: Ensure named is running and enabled
+      service:
+        name: named
+        state: started
+        enabled: yes
+
+  handlers:
+    - name: reload_named
+      service:
+        name: named
+        state: reloaded
+...        

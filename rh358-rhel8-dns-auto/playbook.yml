@@ -1,0 +1,4 @@
+---
+- import_playbook: configure_primary.yml
+- import_playbook: configure_secondary.yml
+- import_playbook: configure_caching.yml
