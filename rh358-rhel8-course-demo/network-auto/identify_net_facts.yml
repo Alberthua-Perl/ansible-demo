@@ -1,0 +1,28 @@
+---
+- name: Verify different network facts through filter
+  hosts: net_auto
+  become: true
+
+  tasks:
+    # display ip address on interface
+    - name: Display list of IPv6  addresses of eth0
+      debug:
+        var: ansible_facts['eth0']['ipv6'] | map(attribute='address') | list
+      # use map and list filter to get interface ip address list  
+
+    # use mac address to identity interface
+    - name: Find the_interface for target_mac
+      set_fact:
+        the_interface: "{{ item }}"
+      when:
+        - ansible_facts[item]['macaddress'] is defined
+        - ansible_facts[item]['macaddress'] == target_mac
+        # this statement is same with 'and' statement
+      loop: "{{ ansible_facts['interfaces'] }}"
+      vars:
+        target_mac: "52:54:00:00:fa:0a"
+
+    - name: Display the_interface
+      debug:
+        var: the_interface
+...        

@@ -1,0 +1,5 @@
+[control_node]
+workstation.lab.example.com
+
+[net_auto]
+servera.lab.example.com
