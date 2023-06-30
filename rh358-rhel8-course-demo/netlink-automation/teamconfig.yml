@@ -1,0 +1,35 @@
+---
+- name: Configure team network device
+  hosts: servers
+  become: true
+
+  vars:
+    network_connections:
+      # Create a team profile
+      - name: team0
+        state: up
+        type: team
+        interface_name: team0
+        ip:
+          dhcp4: no
+          auto6: no
+          address:
+            - "192.168.0.100/24"
+
+      # enslave an ethernet to the team
+      - name: team0-port1
+        state: up
+        type: ethernet
+        interface_name: eth1
+        master: team0
+
+      # enslave an ethernet to the team
+      - name: team0-port2
+        state: up
+        type: ethernet
+        interface_name: eth2
+        master: team0
+
+  roles:
+    - rhel-system-roles.network
+...    

@@ -1,4 +1,5 @@
 ---
+# Note: please verify one network interface MUST be existed on managed hosts.
 - name: Verify different network facts through filter
   hosts: net_auto
   become: true
@@ -17,7 +18,7 @@
       when:
         - ansible_facts[item]['macaddress'] is defined
         - ansible_facts[item]['macaddress'] == target_mac
-        # this statement is same with 'and' statement
+        # this statement is same with 'and' statement, and don't use ansible_facts.item.macaddress.
       loop: "{{ ansible_facts['interfaces'] }}"
       vars:
         target_mac: "52:54:00:00:fa:0a"

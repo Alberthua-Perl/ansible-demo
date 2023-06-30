@@ -1,0 +1,9 @@
+---
+- name: Configure team network device
+  hosts: servers
+  become: true
+
+  tasks:
+    - name: Confirm team interface functions
+      command: ping -c1 -w2 192.168.0.254
+...      
