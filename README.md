@@ -8,7 +8,7 @@ Collections for different ansible project demo:
 
 - do374-rhaap2.0-course-demo: DO374 Course (RedHat Ansible Automation Platform 2.0, RHAAP2.0)
 
-- do447-rhae2.8-course-demo: DO447 Course (Ansible v2.8 and Ansible Tower)
+- do447-course-demo: DO447 Course (Ansible v2.8 and Ansible Tower)
 
 - rh358-rhel8-course-demo: RH358 Course in RHEL8.1 (Ansible v2.9.5) including linux server configurations and automation through ansible
 
