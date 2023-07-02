@@ -10,7 +10,7 @@ Collections for different ansible project demo:
 
 - do447-rhae2.8-course-demo: DO447 Course (Ansible v2.8 and Ansible Tower)
 
-- rh358-rhel8-course-demo: RH358 Course in RHEL8.1 (Ansible v2.9.5)
+- rh358-rhel8-course-demo: RH358 Course in RHEL8.1 (Ansible v2.9.5) including linux server configurations and automation through ansible
 
 - deploy-pxe-server: Deploy PXE server on all-in-one node
 
