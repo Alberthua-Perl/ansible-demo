@@ -12,3 +12,6 @@ serverf.lab.example.com
 [webservers]
 servera.lab.example.com
 serverb.lab.example.com
+
+[gitlab_node]
+gitlab.lab.example.com

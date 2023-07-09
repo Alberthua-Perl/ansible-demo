@@ -6,13 +6,10 @@
   tasks:
     - name: Install several packages
       yum:
-        name: "{{ item }}"
-        state: present
-      loop: "{{ packages }}"
-      vars:
-        packages:
+        name:
           - httpd
           - mariadb-server
+        state: present
       notify:
         - Restart apache web server
         - Restart mariadb database
