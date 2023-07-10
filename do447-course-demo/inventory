@@ -1,0 +1,14 @@
+[control_node]
+workstation.lab.example.com
+
+[managed_nodes]
+servera.lab.example.com
+serverb.lab.example.com
+serverc.lab.example.com
+serverd.lab.example.com
+servere.lab.example.com
+serverf.lab.example.com
+
+[webservers]
+servera.lab.example.com
+serverb.lab.example.com

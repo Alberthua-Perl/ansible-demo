@@ -7,13 +7,10 @@
   tasks:
     - name: Install several packages
       yum:
-        name: "{{ item }}"
-        state: present
-      loop: "{{ packages }}"
-      vars:
-        packages:
+        name:
           - httpd
           - mariadb-server
+        state: present
       notify: restart-srv
       changed_when: true  
 
