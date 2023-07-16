@@ -8,6 +8,7 @@
     - name: mandatory filter - install web server package
       yum:
         name: "{{ package | mandatory }}"
+        #name: "{{ package }}"
         state: present
       become: true  
       vars:

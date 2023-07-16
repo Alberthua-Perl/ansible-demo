@@ -74,6 +74,7 @@ modules:
     - haproxy
     - git
     - wait_for
+    - mysql_db
 
 # manifest of filters and plugins in DO447 chapter4
 # filters used to change different type of variables
