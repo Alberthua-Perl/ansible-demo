@@ -1,0 +1,6 @@
+[dhcp_servers]
+servera.lab.example.com
+
+[clients]
+serverb.lab.example.com
+serverc.lab.example.com

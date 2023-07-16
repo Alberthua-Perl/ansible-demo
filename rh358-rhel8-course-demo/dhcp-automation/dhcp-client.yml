@@ -1,0 +1,33 @@
+---
+- name: Configure a DHCPv4 and DHCPv6 network interface
+  hosts: clients
+  become: true
+  vars:
+    network_connections:
+      - name: dyn_net
+        type: ethernet
+        mac: "{{ mac_if2 }}"
+        state: up
+        ip:
+          dhcp4: yes
+          auto6: yes
+          # See "/usr/share/doc/rhel-system-roles/network/"
+          # for documentation.
+          # Activate DHCP for IPv4 and SLAAC for IPv6.
+
+  roles:
+    - rhel-system-roles.network
+
+  # Verifying your work by testing the IPv4 and IPv6 configuration
+  tasks:
+    - name: the system can connect to servera IPv4 address
+      wait_for:
+        host: 192.168.0.10
+        port: 22
+        timeout: 10
+
+    - name: the system can connect to servera IPv6 address
+      wait_for:
+        host: fde2:6494:1e09:2::a
+        port: 22
+        timeout: 10

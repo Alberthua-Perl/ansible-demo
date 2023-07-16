@@ -1,0 +1,70 @@
+---
+- name: Deploy a DHCPv4 and DHCPv6 server
+  hosts: servera.lab.example.com
+  become: true
+  vars:
+    network_connections:
+      - name: static_net
+        type: ethernet
+        mac: "{{ mac_if2 }}"
+        state: up
+        ip:
+          address:
+            - 192.168.0.10/24
+            - fde2:6494:1e09:2::a/64
+
+  roles:
+    - rhel-system-roles.network
+
+  tasks:
+    - name: the dhcp-server package is installed
+      yum:
+        name: dhcp-server
+        state: present
+
+    - name: the DHCPv4 configuration file is deployed
+      copy:
+        src: files/dhcpd.conf
+        dest: /etc/dhcp/dhcpd.conf
+      notify: reload dhcpd
+
+    - name: the DHCPv6 configuration file is deployed
+      copy:
+        src: files/dhcpd6.conf
+        dest: /etc/dhcp/dhcpd6.conf
+      notify: reload dhcpd6
+
+    - name: the dhcpd and dhcpd6 services are started and enabled
+      service:
+        name: "{{ item }}"
+        state: started
+        enabled: yes
+      loop: "{{ dhcpd_srv }}"  
+      vars:
+        dhcpd_srv:
+          - dhcpd
+          - dhcpd6
+
+    - name: the dhcp and dhcpv6 firewall services are opened
+      firewalld:
+        service: "{{ item }}"
+        permanent: yes
+        state: enabled
+        immediate: yes
+      loop: "{{ dhcpd_srv }}"
+      vars:
+        dhcpd_srv:
+          - dhcp
+          - dhcpv6
+
+  handlers:
+    - name: reload dhcpd
+      service:
+        name: dhcpd
+        state: restarted
+
+    - name: reload dhcpd6
+      service:
+        name: dhcpd6
+        state: restarted
+...       
