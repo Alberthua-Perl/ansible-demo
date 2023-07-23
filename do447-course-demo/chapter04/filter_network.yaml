@@ -27,18 +27,18 @@
         - name: Verify ipaddr filter network parameter
           assert:
             that:
-              #- "'{{ '10.0.0.1/23' | ipaddr('netmask') }}' is eq('255.255.254.0')"
-              - "'{{ '10.0.0.1/23' | ansible.netcommon.ipaddr('netmask') }}' is eq('255.255.254.0')"
-              #- "'{{ '10.0.0.1/255.255.254.0' | ipaddr('prefix') }}' is eq('23')"
-              - "'{{ '10.0.0.1/255.255.254.0' | ansible.netcommon.ipaddr('prefix') }}' is eq('23')"
-              #- "'{{ '172.24.16.50/20' | ipaddr('address') }}' is eq('172.24.16.50')"
-              - "'{{ '172.24.16.50/20' | ansible.netcommon.ipaddr('address') }}' is eq('172.24.16.50')"
+              - "'{{ '10.0.0.1/23' | ipaddr('netmask') }}' is eq('255.255.254.0')"
+              #- "'{{ '10.0.0.1/23' | ansible.netcommon.ipaddr('netmask') }}' is eq('255.255.254.0')"
+              - "'{{ '10.0.0.1/255.255.254.0' | ipaddr('prefix') }}' is eq('23')"
+              #- "'{{ '10.0.0.1/255.255.254.0' | ansible.netcommon.ipaddr('prefix') }}' is eq('23')"
+              - "'{{ '172.24.16.50/20' | ipaddr('address') }}' is eq('172.24.16.50')"
+              #- "'{{ '172.24.16.50/20' | ansible.netcommon.ipaddr('address') }}' is eq('172.24.16.50')"
         - name: Print specified NIC CIDR netmask
           debug:
             msg: "CIDR of eth0 interface is {{ cidr_prefix }}"
           vars:
-            #cidr_prefix: "{{ ansible_facts['eth0']['ipv4']['netmask'] | ipaddr('prefix') }}"
-            cidr_prefix: "{{ ansible_facts['eth0']['ipv4']['netmask'] | ansible.netcommon.ipaddr('prefix') }}"
+            cidr_prefix: "{{ ansible_facts['eth0']['ipv4']['netmask'] | ipaddr('prefix') }}"
+            #cidr_prefix: "{{ ansible_facts['eth0']['ipv4']['netmask'] | ansible.netcommon.ipaddr('prefix') }}"
         - name: Use different arguments to test ipaddr or ansible.netcommon.ipaddr filter
           debug:
             #msg: "{{ listips | ipaddr(...) }}"
@@ -54,6 +54,7 @@
               - 2001::1/64
               - 2001::/64
               - www.redhat.com
+          ignore_errors: yes    
       tags:
         - ipaddr_filter
 
@@ -62,6 +63,7 @@
         msg: "IP address validate!"
       when: "{{ '192.0.2.0/24' | ansible.netcommon.network_in_usable('192.0.2.254') }}"
       # Note: [WARNING]: conditional statements should not include jinja2 templating delimiters such as {{ }} or {% %}.
+      ignore_errors: yes
       tags:
         - network_in_usable_filter
 
@@ -73,8 +75,8 @@
             msg: Host A record is {{ lookup('dig', 'servera.lab.example.com', '@172.25.250.254') }}
         - name: Determinte if host's ip address is private
           debug:
-            #msg: "{{ lookup('dig', ansible_facts['hostname']) | ipaddr('private') }}"
-            msg: "{{ lookup('dig', ansible_facts['hostname']) | ansible.netcommon.ipaddr('private') }}"
+            msg: "{{ lookup('dig', ansible_facts['hostname']) | ipaddr('private') }}"
+            #msg: "{{ lookup('dig', ansible_facts['hostname']) | ansible.netcommon.ipaddr('private') }}"
       tags:
         - dig_plugin
         
