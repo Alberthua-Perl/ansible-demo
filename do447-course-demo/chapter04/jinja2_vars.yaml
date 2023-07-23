@@ -12,8 +12,8 @@
       Douglas: Human
       Marvin: Robot
       Arthur: Human
-    name: null  
-    #name: ~
+    #testvar: null  
+    testvar: ~
   
   tasks:
     - name: Confirm that the second list element is "Marvin"
@@ -27,11 +27,11 @@
         that:
           - my_dict['Marvin'] == 'Robot'
 
-    - name: Verify name variable is or not defined
-      command: echo "name variable is undefined"
-      when: name is undefined
-      register: name_result
+    - name: Verify testvar variable is or not defined
+      command: echo "testvar variable is not defined"
+      when: testvar is not defined"
+      register: testvar_result
 
-    - name: Display name variable output
+    - name: Display testvar variable output
       debug:
-        var: name_result
+        var: testvar_result

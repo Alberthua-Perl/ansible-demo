@@ -28,6 +28,8 @@
         gender: female
         hobby:
           - Music
+          - Dance
+          - Paint
     # dict_of_dict      
     users_dict:
       demo1:
@@ -99,6 +101,8 @@
           value is {{ item.value.name }} and 
           user's mail is {{ item.value.mail }}
       with_dict: "{{ users_dict }}"
+      tags:
+        - loop_with_dict2items
 
     - name: Verify users key and value through loop
       debug:
@@ -107,7 +111,8 @@
           value is {{ item.value.name }} and
           user's mail is {{ item.value.mail }}
       loop: "{{ users_dict | dict2items }}"
-
+      tags:
+        - loop_with_dict2items
     
     ## loop + query + fileglob plug-in equal to with_fileglob
     - name: Test fileglob lookup plugin through loop
