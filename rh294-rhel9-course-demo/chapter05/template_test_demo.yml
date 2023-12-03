@@ -1,0 +1,20 @@
+---
+- name: Test Jinja2 template
+  hosts: all
+  vars:
+    users:
+      - user1
+      - user2
+      - user3
+
+  tasks:
+    - name: Transfer user template to hosts
+      ansible.builtin.template:
+        src: templates/user_demo.j2
+        dest: /tmp/user_list.txt
+
+    - name: Deploy hosts file
+      ansible.builtin.template:
+        src: templates/hosts.j2
+        dest: /tmp/hosts.txt
+...

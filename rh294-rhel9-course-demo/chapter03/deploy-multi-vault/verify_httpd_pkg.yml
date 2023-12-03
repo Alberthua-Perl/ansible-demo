@@ -1,0 +1,26 @@
+---
+# Note:
+#   1.run playbook as following command:
+#     $ ansible-navigator run -m stdout \
+#       --vault-password-file=vault/sec1 --vault-password-file=vault/sec2 \
+#       verify-httpd-pkg.yml
+#   2.option --vault-password-file also be used by ansible-navigator command
+#     as ansible-playbook   
+- name: Test multiple vault variables file
+  hosts: all
+  vars_files:
+    - vars/packages.yml
+    - vars/state.yml
+
+  tasks:
+    - name: Prints various Ansible facts
+      ansible.builtin.debug:
+        msg: >
+          The default IPv4 address of {{ ansible_facts.fqdn }}
+          is {{ ansible_facts.default_ipv4.address }}
+
+    - name: Verify Apache httpd installed
+      ansible.builtin.yum:
+        name: "{{ package }}"
+        state: "{{ status }}"
+...

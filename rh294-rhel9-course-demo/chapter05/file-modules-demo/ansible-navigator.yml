@@ -17,4 +17,3 @@ ansible-navigator:
   #mode: stdout
   playbook-artifact:
     enable: false
-

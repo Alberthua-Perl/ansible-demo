@@ -1,0 +1,13 @@
+---
+- name: Sync system time through chrony
+  hosts: all
+  gather_facts: false
+  vars:
+    timesync_ntp_provider: chrony
+    timesync_ntp_servers:
+      - hostname: classroom.example.com
+        iburst: yes
+   
+  roles:
+    - redhat.rhel_system_roles.timesync
+...

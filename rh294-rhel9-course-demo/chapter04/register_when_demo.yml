@@ -1,0 +1,21 @@
+---
+- name: Restart HTTPD if Postfix is Running
+  hosts: all
+
+  tasks:
+    - name: Get Postfix server status
+      ansible.builtin.command:
+        /usr/bin/systemctl is-active postfix.service
+      ignore_errors: true
+      register: result
+
+    - name: Verify result variable
+      ansible.builtin.debug:
+        var: result
+
+    - name: Restart Apache HTTPD based on Postfix status
+      ansible.builtin.service:
+        name: httpd
+        state: restarted
+      when: result.rc == 0
+...

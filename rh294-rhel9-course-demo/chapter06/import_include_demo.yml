@@ -1,0 +1,8 @@
+---
+- name: Install web server
+  hosts: all
+  
+  tasks:
+    - ansible.builtin.import_tasks: webserver_tasks_demo.yml
+    # - ansible.builtin.include_tasks: webserver_tasks_demo.yml
+...

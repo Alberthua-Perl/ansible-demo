@@ -1,0 +1,18 @@
+---
+- name: ansible block usage sample
+  hosts: all
+
+  tasks:
+    - name: installing and configuring DNF versionlock plugin
+      block:
+        - name: package needed by dnf
+          ansible.builtin.dnf:
+            name: python3-dnf-plugin-versionlock
+            state: present
+        - name: lock version of tzdata
+          ansible.builtin.lineinfile:
+            dest: /etc/yum/pluginconf.d/versionlock.list
+            line: tzdata-2016j-1
+            state: present
+      when: ansible_distribution == "RedHat"
+...
