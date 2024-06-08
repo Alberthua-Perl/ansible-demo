@@ -8,6 +8,9 @@ ansible-navigator:
     container-engine: podman
     enabled: True
     image: hub.lab.example.com/ee-supported-rhel8:2.0
+    pull:
+      policy: missing
+      # pull eei image when missing
   logging:
     file: /dev/null
   mode: stdout
