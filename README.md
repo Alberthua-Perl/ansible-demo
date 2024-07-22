@@ -17,3 +17,5 @@ Collections for different ansible project demo:
 - sync-sshkey: authorized_keys module in playbook to sync user ssh public key
 
 - haproxy-lamp: Deploy Haproxy, Apache, PHP and Mysql through playbook roles
+
+- 🚀 [Kani](https://github.com/Alberthua-Perl/kani): Deploy and manage Kubernetes cluster v1.22.1
