@@ -1,4 +1,4 @@
-# ♾ Demo: Deploy and manage GitLab-CE and Jenkins CI platform by Ansible
+## ♾ Demo: Deploy and manage GitLab-CE and Jenkins CI platform by Ansible
 
 - Note: The demo is JUST a lab practice, if you want to use in your environment, please change and test it!
 
@@ -59,9 +59,7 @@
 
   ![ansible-gitlab-jenkins-cicd-platform-demo](ansible-gitlab-jenkins-cicd-platform-demo.png)
 
-- Steps as follows:
-  
-  - Prepare devops user account and ssh authorized:
+- Prepare devops user account and ssh authorized:
   ```bash
   @foundation0:
   ## create devops user on foundation0 node
