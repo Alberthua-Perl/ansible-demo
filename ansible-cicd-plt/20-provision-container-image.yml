@@ -1,0 +1,53 @@
+---
+- name: Provision associated container image
+  hosts: provision_node
+  vars_files:
+    - secrets/hub_auth.yml
+
+  tasks:
+    - name: Install skopeo to operate container image
+      ansible.builtin.yum:
+        name:
+          - podman
+          - skopeo
+        state: present
+      #ignore_errors: yes
+    
+    - name: Login automation hub by podman
+      containers.podman.podman_login:
+        username: "{{ hub_user }}"
+        password: "{{ hub_password }}"
+        registry: "{{ hub_url }}"
+        tlsverify: false
+
+    - name: Probe quay.io is or not access
+      ansible.builtin.uri:
+        url: https://quay.io
+        return_content: yes
+        method: GET
+      register: response
+      ignore_errors: yes
+
+    - name: Sync tomcat image to automation hub
+      block:
+        - name: BLOCK> Try to sync container image to automation hub
+          ansible.builtin.command: |
+            skopeo copy --dest-tls-verify=false docker://quay.io/alberthua/tomcat:v1.0.0 docker://{{ hub_url }}/tomcat:v1.0.0
+      rescue:
+        - name: RESCUE> Try to sync container image to automation hub
+          ansible.builtin.command: "{{ item }}"
+          loop: "{{ cmd_list }}"
+          vars:
+            cmd_list:
+              - cp ./tomcat-v1.0.0.tar /home/devops/tomcat-v1.0.0.tar
+              - skopeo copy --dest-tls-verify=false oci-archive:tomcat-v1.0.0.tar docker://{{ hub_url }}/tomcat:v1.0.0
+          register: sync_result
+          ignore_errors: yes
+          # ERRORs result in ending task, so ignore them to continue following task
+        - name: Display debug info
+          ansible.builtin.debug:
+            msg: |
+              NOT access quay.io, please use skopeo to sync tomcat image manually as follow,
+              $ skopeo copy --dest-tls-verify=false oci-archive:tomcat-v1.0.0.tar docker://utility.lab.example.com/tomcat:v1.0.0
+          when: sync_result.rc != 0
+

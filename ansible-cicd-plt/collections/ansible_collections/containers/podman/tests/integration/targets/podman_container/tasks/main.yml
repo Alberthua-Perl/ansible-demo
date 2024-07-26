@@ -1,0 +1,1381 @@
+- name: Test podman_container
+  block:
+
+    - name: Discover podman version
+      shell: podman version | grep "^Version:" | awk {'print $2'}
+      register: podman_v
+
+    - name: Set podman version to 3
+      set_fact:
+        podman_version: 3
+      when: podman_v.stdout is version('4.0.0', 'lt')
+
+    - name: Set podman version to 4
+      set_fact:
+        podman_version: 4
+      when: podman_v.stdout is version('4.0.0', '>=')
+
+    - name: Set podman version to 5
+      set_fact:
+        podman_version: 5
+      when: podman_v.stdout is version('5.0.0', '>=')
+
+    - name: Delete all container leftovers from tests
+      containers.podman.podman_container:
+        executable: "{{ test_executable | default('podman') }}"
+        name: "{{ item }}"
+        state: absent
+      loop:
+        - "alpine:3.7"
+        - "container"
+        - "container1"
+        - "container2"
+        - "container3"
+        - "testidem-pod"
+
+    - name: Test no image with default action
+      containers.podman.podman_container:
+        executable: "{{ test_executable | default('podman') }}"
+        name: container
+      ignore_errors: true
+      register: no_image
+
+    - name: Test no image with state 'started'
+      containers.podman.podman_container:
+        executable: "{{ test_executable | default('podman') }}"
+        name: container
+        state: created
+      ignore_errors: true
+      register: no_image1
+
+    - name: Test no image with state 'present'
+      containers.podman.podman_container:
+        executable: "{{ test_executable | default('podman') }}"
+        name: container
+        state: present
+      ignore_errors: true
+      register: no_image2
+
+    - name: Check no image
+      assert:
+        that:
+          - no_image is failed
+          - no_image1 is failed
+          - no_image2 is failed
+          - no_image.msg == "Cannot start container when image is not specified!"
+          - no_image1.msg == "State 'created' required image to be configured!"
+          - no_image2.msg == "State 'present' required image to be configured!"
+        fail_msg: No image test failed!
+        success_msg: No image test passed!
+
+    - name: Ensure image doesn't exist
+      containers.podman.podman_image:
+        executable: "{{ test_executable | default('podman') }}"
+        name: alpine:3.7
+        state: absent
+
+    - name: Check pulling image
+      containers.podman.podman_container:
+        executable: "{{ test_executable | default('podman') }}"
+        name: container
+        image: alpine:3.7
+        state: started
+        command: sleep 1d
+      register: image
+
+    - name: Check using already pulled image
+      containers.podman.podman_container:
+        executable: "{{ test_executable | default('podman') }}"
+        name: container2
+        image: alpine:3.7
+        state: started
+        command: sleep 1d
+      register: image2
+
+    - name: Check output is correct
+      assert:
+        that:
+          - image is changed
+          - image.container is defined
+          - image.container['State']['Running']
+          - "'pulled image alpine:3.7' in image.actions"
+          - "'started container' in image.actions"
+          - image2 is changed
+          - image2.container is defined
+          - image2.container['State']['Running']
+          - "'pulled image alpine:3.7' not in image2.actions"
+          - "'started container2' in image2.actions"
+        fail_msg: Pulling image test failed!
+        success_msg: Pulling image test passed!
+
+    - name: Check failed image pull
+      containers.podman.podman_container:
+        executable: "{{ test_executable | default('podman') }}"
+        name: container
+        image: ineverneverneverexist
+        state: started
+        command: sleep 1d
+      register: imagefail
+      ignore_errors: true
+
+    - name: Check output is correct
+      assert:
+        that:
+          - imagefail is failed
+          - imagefail.msg == "Can't pull image ineverneverneverexist"
+
+    - name: Force container recreate
+      containers.podman.podman_container:
+        executable: "{{ test_executable | default('podman') }}"
+        name: container
+        image: alpine
+        state: started
+        command: sleep 1d
+        recreate: true
+      register: recreated
+
+    - name: Check output is correct
+      assert:
+        that:
+          - recreated is changed
+          - recreated.container is defined
+          - recreated.container['State']['Running']|bool
+          - "'recreated container' in recreated.actions"
+        fail_msg: Force recreate test failed!
+        success_msg: Force recreate test passed!
+
+    - name: Start container
+      containers.podman.podman_container:
+        executable: "{{ test_executable | default('podman') }}"
+        name: container
+        state: started
+
+    - name: Present container
+      containers.podman.podman_container:
+        executable: "{{ test_executable | default('podman') }}"
+        name: container
+        image: alpine
+        state: present
+        command: sleep 1d
+      register: start_present
+
+    - name: Check output is correct
+      assert:
+        that:
+          - start_present.container['State']['Running']
+
+    - name: Stop container
+      containers.podman.podman_container:
+        executable: "{{ test_executable | default('podman') }}"
+        name: container
+        state: stopped
+      register: stopped
+
+    - name: Stop the same container again (idempotency)
+      containers.podman.podman_container:
+        executable: "{{ test_executable | default('podman') }}"
+        name: container
+        state: stopped
+      register: stopped_again
+
+    - name: Check output is correct
+      assert:
+        that:
+          - stopped is changed
+          - stopped.container is defined
+          - not stopped.container['State']['Running']
+          - "'stopped container' in stopped.actions"
+          - stopped_again is not changed
+          - stopped_again.container is defined
+          - not stopped_again.container['State']['Running']
+          - stopped_again.actions == []
+        fail_msg: Stopping container test failed!
+        success_msg: Stopping container test passed!
+
+    - name: Delete stopped container
+      containers.podman.podman_container:
+        executable: "{{ test_executable | default('podman') }}"
+        name: container
+        state: absent
+      register: deleted
+
+    - name: Delete again container (idempotency)
+      containers.podman.podman_container:
+        executable: "{{ test_executable | default('podman') }}"
+        name: container
+        state: absent
+      register: deleted_again
+
+    - name: Check output is correct
+      assert:
+        that:
+          - deleted is changed
+          - deleted.container is defined
+          - deleted.container == {}
+          - "'deleted container' in deleted.actions"
+          - deleted_again is not changed
+          - deleted_again.container is defined
+          - deleted_again.container == {}
+          - deleted_again.actions == []
+        fail_msg: Deleting stopped container test failed!
+        success_msg: Deleting stopped container test passed!
+
+    - name: Create container in 'stopped' state
+      containers.podman.podman_container:
+        executable: "{{ test_executable | default('podman') }}"
+        name: container
+        image: alpine:3.7
+        state: stopped
+        command: sleep 1d
+      register: created
+
+    - name: Check output is correct
+      assert:
+        that:
+          - created is changed
+          - created.container is defined
+          - created.container != {}
+          - not created.container['State']['Running']
+          - "'created container' in created.actions"
+        fail_msg: "Creating stopped container test failed!"
+        success_msg: "Creating stopped container test passed!"
+
+    - name: Force recreate stopped container
+      containers.podman.podman_container:
+        executable: "{{ test_executable | default('podman') }}"
+        name: container
+        image: alpine:3.7
+        state: started
+        command: sleep 1d
+        recreate: true
+      register: recreate_stopped
+
+    - name: Check output is correct
+      assert:
+        that:
+          - recreate_stopped is changed
+          - recreate_stopped.container is defined
+          - recreate_stopped.container['State']['Running']|bool
+          - "'recreated container' in recreate_stopped.actions"
+        fail_msg: Force recreate stopped test failed!
+        success_msg: Force recreate stopped test passed!
+
+    - name: Delete created container
+      containers.podman.podman_container:
+        executable: "{{ test_executable | default('podman') }}"
+        name: container
+        state: absent
+
+    - name: Create container in 'created' state
+      containers.podman.podman_container:
+        executable: "{{ test_executable | default('podman') }}"
+        name: container
+        image: alpine:3.7
+        state: created
+        command: sleep 1d
+      register: created
+
+    - name: Check output is correct
+      assert:
+        that:
+          - created is changed
+          - created.container is defined
+          - created.container != {}
+          - not created.container['State']['Running']
+          - "'created container' in created.actions"
+        fail_msg: "Creating stopped container test failed!"
+        success_msg: "Creating stopped container test passed!"
+
+    - name: Force container recreate
+      containers.podman.podman_container:
+        executable: "{{ test_executable | default('podman') }}"
+        name: container
+        image: alpine
+        state: created
+        command: sleep 1d
+        recreate: true
+      register: recreated
+
+    - name: Check output is correct
+      assert:
+        that:
+          - recreated is changed
+          - recreated.container is defined
+          - not recreated.container['State']['Running']
+          - "'recreated container' in recreated.actions"
+        fail_msg: Force recreate test failed!
+
+    - name: Restart container
+      containers.podman.podman_container:
+        executable: "{{ test_executable | default('podman') }}"
+        name: container
+        restart: true
+      register: restarted
+
+    - name: Check output is correct
+      assert:
+        that:
+          - restarted is changed
+          - restarted.container is defined
+          - restarted.container['State']['Running']
+          - "'restarted container' in restarted.actions"
+        fail_msg: Restart container test failed!
+
+    - name: Restart running container
+      containers.podman.podman_container:
+        executable: "{{ test_executable | default('podman') }}"
+        name: container
+        restart: true
+      register: restarted
+
+    - name: Check output is correct
+      assert:
+        that:
+          - restarted is changed
+          - restarted.container is defined
+          - restarted.container['State']['Running']
+          - "'restarted container' in restarted.actions"
+        fail_msg: Restart running container test failed!
+
+    - name: Delete created container
+      containers.podman.podman_container:
+        executable: "{{ test_executable | default('podman') }}"
+        name: container
+        state: absent
+
+    - name: Start container that was deleted
+      containers.podman.podman_container:
+        executable: "{{ test_executable | default('podman') }}"
+        name: container
+        image: alpine:3.7
+        state: started
+        command: sleep 1d
+      register: started
+
+    - name: Check output is correct
+      assert:
+        that:
+          - started is changed
+          - started.container is defined
+          - started.container['State']['Running']
+          - "'pulled image alpine:3.7' not in started.actions"
+
+    - name: Delete started container
+      containers.podman.podman_container:
+        executable: "{{ test_executable | default('podman') }}"
+        name: container
+        state: absent
+      register: deleted
+
+    - name: Delete again container (idempotency)
+      containers.podman.podman_container:
+        executable: "{{ test_executable | default('podman') }}"
+        name: container
+        state: absent
+      register: deleted_again
+
+    - name: Check output is correct
+      assert:
+        that:
+          - deleted is changed
+          - deleted.container is defined
+          - deleted.container == {}
+          - "'deleted container' in deleted.actions"
+          - deleted_again is not changed
+          - deleted_again.container is defined
+          - deleted_again.container == {}
+          - deleted_again.actions == []
+        fail_msg: Deleting started container test failed!
+        success_msg: Deleting started container test passed!
+
+    - name: Create container with security_opt
+      containers.podman.podman_container:
+        executable: "{{ test_executable | default('podman') }}"
+        name: container
+        image: docker.io/alpine:3.7
+        state: started
+        command: sleep 1d
+        security_opt:
+            - label=level:s0
+            - label=type:spc_t
+            - label=filetype:container_share_t
+            - seccomp=unconfined
+
+    - name: Recreate container with same security_opt flags
+      containers.podman.podman_container:
+        executable: "{{ test_executable | default('podman') }}"
+        name: container
+        image: docker.io/alpine:3.7
+        state: started
+        command: sleep 1d
+        security_opt:
+            - label=level:s0
+            - label=type:spc_t
+            - label=filetype:container_share_t
+            - seccomp=unconfined
+      register: recreate_security_opt
+
+    - name: Check if output is correct
+      assert:
+        that:
+          - recreate_security_opt is not changed
+          - recreate_security_opt.container is defined
+          - recreate_security_opt.container != {}
+          - recreate_security_opt.container['State']['Running']
+          - "'recreated container' not in recreate_security_opt.actions"
+
+    - name: Remove container
+      containers.podman.podman_container:
+        executable: "{{ test_executable | default('podman') }}"
+        name: container
+        state: absent
+
+    - name: Recreate container with parameters
+      containers.podman.podman_container:
+        executable: "{{ test_executable | default('podman') }}"
+        name: container
+        image: docker.io/alpine:3.7
+        state: started
+        command: sleep 1d
+        recreate: true
+        etc_hosts:
+          host1: 127.0.0.1
+          host2: 127.0.0.1
+        annotation:
+          this: "annotation_value"
+        dns:
+          - 1.1.1.1
+          - 8.8.4.4
+        dns_search: example.com
+        cap_add:
+          - SYS_TIME
+          - NET_ADMIN
+        publish:
+          - "9000:80"
+          - "9001:8000"
+        workdir: "/bin"
+        env:
+          FOO: bar=1
+          BAR: foo
+          TEST: 1
+          BOOL: false
+        label:
+          somelabel: labelvalue
+          otheralbe: othervalue
+        volumes:
+          - /tmp:/data
+        mounts:
+          - type=devpts,destination=/dev/pts
+      register: test
+
+    - name: Check output is correct
+      assert:
+        that:
+          - test is changed
+          - test.container is defined
+          - test.container != {}
+          - test.container['State']['Running']
+          # test capabilities
+          - "'CAP_SYS_TIME' in test.container['BoundingCaps']"
+          - "'CAP_NET_ADMIN' in test.container['BoundingCaps']"
+          # test annotations
+          - test.container['Config']['Annotations']['this'] is defined
+          - test.container['Config']['Annotations']['this'] == "annotation_value"
+          # test DNS
+          - >-
+            (test.container['HostConfig']['Dns'] is defined and
+            test.container['HostConfig']['Dns'] == ['1.1.1.1', '8.8.4.4']) or
+            (test.container['HostConfig']['DNS'] is defined and
+            test.container['HostConfig']['DNS'] == ['1.1.1.1', '8.8.4.4'])
+          # test ports
+          - test.container['NetworkSettings']['Ports']|length == 2
+          # test working dir
+          - test.container['Config']['WorkingDir'] == "/bin"
+          # test dns search
+          - >-
+            (test.container['HostConfig']['DnsSearch'] is defined and
+            test.container['HostConfig']['DnsSearch'] == ['example.com']) or
+            (test.container['HostConfig']['DNSSearch'] is defined and
+            test.container['HostConfig']['DNSSearch'] == ['example.com'])
+          # test environment variables
+          - "'FOO=bar=1' in test.container['Config']['Env']"
+          - "'BAR=foo' in test.container['Config']['Env']"
+          - "'TEST=1' in test.container['Config']['Env']"
+          - "'BOOL=False' in test.container['Config']['Env']"
+          # test labels
+          - test.container['Config']['Labels'] | length == 2
+          - test.container['Config']['Labels']['somelabel'] == "labelvalue"
+          - test.container['Config']['Labels']['otheralbe'] == "othervalue"
+          # test mounts
+          - test.container['Mounts'][0]['Type'] is defined and test.container['Mounts'][0]['Type'] == 'bind'
+          - >-
+            test.container['Mounts'][0]['Source'] is defined and test.container['Mounts'][0]['Source'] == 'devpts' or
+            test.container['Mounts'][1]['Source'] is defined and test.container['Mounts'][1]['Source'] == 'devpts'
+          - >-
+            test.container['Mounts'][0]['Destination'] is defined and test.container['Mounts'][0]['Destination'] == '/dev/pts' or
+            test.container['Mounts'][1]['Destination'] is defined and test.container['Mounts'][1]['Destination'] == '/dev/pts'
+          # test volumes
+          # test volumes
+          - >-
+            (test.container['Mounts'][0]['Destination'] is defined and
+            '/data' in test.container['Mounts'] | map(attribute='Destination') | list)
+          - >-
+            (test.container['Mounts'][1]['Source'] is defined and
+            '/tmp' in test.container['Mounts'] | map(attribute='Source') | list)
+        fail_msg: Parameters container test failed!
+        success_msg: Parameters container test passed!
+
+    - name: Check basic idempotency of running container
+      containers.podman.podman_container:
+        executable: "{{ test_executable | default('podman') }}"
+        name: testidem
+        image: docker.io/alpine
+        state: started
+        command: sleep 20m
+
+    - name: Check basic idempotency of running container - run it again
+      containers.podman.podman_container:
+        executable: "{{ test_executable | default('podman') }}"
+        name: testidem
+        image: alpine:latest
+        state: started
+        command: sleep 20m
+      register: idem
+
+    - name: Check that nothing was changed
+      assert:
+        that:
+          - not idem.changed
+
+    - name: Check force restart option - run again and force restart
+      containers.podman.podman_container:
+        executable: "{{ test_executable | default('podman') }}"
+        name: testidem
+        image: alpine:latest
+        state: started
+        command: sleep 20m
+        force_restart: true
+      register: idem_r
+
+    - name: Check that task was changed
+      assert:
+        that:
+          - idem_r is changed
+
+    - name: Check removing force_restart option
+      containers.podman.podman_container:
+        executable: "{{ test_executable | default('podman') }}"
+        name: testidem
+        image: alpine:latest
+        state: started
+        command: sleep 20m
+      register: idem_r1
+
+    - name: Check that task was not changed
+      assert:
+        that:
+          - idem_r1 is not changed
+
+    - name: Run changed container (with tty enabled)
+      containers.podman.podman_container:
+        executable: "{{ test_executable | default('podman') }}"
+        name: testidem
+        image: alpine
+        state: started
+        command: sleep 20m
+        tty: true
+      register: idem1
+
+    - name: Check that container is recreated when changed
+      assert:
+        that:
+          - idem1 is changed
+
+    - name: Run changed container without specifying an option, use defaults
+      containers.podman.podman_container:
+        executable: "{{ test_executable | default('podman') }}"
+        name: testidem
+        image: alpine
+        state: started
+        command: sleep 20m
+      register: idem2
+
+    - name: Check that container is recreated when changed to default value
+      assert:
+        that:
+          - idem2 is changed
+
+    - name: Remove container
+      containers.podman.podman_container:
+        executable: "{{ test_executable | default('podman') }}"
+        name: testidem
+        state: absent
+      register: remove
+
+    - name: Check podman_actions
+      assert:
+        that:
+          - "'podman rm --force testidem' in remove.podman_actions"
+
+    # - name: Create a pod
+    #   shell: podman pod create --name testidempod
+
+    - name: Check basic idempotency of pod container
+      containers.podman.podman_container:
+        executable: "{{ test_executable | default('podman') }}"
+        name: testidem-pod
+        image: docker.io/alpine
+        state: started
+        command: sleep 20m
+        pod: "new:testidempod"
+
+    - name: Check basic idempotency of pod container - run it again
+      containers.podman.podman_container:
+        executable: "{{ test_executable | default('podman') }}"
+        name: testidem-pod
+        image: alpine:latest
+        state: started
+        command: sleep 20m
+        pod: testidempod
+      register: idem3
+
+    - name: Check that nothing was changed in pod containers
+      assert:
+        that:
+          - not idem3.changed
+
+    - name: Run changed pod container (with tty enabled)
+      containers.podman.podman_container:
+        executable: "{{ test_executable | default('podman') }}"
+        name: testidem-pod
+        image: alpine
+        state: started
+        command: sleep 20m
+        tty: true
+        pod: testidempod
+      register: idem4
+
+    - name: Check that container is recreated when changed
+      assert:
+        that:
+          - idem4 is changed
+          - idem4.podman_systemd.keys() | list | length > 0
+          - idem4.podman_systemd.values() | list | length > 0
+
+    - name: Run container with systemd generation parameters v4
+      containers.podman.podman_container:
+        executable: "{{ test_executable | default('podman') }}"
+        name: container1
+        image: alpine
+        state: started
+        command: sleep 20m
+        generate_systemd:
+          path: /tmp/
+          restart_policy: always
+          no_header: true
+          names: true
+          pod_prefix: whocares
+          separator: zzzz
+          container_prefix: contain
+          restart_sec: 10
+          start_timeout: 20
+          stop_timeout: 15
+      register: system14
+      when: podman_version == 4
+
+    - name: Run container with systemd generation parameters v3
+      containers.podman.podman_container:
+        executable: "{{ test_executable | default('podman') }}"
+        name: container1
+        image: alpine
+        state: started
+        command: sleep 20m
+        generate_systemd:
+          path: /tmp/
+          time: 120
+          restart_policy: always
+          no_header: true
+          names: true
+          pod_prefix: whocares
+          separator: zzzz
+          container_prefix: contain
+      register: system13
+      when: podman_version == 3
+
+    - name: Check service file presents
+      stat:
+        path: /tmp/containzzzzcontainer1.service
+      register: service_file
+
+    - name: Check that container has correct systemd output v4 and quadlet
+      assert:
+        that:
+          - system14.podman_systemd.keys() | list | first == 'containzzzzcontainer1'
+          - system14.podman_systemd.values() | list | length > 0
+          - service_file.stat.exists | bool
+          - "'Restart=always' in system14.podman_systemd.values() | list | first"
+          - "'autogenerated by Podman' not in system14.podman_systemd.values() | list | first"
+          - "'RestartSec=10' in system14.podman_systemd.values() | list | first"
+          - "'TimeoutStartSec=20' in system14.podman_systemd.values() | list | first"
+          - system14.podman_quadlet | length > 0
+          - system14.podman_quadlet | length > 0
+          - "'ContainerName=container1' in system14.podman_quadlet"
+          - "'Image=alpine' in system14.podman_quadlet"
+
+      when: podman_version == 4
+
+    - name: Check that container has correct systemd output v3
+      assert:
+        that:
+          - system13.podman_systemd.keys() | list | first == 'containzzzzcontainer1'
+          - system13.podman_systemd.values() | list | length > 0
+          - service_file.stat.exists | bool
+          - "'Restart=always' in system13.podman_systemd.values() | list | first"
+          - "'autogenerated by Podman' not in system13.podman_systemd.values() | list | first"
+          - "'-t 120 ' in system13.podman_systemd.values() | list | first"
+      when: podman_version == 3
+
+    - name: Delete container with systemd generation parameters v3
+      containers.podman.podman_container:
+        executable: "{{ test_executable | default('podman') }}"
+        name: container1
+        image: alpine
+        state: absent
+        command: sleep 20m
+        generate_systemd:
+          path: /tmp/
+          time: 120
+          restart_policy: always
+          no_header: true
+          names: true
+          pod_prefix: whocares
+          separator: zzzz
+          container_prefix: contain
+      register: system1
+      when: podman_version == 3
+
+    - name: Delete container with systemd generation parameters v4
+      containers.podman.podman_container:
+        executable: "{{ test_executable | default('podman') }}"
+        name: container1
+        image: alpine
+        state: absent
+        command: sleep 20m
+        generate_systemd:
+          path: /tmp/
+          restart_policy: always
+          no_header: true
+          names: true
+          pod_prefix: whocares
+          separator: zzzz
+          container_prefix: contain
+          restart_sec: 10
+          start_timeout: 20
+          stop_timeout: 15
+      register: system1
+      when: podman_version == 4
+
+    - name: Check service file doesn't present
+      stat:
+        path: /tmp/containzzzzcontainer1.service
+      register: service2_file
+
+    - name: Check that service file was deleted
+      assert:
+        that:
+          - not service2_file.stat.exists | bool
+
+    - name: Create environment variables files
+      copy:
+        dest: /tmp/envfile
+        content: |
+          FOO=bar
+          BAR=foo
+          TEST=1
+          BOOL=false
+
+    - name: Create another environment variables files
+      copy:
+        dest: /tmp/envfile2
+        content: |
+          TESTVAR=qwerty
+
+    - name: Create container with environment variables file
+      containers.podman.podman_container:
+        executable: "{{ test_executable | default('podman') }}"
+        name: container1
+        image: alpine
+        state: started
+        command:
+          - sh
+          - -c
+          - echo $BAR
+        attach:
+          - stdout
+          - stderr
+        env_file: /tmp/envfile
+      register: envfile
+
+    - name: Check output is correct for env file
+      assert:
+        that:
+          - envfile.stdout == "foo\n"
+
+    - name: Create container with multiple environment variables files
+      containers.podman.podman_container:
+        executable: "{{ test_executable | default('podman') }}"
+        name: container1
+        image: alpine
+        state: started
+        command:
+          - sh
+          - -c
+          - echo $TESTVAR
+        attach:
+          - stdout
+          - stderr
+        env_file:
+          - /tmp/envfile
+          - /tmp/envfile2
+      register: envfile2
+
+    - name: Check output is correct for multiple env files
+      assert:
+        that:
+          - envfile2.stdout == "qwerty\n"
+
+    - name: Delete container with environment variables file
+      containers.podman.podman_container:
+        executable: "{{ test_executable | default('podman') }}"
+        name: container1
+        state: absent
+
+    - name: Create temporary rootfs directory
+      ansible.builtin.tempfile:
+        state: directory
+        suffix: container-rootfs
+      register: container_tempdir
+    - name: Debug container_tempdir
+      ansible.builtin.debug:
+        var: container_tempdir
+
+    - name: Download alpine releases file
+      ansible.builtin.get_url:
+        url: "https://dl-cdn.alpinelinux.org/alpine/latest-stable/releases/{{ ansible_architecture }}/latest-releases.yaml"
+        dest: "{{ container_tempdir.path }}/latest-releases.yaml"
+      register: alpine_releases_file
+
+    - name: Get content of alpine releases file
+      ansible.builtin.slurp:
+        src: "{{ container_tempdir.path }}/latest-releases.yaml"
+      register: latest_releases_file
+
+    - name: Download alpine latest rootfs
+      vars:
+        latest_releases: "{{ latest_releases_file.content | b64decode }}"
+        latest_version: "{{ (latest_releases | from_yaml)[0].version }}"
+        latest_branch: "{{ (latest_releases | from_yaml)[0].branch }}"
+      ansible.builtin.unarchive:
+        src: "https://dl-cdn.alpinelinux.org/alpine/{{ latest_branch }}/releases/{{ ansible_architecture }}/alpine-minirootfs-{{ latest_version }}-{{ ansible_architecture }}.tar.gz"
+        dest: "{{ container_tempdir.path }}"
+        remote_src: true
+
+    - name: Check invalid rootfs image pull
+      containers.podman.podman_container:
+        executable: "{{ test_executable | default('podman') }}"
+        name: container
+        image: /ineverneverneverexist
+        rootfs: true
+        state: started
+        command: sleep 1d
+      register: imagerootfsfail
+      ignore_errors: true
+
+    - name: Check output is correct
+      assert:
+        that:
+          - imagerootfsfail is failed
+          - imagerootfsfail.msg == "Image rootfs doesn't exist /ineverneverneverexist"
+
+    - name: Check rootfs container
+      containers.podman.podman_container:
+        executable: "{{ test_executable | default('podman') }}"
+        name: container3
+        image: "{{ container_tempdir.path }}"
+        rootfs: true
+        state: started
+        command: sleep 1d
+      register: image
+
+    - name: Check output is correct
+      assert:
+        that:
+          - image is changed
+          - image.container is defined
+          - image.container['State']['Running']
+          - image.container['Image'] == ""
+          - image.container['Rootfs'] == container_tempdir.path
+          - "'started container3' in image.actions"
+        fail_msg: Rootfs container test failed!
+        success_msg: Rootfs container test passed!
+
+    - name: Check basic idempotency of running rootfs container - run it again
+      containers.podman.podman_container:
+        executable: "{{ test_executable | default('podman') }}"
+        name: container3
+        image: "{{ container_tempdir.path }}"
+        rootfs: true
+        state: started
+        command: sleep 1d
+      register: idem
+
+    - name: Check that nothing was changed
+      assert:
+        that:
+          - not idem.changed
+
+    - name: Rebuild rootfs container with image
+      containers.podman.podman_container:
+        executable: "{{ test_executable | default('podman') }}"
+        name: container3
+        image: alpine:3.7
+        state: started
+        command: sleep 1d
+      register: image
+
+    - name: Debug image
+      ansible.builtin.debug:
+        var: image
+
+    - name: Check output is correct
+      assert:
+        that:
+          - image is changed
+          - image.container is defined
+          - image.container['State']['Running']
+          - image.container['Rootfs'] == ""
+          - "'alpine:3.7' in image.container['ImageName']"
+          - "'recreated container3' in image.actions"
+        fail_msg: Rootfs container test failed!
+        success_msg: Rootfs container test passed!
+
+    - name: Rebuild container with rootfs again
+      containers.podman.podman_container:
+        executable: "{{ test_executable | default('podman') }}"
+        name: container3
+        image: "{{ container_tempdir.path }}"
+        rootfs: true
+        state: started
+        command: sleep 1d
+      register: image
+
+    - name: Check output is correct
+      assert:
+        that:
+          - image is changed
+          - image.container is defined
+          - image.container['State']['Running']
+          - image.container['Image'] == ""
+          - image.container['Rootfs'] == container_tempdir.path
+          - "'recreated container3' in image.actions"
+        fail_msg: Rootfs container test failed!
+        success_msg: Rootfs container test passed!
+
+    - name: Run started container with attaching
+      containers.podman.podman_container:
+        executable: "{{ test_executable | default('podman') }}"
+        name: container1
+        image: alpine:3.7
+        state: started
+        command: ls /nonexists
+        attach:
+          - stdout
+          - stderr
+      register: attach
+      ignore_errors: true
+
+    - name: Check output is correct for started container with attaching
+      assert:
+        that:
+          - attach is failed
+          - "'No such file or directory' in attach.stderr"
+
+    - name: Delete container with attaching
+      containers.podman.podman_container:
+        executable: "{{ test_executable | default('podman') }}"
+        name: container1
+        state: absent
+
+    - name: Create container with attaching in created state
+      containers.podman.podman_container:
+        executable: "{{ test_executable | default('podman') }}"
+        name: container1
+        image: alpine:3.7
+        state: created
+        command: ls /nonexists
+        attach:
+          - stdout
+          - stderr
+
+    - name: Start container with attaching from created state
+      containers.podman.podman_container:
+        executable: "{{ test_executable | default('podman') }}"
+        name: container1
+        state: started
+        attach:
+          - stdout
+          - stderr
+      register: attach2
+      ignore_errors: true
+
+    - name: Check output is correct for started container with attaching from created state
+      assert:
+        that:
+          - attach2 is failed
+          - "'No such file or directory' in attach2.stderr"
+
+    - name: Delete container with attaching from created state
+      containers.podman.podman_container:
+        executable: "{{ test_executable | default('podman') }}"
+        name: container1
+        state: absent
+
+    - name: Create container without attaching in created state
+      containers.podman.podman_container:
+        executable: "{{ test_executable | default('podman') }}"
+        name: container1
+        image: alpine:3.7
+        state: created
+        command: ls /nonexists
+
+    - name: Start container without attaching from created state
+      containers.podman.podman_container:
+        executable: "{{ test_executable | default('podman') }}"
+        name: container1
+        state: started
+      register: attach21
+
+    - name: Check output is correct for container without attaching from created state
+      assert:
+        that:
+          - attach21 is success
+
+    - name: Delete container without attaching from created state
+      containers.podman.podman_container:
+        executable: "{{ test_executable | default('podman') }}"
+        name: container1
+        state: absent
+
+    - name: Create container with detach False
+      containers.podman.podman_container:
+        executable: "{{ test_executable | default('podman') }}"
+        name: container1
+        image: alpine:3.7
+        state: created
+        command: ls /nonexists
+        detach: false
+
+    - name: Start container with detach False
+      containers.podman.podman_container:
+        executable: "{{ test_executable | default('podman') }}"
+        name: container1
+        state: started
+        detach: false
+      register: attach3
+      ignore_errors: true
+
+    - name: Check output is correct for started container with detach False
+      assert:
+        that:
+          - attach3 is failed
+          - "'No such file or directory' in attach3.stderr"
+
+    - name: Create a Quadlet for container with filename
+      containers.podman.podman_container:
+        executable: "{{ test_executable | default('podman') }}"
+        name: container-quadlet
+        image: alpine
+        state: quadlet
+        quadlet_dir: /tmp
+        quadlet_filename: customfile
+
+    - name: Check if files exists
+      stat:
+        path: /tmp/customfile.container
+      register: quadlet_file_custom
+
+    - name: Fail if no file is present
+      assert:
+        that:
+          - quadlet_file_custom.stat.exists
+
+    - name: Create a Quadlet for container with filename w/o dir
+      containers.podman.podman_container:
+        executable: "{{ test_executable | default('podman') }}"
+        name: container-quadlet
+        image: alpine
+        state: quadlet
+        quadlet_filename: container11.container
+
+    - name: Check if files exists
+      stat:
+        path: ~/.config/containers/systemd/container11.container
+      register: quadlet_file_custom2
+
+    - name: Fail if no file is present
+      assert:
+        that:
+          - quadlet_file_custom2.stat.exists
+
+    - name: Create a Quadlet for container with filename w/o dir
+      containers.podman.podman_container:
+        executable: "{{ test_executable | default('podman') }}"
+        name: container-quadlet
+        image: alpine
+        state: quadlet
+
+    - name: Check if files exists
+      stat:
+        path: ~/.config/containers/systemd/container-quadlet.container
+      register: quadlet_file_custom3
+
+    - name: Fail if no file is present
+      assert:
+        that:
+          - quadlet_file_custom3.stat.exists
+
+    - name: Create a Quadlet for container
+      containers.podman.podman_container:
+        executable: "{{ test_executable | default('podman') }}"
+        name: container-quadlet
+        image: alpine:3.12
+        state: quadlet
+        quadlet_dir: /tmp
+        command: sleep 1d
+        recreate: true
+        etc_hosts:
+          host1: 127.0.0.1
+          host2: 127.0.0.1
+        annotation:
+          this: "annotation_value"
+        dns:
+          - 1.1.1.1
+          - 8.8.4.4
+        dns_search: example.com
+        cap_add:
+          - SYS_TIME
+          - NET_ADMIN
+        publish:
+          - "9000:80"
+          - "9001:8000"
+        workdir: "/bin"
+        env:
+          FOO: bar=1
+          BAR: foo
+          TEST: 1
+          BOOL: false
+        label:
+          somelabel: labelvalue
+          otheralbe: othervalue
+        volumes:
+          - /tmp:/data
+        mounts:
+          - type=devpts,destination=/dev/pts
+        quadlet_options:
+          - AutoUpdate=registry
+          - Unmask=ALL
+          - SecurityLabelFileType=usr_t
+          - Annotation=key1=annotation_value1
+          - Annotation=key2=annotation_value2
+          - |
+            [Install]
+            WantedBy=default.target
+
+    - name: Check if files exists
+      stat:
+        path: /tmp/container-quadlet.container
+      register: quadlet_file
+
+    - name: Check output is correct for Quadlet container in /tmp/container-quadlet.container file
+      assert:
+        that:
+          - quadlet_file.stat.exists
+
+    - name: Check for the existence of lines in /tmp/container-quadlet.container
+      lineinfile:
+        path: /tmp/container-quadlet.container
+        line: "{{ item }}"
+        state: present
+      check_mode: yes
+      register: line_check
+      loop:
+        - "[Container]"
+        - "Annotation=this=annotation_value"
+        - "Annotation=key1=annotation_value1"
+        - "Annotation=key2=annotation_value2"
+        - "ContainerName=container-quadlet"
+        - "Image=alpine:3.12"
+        - "Exec=sleep 1d"
+        - "Volume=/tmp:/data"
+        - "Mount=type=devpts,destination=/dev/pts"
+        - "WorkingDir=/bin"
+        - "Unmask=ALL"
+        - "SecurityLabelFileType=usr_t"
+        - "Environment=BOOL=False"
+        - "PublishPort=9001:8000"
+        - "PodmanArgs=--add-host host2:127.0.0.1"
+        - "Label=somelabel=labelvalue"
+        - "WantedBy=default.target"
+      loop_control:
+        label: "{{ item }}"
+
+    - name: Fail the task if any line is not present
+      fail:
+        msg: "The following line is not present in /tmp/container-quadlet.container: {{ item.item }}"
+      when: item.changed
+      loop: "{{ line_check.results }}"
+      loop_control:
+        label: "{{ item.item }}"
+
+    - name: Create a Quadlet for container - same
+      containers.podman.podman_container:
+        executable: "{{ test_executable | default('podman') }}"
+        name: container-quadlet
+        image: alpine:3.12
+        state: quadlet
+        quadlet_dir: /tmp
+        command: sleep 1d
+        recreate: true
+        etc_hosts:
+          host1: 127.0.0.1
+          host2: 127.0.0.1
+        annotation:
+          this: "annotation_value"
+        dns:
+          - 1.1.1.1
+          - 8.8.4.4
+        dns_search: example.com
+        cap_add:
+          - SYS_TIME
+          - NET_ADMIN
+        publish:
+          - "9000:80"
+          - "9001:8000"
+        workdir: "/bin"
+        env:
+          FOO: bar=1
+          BAR: foo
+          TEST: 1
+          BOOL: false
+        label:
+          somelabel: labelvalue
+          otheralbe: othervalue
+        volumes:
+          - /tmp:/data
+        mounts:
+          - type=devpts,destination=/dev/pts
+        quadlet_options:
+          - AutoUpdate=registry
+          - Unmask=ALL
+          - SecurityLabelFileType=usr_t
+          - Annotation=key1=annotation_value1
+          - Annotation=key2=annotation_value2
+          - |
+            [Install]
+            WantedBy=default.target
+      register: quad2
+
+    - name: Check if quadlet changed
+      assert:
+        that:
+          - quad2 is not changed
+
+    - name: Create a Quadlet for container - different
+      containers.podman.podman_container:
+        executable: "{{ test_executable | default('podman') }}"
+        name: container-quadlet
+        image: alpine:3.12
+        state: quadlet
+        quadlet_dir: /tmp
+        command: sleep 1d
+        recreate: true
+        etc_hosts:
+          host1: 127.0.0.45
+          host2: 127.0.0.1
+        annotation:
+          this: "annotation_value"
+        dns:
+          - 1.1.1.1
+          - 8.8.4.4
+        dns_search: example.com
+        cap_add:
+          - SYS_TIME
+          - NET_ADMIN
+        publish:
+          - "9000:80"
+          - "9001:8000"
+        workdir: "/bin"
+        env:
+          FOO: bar=1
+          BAR: foo
+          TEST: 1
+          BOOL: false
+        label:
+          somelabel: labelvalue
+          otheralbe: othervalue
+        volumes:
+          - /tmp:/data
+        mounts:
+          - type=devpts,destination=/dev/pts
+        quadlet_options:
+          - AutoUpdate=registry
+          - Unmask=ALL
+          - SecurityLabelFileType=usr_t
+          - Annotation=key1=annotation_value1
+          - Annotation=key2=annotation_value2
+          - |
+            [Install]
+            WantedBy=default.target
+      register: quad3
+
+    - name: Print diff
+      debug:
+        var: quad3.diff
+
+    - name: Check if changed and diff
+      assert:
+        that:
+          - quad3 is changed
+          - "'127.0.0.45' in quad3.diff.after"
+
+  always:
+
+    - name: Remove container
+      containers.podman.podman_container:
+        executable: "{{ test_executable | default('podman') }}"
+        name: testidem-pod
+        state: absent
+
+    - name: Delete all container leftovers from tests
+      containers.podman.podman_container:
+        executable: "{{ test_executable | default('podman') }}"
+        name: "{{ item }}"
+        state: absent
+      loop:
+        - "alpine:3.7"
+        - "container"
+        - "container1"
+        - "container2"
+        - "container3"
+        - "testidem-pod"
+
+    - name: Remove pod
+      shell: podman pod rm -f testidempod
+      ignore_errors: true
+
+    - name: Remove temporary rootfs directory
+      ansible.builtin.file:
+        path: "{{ container_tempdir.path }}"
+        state: absent
+      when: container_tempdir is defined
+      ignore_errors: true

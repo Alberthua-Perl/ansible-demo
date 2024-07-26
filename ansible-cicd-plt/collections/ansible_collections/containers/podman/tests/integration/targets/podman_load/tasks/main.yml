@@ -1,0 +1,91 @@
+---
+- name: Pull image
+  containers.podman.podman_image:
+    executable: "{{ test_executable | default('podman') }}"
+    name: k8s.gcr.io/pause
+
+- name: Save image
+  containers.podman.podman_save:
+    executable: "{{ test_executable | default('podman') }}"
+    image: k8s.gcr.io/pause
+    dest: /tmp/image.tar
+
+- name: Load image
+  containers.podman.podman_load:
+    executable: "{{ test_executable | default('podman') }}"
+    input: /tmp/image.tar
+  register: image
+
+- name: Check it's loaded
+  assert:
+    that:
+      - image.image != {}
+      - image.image.NamesHistory.0 == "k8s.gcr.io/pause:latest"
+
+- name: Save image
+  containers.podman.podman_save:
+    executable: "{{ test_executable | default('podman') }}"
+    image: k8s.gcr.io/pause
+    dest: /tmp/imagedir
+    format: oci-dir
+
+- name: Load image from oci-dir
+  containers.podman.podman_load:
+    executable: "{{ test_executable | default('podman') }}"
+    input: /tmp/imagedir
+  register: image
+
+- name: Check it's loaded
+  assert:
+    that:
+      - image.image != {}
+      - image.image.NamesHistory.0 == "localhost/tmp/imagedir:latest"
+
+- name: Save image with multi image archive
+  containers.podman.podman_save:
+    executable: "{{ test_executable | default('podman') }}"
+    image: k8s.gcr.io/pause
+    dest: /tmp/image2.tar
+    multi_image_archive: true
+
+- name: Load image from oci-dir multi image archive
+  containers.podman.podman_load:
+    executable: "{{ test_executable | default('podman') }}"
+    input: /tmp/image2.tar
+  register: image
+
+- name: Check it's loaded
+  assert:
+    that:
+      - image.image != {}
+      - image.image.NamesHistory.0 == "k8s.gcr.io/pause:latest"
+
+- name: Pull images
+  containers.podman.podman_image:
+    executable: "{{ test_executable | default('podman') }}"
+    name: '{{ item }}'
+  loop:
+    - k8s.gcr.io/coredns:1.7.0
+    - k8s.gcr.io/echoserver:1.10
+
+- name: Clean up multifile
+  ansible.builtin.file:
+    path: /tmp/multi.tar
+    state: absent
+
+- name: Create multi image file
+  shell: >-
+    podman save k8s.gcr.io/coredns:1.7.0 k8s.gcr.io/echoserver:1.10 -o /tmp/multi.tar
+
+- name: Load image from oci-dir multi image archive
+  containers.podman.podman_load:
+    executable: "{{ test_executable | default('podman') }}"
+    input: /tmp/multi.tar
+  register: image
+
+- name: Check it's loaded
+  assert:
+    that:
+      - image.image != {}
+      - '"k8s.gcr.io/coredns:1.7.0" in image.image.NamesHistory'
+      - '"k8s.gcr.io/echoserver:1.10" in image.image.NamesHistory'

@@ -1,0 +1,8 @@
+[provision_node]
+foundation0.ilt.example.com
+
+[gitlab_ce]
+foundation0.ilt.example.com
+
+[jenkins_ci]
+servera.lab.example.com

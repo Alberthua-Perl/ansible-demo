@@ -1,0 +1,104 @@
+---
+- name: Deploy and manage GitLab CE
+  hosts: gitlab_ce
+  vars:
+    gitlab_pkg: gitlab-ce-17.2.0-ce.0.el9.x86_64
+    project_name: tomcat-jenkins-demo
+  vars_files:
+    - secrets/gitlab_auth.yml
+
+  tasks:
+    - name: Preinstall required packages
+      ansible.builtin.yum:
+        name:
+          - policycoreutils
+          - python3-gitlab  # required by community.general.gitlab_* collection
+        state: present
+      tags:
+        - install_gitlab
+
+    - name: Copy gitlab-ce repo to yum repo
+      ansible.builtin.copy:
+        src: gitlab_gitlab-ce.repo
+        dest: /etc/yum.repos.d/
+      tags:
+        - install_gitlab
+
+    - name: Verify gitlab-ce package is or not installed
+      ansible.builtin.shell: rpm -qa | grep gitlab-ce
+      register: installed_result
+      tags:
+        - install_gitlab
+
+    - name: Install gitlab-ce package and requirements
+      #ansible.builtin.yum:
+      #  name: "{{ gitlab_pkg }}"
+      #  state: present
+      ansible.builtin.command: rpm -ivh packages/{{ gitlab_pkg }}.rpm
+      when: installed_result.rc != 0
+      tags:
+        - install_gitlab
+      # Note:
+      #   Using ansible.builtin.yum module to install gitlab-ce will spend long time, because this package
+      #   will be downloaded from internet. So if you have no sufficient patience, you can use dnf or yum
+      #   command to install it directly.
+
+    - name: Copy gitlab-ce config file
+      ansible.builtin.copy:
+        src: files/gitlab.rb
+        dest: /etc/gitlab/gitlab.rb
+      tags:
+        - config_gitlab
+  
+    - name: Reconfigure gitlab-ce repository
+      ansible.builtin.command: gitlab-ctl reconfigure
+      register: run_status
+      tags:
+        - config_gitlab
+
+    - name: Verify gitlab-ce running status
+      ansible.builtin.debug:
+        msg: Start gitlab-ce successfully!
+      when: run_status.rc == 0
+      tags:
+        - config_gitlab
+
+      # Note: 
+      #   Initial root password is located in /etc/gitlab/initial_root_password. You should use this password
+      #   to login by root account. After that create new gitlab account to manage codes.
+
+    - name: Wait for all services of gitlab-ce
+      ansible.builtin.wait_for:
+        timeout: 60
+      tags:
+        - config_gitlab
+      # Until all services of gitlab-ce are available to connect gitlab-ce to create user and project.
+
+    - name: Create gitlab initial {{ gitlab_name }} user
+      community.general.gitlab_user:
+        api_url: "{{ gitlab_api_url }}"
+        validate_certs: false
+        api_username: "{{ gitlab_api_username }}"
+        api_password: "{{ gitlab_api_password }}"
+        name: "{{ gitlab_name }}"
+        username: "{{ gitlab_username }}"
+        password: "{{ gitlab_password }}"
+        email: "{{ gitlab_email }}"
+        sshkey_name: "{{ gitlab_sshkey_name }}"
+        sshkey_file: "{{ gitlab_sshkey_file }}"
+        state: present
+        access_level: "{{ gitlab_access_level }}"
+      tags:
+        - create_user
+      # use {{ gitlab_username }} and {{ gitlab_password }} in jenkins SCM connection,
+      # and NOT to use {{ gitlab_sshkey_file }}
+
+    - name: Create {{ gitlab_name }} user gitlab repository
+      community.general.gitlab_project:
+        api_url: "{{ gitlab_api_url }}"
+        api_username: "{{ gitlab_username }}"
+        api_password: "{{ gitlab_password }}"
+        name: "{{ project_name }}"
+      tags:
+        - create_project
+      # project in main branch, NOT in master branch

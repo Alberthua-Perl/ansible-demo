@@ -1,0 +1,24 @@
+node { 
+	// pull code from gitlab-ce
+	// CHANGEME: change this stage according actual gitlab-ce connection
+	stage('Git Checkout') {
+		checkout([$class: 'GitSCM', branches: [[name: '*/main']], doGenerateSubmoduleConfigurations: false, extensions: [], submoduleCfg: [], userRemoteConfigs: [[credentialsId: '16ceecfa-74e4-49e1-b0e6-c8ce8231b933', url: 'http://foundation0.ilt.example.com:7000/devops/tomcat-jenkins-demo.git']]])
+	}
+  // build container image and push to automation hub registry
+  stage('Build and Push Image') {
+	sh '''
+	CONTAINER_TAG=utility.lab.example.com/tomcat-jenkins-demo:v1.0.0
+	sudo podman login -u admin -p redhat utility.lab.example.com
+	sudo podman build -t ${CONTAINER_TAG} .
+	sudo podman push ${CONTAINER_TAG}
+	'''
+  }
+  // deploy container to localhost, or use ansible to deploy other nodes
+  stage('Deploy to Podman') {
+	sh '''
+	CONTAINER_TAG=utility.lab.example.com/tomcat-jenkins-demo:v1.0.0
+	sudo podman pull ${CONTAINER_TAG}
+	sudo podman run -d --name tomcat-java-demo -p 8880:8080 ${CONTAINER_TAG}
+	'''
+   }
+}

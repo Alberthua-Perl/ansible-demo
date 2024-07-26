@@ -1,0 +1,10 @@
+# Modified on 2024-07-25 by hualongfeiyyy@163.com
+FROM utility.lab.example.com/tomcat:v1.0.0
+MAINTAINER <alberthua> hualongfeiyyy@163.com
+
+RUN rm -rf /usr/local/tomcat/webapps/* && \
+	mkdir /usr/local/tomcat/webapps/simpleServer
+ADD index.jsp /usr/local/tomcat/webapps/simpleServer
+
+EXPOSE 8080
+

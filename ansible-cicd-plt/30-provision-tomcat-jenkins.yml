@@ -1,0 +1,184 @@
+---
+- name: Deploy JDK, Tomcat and Jenkins CI environment
+  hosts: jenkins_ci
+  vars:
+    jdk_tarball: jdk-8u191-linux-x64.tar.gz
+    tomcat_tarball: apache-tomcat-9.0.30.tar.gz
+    jenkins_path_prefix: /home/devops/tomcat-jenkins
+    jenkins_war: jenkins-2.204.2.war
+    jenkins_plugins: jenkins-plugins.tgz
+
+  tasks:
+    - name: Install git and podman to enable jenkins to connect gitlab-ce
+      ansible.builtin.yum:
+        name:
+          - git
+          - podman
+        state: present
+      # git package not installed on servera, so jenkins connect to gitlab-ce failed
+
+    - name: Copy JDK tarball to /opt
+      ansible.builtin.copy:
+        src: packages/{{ jdk_tarball }}
+        dest: /opt
+        owner: root
+        group: root
+      tags:
+        - deploy_jdk
+
+    - name: Check JDK tarball integrality
+      ansible.builtin.stat:
+        path: /opt/{{ jdk_tarball }}
+        checksum_algorithm: md5
+      register: result
+      tags:
+        - deploy_jdk
+      # JUST for example, it's a optional task.
+
+    - name: Display checksum of JDK tarball
+      ansible.builtin.debug:
+        msg: Checksum for JDK tarball is {{ result.stat.checksum }}
+      tags:
+        - deploy_jdk
+      # JUST for example, it's a optional task.  
+
+    - name: Unarchive JDK tarball
+      ansible.builtin.unarchive:
+        src: /opt/{{ jdk_tarball }}
+        dest: /usr/local/
+        remote_src: yes
+      tags:
+        - deploy_jdk
+
+    - name: Sync /etc/profile for JDK
+      ansible.builtin.blockinfile:
+        path: /etc/profile
+        block: |
+          # Java environment for Jenkins
+          export JAVA_HOME=/usr/local/jdk1.8.0_191
+          export JRE_HOME=/usr/local/jdk1.8.0_191/jre
+          export TOMCAT_HOME=/usr/local/apache-tomcat-9.0.30
+          export PATH=$PATH:$JAVA_HOME/bin:$JRE_HOME/bin:$TOMCAT_HOME/bin
+      tags:
+        - deploy_jdk
+
+    - name: Verify java version
+      ansible.builtin.shell: source /etc/profile && java -version
+      register: java_ver
+      tags:
+        - deploy_jdk
+
+    - name: Display java version
+      ansible.builtin.debug:
+        var: java_ver
+      tags:
+        - deploy_jdk
+
+    - name: Copy Tomcat tarball to /usr/local
+      ansible.builtin.copy:
+        src: packages/{{ tomcat_tarball }}
+        dest: /usr/local
+        owner: root
+        group: root
+      tags:
+        - deploy_tomcat
+
+    - name: Unarchive Tomcat tarball
+      ansible.builtin.unarchive:
+        src: /usr/local/{{ tomcat_tarball }}
+        dest: /usr/local/
+        remote_src: yes
+      tags:
+        - deploy_tomcat
+
+    - name: Change owner and group for tomcat dir
+      ansible.builtin.command: chown -R devops:devops /usr/local/apache-tomcat-9.0.30
+      tags:
+        - deploy_tomcat
+      # MUST change owner and group, or run tomcat by devops user reported permission denied  
+
+    - name: Create symbolic link to start tomcat
+      ansible.builtin.file:
+        src: /usr/local/apache-tomcat-9.0.30
+        dest: "{{ jenkins_path_prefix }}"
+        owner: devops
+        group: devops
+        state: link
+      tags:
+        - deploy_tomcat
+
+    - name: Display tomcat version by devops user
+      ansible.builtin.shell: source /etc/profile && {{ jenkins_path_prefix }}/bin/catalina.sh version
+      register: tomcat_version
+      become: false
+      tags:
+        - deploy_tomcat
+      # Note:
+      #   Previous tasks are runned by root, but this task is runned by devops user in different shell env.
+      #   So source command should be runned, or catalina.sh reports NO JAVA_HOME nor the JRE_HOME environment.
+
+    - name: Verify tomcat version result
+      ansible.builtin.debug:
+        var: tomcat_version
+      tags:
+        - deploy_tomcat
+
+    - name: Config firewall to allow tomcat port
+      ansible.posix.firewalld:
+        port: "{{ item }}"
+        permanent: yes
+        state: enabled
+        immediate: yes
+      loop: "{{ port_list }}"
+      vars:
+        port_list:
+          - 8080/tcp  # default port of tomcat
+          - 8443/tcp  # default port of tomcat
+          - 8880/tcp  # port-forward for podman
+      tags:
+        - allow_srv
+
+    - name: Set SELinux permissive target
+      ansible.posix.selinux:
+        policy: targeted
+        state: permissive
+      tags:
+        - allow_srv
+
+    - name: Copy jenkins war package
+      ansible.builtin.copy:
+        src: packages/{{ jenkins_war }}
+        dest: "{{ jenkins_path_prefix }}/webapps"
+        owner: devops
+        group: devops
+      tags:
+        - deploy_jenkins
+
+    - name: Rename jenkins war
+      ansible.builtin.command: mv {{ jenkins_path_prefix }}/webapps/jenkins-2.204.2.war {{ jenkins_path_prefix }}/webapps/jenkins.war
+      tags:
+        - deploy_jenkins
+      # access jenkins according to war name, so rename jenkins war
+ 
+    # ---------- ATTENTION ----------
+    - name: Configure optional jenkins plugins after running jenkins
+      ansible.builtin.copy:
+        src: packages/{{ jenkins_plugins }}
+        dest: /home/devops
+      tags:
+        - config_plugins
+      # Note:
+      #   Just after running jenjins the directory /home/devops/.jenkins appears.
+      #   So copy plugins into it, then stop jenkins and start jenkins again to 
+      #   enforce it.
+
+    - name: Unarchive jenkins plugins into /home/devops/.jenkins
+      ansible.builtin.unarchive:
+        src: /home/devops/{{ jenkins_plugins }}
+        dest: /home/devops/.jenkins
+        remote_src: yes
+        owner: devops
+        group: devops
+      tags:
+        - config_plugins
+        
