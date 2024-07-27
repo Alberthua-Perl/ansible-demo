@@ -2,7 +2,7 @@
 - name: Deploy and manage GitLab CE
   hosts: gitlab_ce
   vars:
-    gitlab_pkg: gitlab-ce-17.2.0-ce.0.el9.x86_64
+    gitlab_pkg: /home/devops/ansible-cicd-plt/packages/gitlab-ce-17.2.0-ce.0.el9.x86_64.rpm
     project_name: tomcat-jenkins-demo
   vars_files:
     - secrets/gitlab_auth.yml
@@ -27,21 +27,22 @@
     - name: Verify gitlab-ce package is or not installed
       ansible.builtin.shell: rpm -qa | grep gitlab-ce
       register: installed_result
+      ignore_errors: yes
       tags:
         - install_gitlab
 
     - name: Install gitlab-ce package and requirements
-      #ansible.builtin.yum:
-      #  name: "{{ gitlab_pkg }}"
-      #  state: present
-      ansible.builtin.command: rpm -ivh packages/{{ gitlab_pkg }}.rpm
+      ansible.builtin.yum:
+        name: "{{ gitlab_pkg }}"
+        state: present
+        disable_gpg_check: yes
       when: installed_result.rc != 0
       tags:
         - install_gitlab
       # Note:
       #   Using ansible.builtin.yum module to install gitlab-ce will spend long time, because this package
-      #   will be downloaded from internet. So if you have no sufficient patience, you can use dnf or yum
-      #   command to install it directly.
+      #   will be downloaded from internet. So if you have no sufficient patience, you can use rpm to install 
+      #   it directly: $ rpm -ivh gitlab-ce-17.2.0-ce.0.el9.x86_64.rpm
 
     - name: Copy gitlab-ce config file
       ansible.builtin.copy:
