@@ -73,7 +73,7 @@
               sed -i -e 's/SELINUX=enforcing/SELINUX=disabled/' /etc/selinux/config && \
               grubby --update-kernel ALL --args selinux=0
     (root)  # reboot
-		```
+    ```
   - Prepare lab material and install ansible-navigator:
     ```bash
     @foundationX:
@@ -89,7 +89,6 @@
     index-url=http://mirrors.aliyun.com/pypi/simple/
     [install]
     trusted-host=mirrors.aliyun.com
-    EOF
     # change pip3 source index to accelerate installation
     (devops)$ pip3 install ansible-navigator --user  # install in user env
     ```
