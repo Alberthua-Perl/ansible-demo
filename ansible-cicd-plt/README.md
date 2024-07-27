@@ -1,4 +1,4 @@
-## Deploy and manage GitLab-CE and Jenkins CI platform by Ansible
+## ♾ Deploy and manage GitLab-CE and Jenkins CI platform by Ansible
 
 - Note: The demo is JUST a lab practice, if you want to use in your environment, please change and test it!
 
