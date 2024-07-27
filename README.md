@@ -19,3 +19,5 @@ Collections for different ansible project demo:
 - haproxy-lamp: Deploy Haproxy, Apache, PHP and Mysql through playbook roles
 
 - 🚀 [Kani](https://github.com/Alberthua-Perl/kani): Deploy and manage Kubernetes cluster v1.22.1
+
+- ♾ ansible-cicd-plt: Deploy and manage GitLab-CE and Jenkins CI platform by Ansible
