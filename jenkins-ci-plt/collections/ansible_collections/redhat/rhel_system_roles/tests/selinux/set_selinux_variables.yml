@@ -1,0 +1,23 @@
+---
+- name: Ensure SELinux tool semanage
+  package:
+    name:
+      - policycoreutils-python-utils
+    state: present
+  when: ansible_distribution == "Fedora" or ( ansible_distribution_major_version | int > 7 and ansible_distribution in ["CentOS", "RedHat", "Rocky"] )
+- name: Get local modifications - boolean
+  command: /usr/sbin/semanage boolean -l -n -C
+  changed_when: false
+  register: selinux_role_boolean
+- name: Get local modifications - port
+  command: /usr/sbin/semanage port -l -n -C
+  changed_when: false
+  register: selinux_role_port
+- name: Get local modifications - login
+  command: /usr/sbin/semanage login -l -n -C
+  changed_when: false
+  register: selinux_role_login
+- name: Get local modifications - fcontext
+  command: /usr/sbin/semanage fcontext -l -n -C
+  changed_when: false
+  register: selinux_role_fcontext

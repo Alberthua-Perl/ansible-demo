@@ -1,0 +1,140 @@
+---
+- name: Pull image
+  containers.podman.podman_image:
+    executable: "{{ test_executable | default('podman') }}"
+    name: "{{ item }}"
+  loop:
+    - registry.k8s.io/pause
+    - registry.k8s.io/coredns/coredns:v1.9.3
+
+- name: Save image
+  containers.podman.podman_save:
+    executable: "{{ test_executable | default('podman') }}"
+    image: registry.k8s.io/pause
+    dest: /tmp/image.tar
+    force: false
+  register: saved_docker
+
+- name: Check file
+  stat:
+    path: /tmp/image.tar
+  register: img
+
+- name: Check it's saved
+  assert:
+    that:
+      - img.stat.exists
+
+- name: Save Force image
+  containers.podman.podman_save:
+    executable: "{{ test_executable | default('podman') }}"
+    image: registry.k8s.io/pause
+    dest: /tmp/image.tar
+    force: true
+  register: saved_forced
+
+- name: Check file
+  stat:
+    path: /tmp/image.tar
+  register: img
+
+- name: Check it's saved
+  assert:
+    that:
+      - img.stat.exists
+
+- name: Save image
+  containers.podman.podman_save:
+    executable: "{{ test_executable | default('podman') }}"
+    image: registry.k8s.io/pause
+    dest: /tmp/imagedir
+    format: oci-dir
+  register: saved_oci_dir
+
+- name: Check file
+  stat:
+    path: /tmp/imagedir
+  register: img
+
+- name: Check it's saved
+  assert:
+    that:
+      - img.stat.exists
+
+- name: Save image
+  containers.podman.podman_save:
+    executable: "{{ test_executable | default('podman') }}"
+    image: registry.k8s.io/pause
+    dest: /tmp/imagedir-docker
+    force: true
+    format: docker-dir
+    compress: true
+  register: saved_docker_dir
+
+- name: Save image
+  containers.podman.podman_save:
+    executable: "{{ test_executable | default('podman') }}"
+    image: registry.k8s.io/pause
+    dest: /tmp/imagedir
+    force: true
+    format: oci-dir
+  register: saved_oci_dir2
+
+- name: Check file
+  stat:
+    path: /tmp/imagedir
+  register: img
+
+- name: Check it's saved
+  assert:
+    that:
+      - img.stat.exists
+
+- name: Save image
+  containers.podman.podman_save:
+    executable: "{{ test_executable | default('podman') }}"
+    image: registry.k8s.io/pause
+    dest: /tmp/image2.tar
+    multi_image_archive: true
+  register: saved_multi
+
+- name: Check file
+  stat:
+    path: /tmp/image2.tar
+  register: img
+
+- name: Check it's saved
+  assert:
+    that:
+      - img.stat.exists
+
+- name: Save multi image
+  containers.podman.podman_save:
+    executable: "{{ test_executable | default('podman') }}"
+    image:
+      - registry.k8s.io/pause
+      - registry.k8s.io/coredns/coredns:v1.9.3
+    dest: /tmp/image-multi.tar
+    multi_image_archive: true
+  register: saved_multi2
+
+- name: Check mult image file
+  stat:
+    path: /tmp/image-multi.tar
+  register: img
+
+- name: Check multi image is saved
+  assert:
+    that:
+      - img.stat.exists
+
+- name: Check results changed
+  assert:
+    that:
+      - saved_docker is changed
+      - saved_forced is changed
+      - saved_oci_dir is changed
+      - saved_docker_dir is changed
+      - saved_oci_dir2 is changed
+      - saved_multi is changed
+      - saved_multi2 is changed

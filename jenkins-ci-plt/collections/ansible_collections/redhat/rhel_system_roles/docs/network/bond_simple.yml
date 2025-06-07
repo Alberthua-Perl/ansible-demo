@@ -1,0 +1,36 @@
+# SPDX-License-Identifier: BSD-3-Clause
+---
+- hosts: network-test
+  vars:
+    network_connections:
+  # Specify the bond profile
+      - name: bond0
+        state: up
+        type: bond
+        interface_name: bond0
+    # ip configuration (optional)
+        ip:
+          address:
+            - "192.0.2.24/24"
+            - "2001:db8::23/64"
+    # bond configuration settings: (optional)
+        bond:
+          mode: active-backup
+          miimon: 110
+
+  # add an ethernet profile to the bond
+      - name: member1
+        state: up
+        type: ethernet
+        interface_name: eth1
+        controller: bond0
+
+  # add a second ethernet profile to the bond
+      - name: member2
+        state: up
+        type: ethernet
+        interface_name: eth2
+        controller: bond0
+  roles:
+    - redhat.rhel_system_roles.network
+...

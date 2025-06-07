@@ -1,0 +1,1183 @@
+- name: Test podman pod
+  block:
+
+    - name: Discover podman version
+      shell: podman version | grep "^Version:" | awk {'print $2'}
+      register: podman_v
+
+    - name: Set podman version to 1
+      set_fact:
+        podman_version: 1
+      when: podman_v.stdout is version('2.0.0', 'lt')
+
+    - name: Set podman version to 2
+      set_fact:
+        podman_version: 2
+      when: podman_v.stdout is version('2.0.0', '>=')
+
+    - name: Set podman version to 3
+      set_fact:
+        podman_version: 3
+      when: podman_v.stdout is version('3.0.0', '>=')
+
+    - name: Set podman version to 4
+      set_fact:
+        podman_version: 4
+      when: podman_v.stdout is version('4.0.0', '>=')
+
+    - name: Set podman version to 5
+      set_fact:
+        podman_version: 5
+      when: podman_v.stdout is version('5.0.0', '>=')
+
+    - name: Discover cgroups version
+      shell: podman info | grep cgroupVersion | awk {'print $2'}
+      register: cgroups
+
+    - name: Set cgroups version
+      set_fact:
+        cgroups_version: "{{ cgroups.stdout }}"
+
+    - name: Delete all pods leftovers from tests
+      containers.podman.podman_pod:
+        executable: "{{ test_executable | default('podman') }}"
+        name: "{{ item }}"
+        state: absent
+      loop:
+        - "pod1"
+        - "pod2"
+
+    - name: Delete all container leftovers from tests
+      containers.podman.podman_container:
+        executable: "{{ test_executable | default('podman') }}"
+        name: "{{ item }}"
+        state: absent
+      loop:
+        - "container1"
+        - "container2"
+
+    - name: Create pod
+      containers.podman.podman_pod:
+        executable: "{{ test_executable | default('podman') }}"
+        name: pod1
+        state: created
+      register: pod1_info
+
+    - name: Check info
+      assert:
+        that:
+          - >-
+             (pod1_info.pod['State']['status'] is defined and
+             pod1_info.pod['State']['status'] == 'Created') or
+             (pod1_info.pod['State']['status'] is not defined and
+             pod1_info.pod['State'] == 'Created')
+
+    - name: Start pod
+      containers.podman.podman_pod:
+        executable: "{{ test_executable | default('podman') }}"
+        name: pod1
+        state: started
+      register: pod2_info
+
+    - name: Check info
+      assert:
+        that:
+          - >-
+             (pod2_info.pod['State']['status'] is defined and
+             pod2_info.pod['State']['status'] == 'Running') or
+             (pod2_info.pod['State']['status'] is not defined and
+             pod2_info.pod['State'] == 'Running')
+
+    # - name: Pause pod
+    #   containers.podman.podman_pod:
+    #     executable: "{{ test_executable | default('podman') }}"
+    #     name: pod1
+    #     state: paused
+    #   register: pod3_info
+    #   when: cgroups_version == 'v2'
+
+    # - name: Check info
+    #   assert:
+    #     that:
+    #       - >-
+    #          (pod3_info.pod['State']['status'] is defined and
+    #          pod3_info.pod['State']['status'] == 'Paused') or
+    #          (pod3_info.pod['State']['status'] is not defined and
+    #          pod3_info.pod['State'] == 'Paused')
+    #   when: cgroups_version == 'v2'
+
+    # - name: Unpause pod
+    #   containers.podman.podman_pod:
+    #     executable: "{{ test_executable | default('podman') }}"
+    #     name: pod1
+    #     state: unpaused
+    #   register: pod4_info
+    #   when: cgroups_version == 'v2'
+
+    # - name: Check info
+    #   assert:
+    #     that:
+    #       - >-
+    #          (pod4_info.pod['State']['status'] is defined and
+    #          pod4_info.pod['State']['status'] == 'Running') or
+    #          (pod4_info.pod['State']['status'] is not defined and
+    #          pod4_info.pod['State'] == 'Running')
+    #   when: cgroups_version == 'v2'
+
+    - name: Stop pod
+      containers.podman.podman_pod:
+        executable: "{{ test_executable | default('podman') }}"
+        name: pod1
+        state: stopped
+      register: pod5_info
+
+    - name: Check info
+      assert:
+        that:
+          - >-
+             (pod5_info.pod['State']['status'] is defined and
+             pod5_info.pod['State']['status'] != 'Running') or
+             (pod5_info.pod['State']['status'] is not defined and
+             pod5_info.pod['State'] != 'Running')
+
+    - name: Stop non-existing pod
+      containers.podman.podman_pod:
+        executable: "{{ test_executable | default('podman') }}"
+        name: pod-notexist
+        state: stopped
+      register: pod5a_info
+      ignore_errors: true
+
+    - name: Check info
+      assert:
+        that:
+          - pod5a_info is failed
+
+    - name: Kill pod
+      containers.podman.podman_pod:
+        executable: "{{ test_executable | default('podman') }}"
+        name: pod1
+        state: killed
+      register: pod6_info
+
+    - name: Check info
+      assert:
+        that:
+          - >-
+             (pod6_info.pod['State']['status'] is defined and
+             pod6_info.pod['State']['status'] == 'Exited') or
+             (pod6_info.pod['State']['status'] is not defined and
+             pod6_info.pod['State'] == 'Exited')
+      when: podman_version < 5
+
+    - name: Start pod
+      containers.podman.podman_pod:
+        executable: "{{ test_executable | default('podman') }}"
+        name: pod1
+        state: started
+      register: pod7_info
+
+    - name: Check info
+      assert:
+        that:
+          - >-
+             (pod7_info.pod['State']['status'] is defined and
+             pod7_info.pod['State']['status'] == 'Running') or
+             (pod7_info.pod['State']['status'] is not defined and
+             pod7_info.pod['State'] == 'Running')
+
+    - name: Start pod again for idempotency
+      containers.podman.podman_pod:
+        executable: "{{ test_executable | default('podman') }}"
+        name: pod1
+        state: started
+      register: pod8_info
+
+    - name: Check info
+      assert:
+        that:
+          - pod8_info is not changed
+
+    - name: Restart pod
+      containers.podman.podman_pod:
+        executable: "{{ test_executable | default('podman') }}"
+        name: pod1
+        state: restarted
+      register: pod121_info
+
+    - name: Check info
+      assert:
+        that:
+          - pod121_info is changed
+
+    - name: Stop pod before restart
+      containers.podman.podman_pod:
+        executable: "{{ test_executable | default('podman') }}"
+        name: pod1
+        state: stopped
+
+    - name: Restart stopped pod
+      containers.podman.podman_pod:
+        executable: "{{ test_executable | default('podman') }}"
+        name: pod1
+        state: restarted
+      register: pod122_info
+
+    - name: Check info
+      assert:
+        that:
+          - pod122_info is changed
+
+    - name: Stop pod with additional config
+      containers.podman.podman_pod:
+        executable: "{{ test_executable | default('podman') }}"
+        name: pod1
+        state: stopped
+        ports:
+          - 9484:9483
+      register: pod123_info
+
+    - name: Check info
+      assert:
+        that:
+          - pod123_info is changed
+          - '"podman pod rm -f pod1" not in pod123_info.podman_actions'
+
+    - name: Start pod with ports
+      containers.podman.podman_pod:
+        executable: "{{ test_executable | default('podman') }}"
+        name: pod1
+        state: started
+        ports:
+          - "4444:4444/tcp"
+          - "1212:5555"
+          - "8888:19191/udp"
+          - "1901:1901/udp"
+          - "127.0.0.1:7671:7676/udp"
+          - "127.0.0.1:12122:8876/udp"
+          - "127.0.0.1:13122:8871/tcp"
+          - "127.0.0.1:43423:8872"
+      register: pod9_info
+
+    - name: Check info
+      assert:
+        that:
+          - pod9_info is changed
+
+    - name: Start pod with ports for idempotency
+      containers.podman.podman_pod:
+        executable: "{{ test_executable | default('podman') }}"
+        name: pod1
+        state: started
+        ports:
+          - "4444:4444/tcp"
+          - "1212:5555"
+          - "8888:19191/udp"
+          - "1901:1901/udp"
+          - "127.0.0.1:7671:7676/udp"
+          - "127.0.0.1:12122:8876/udp"
+          - "127.0.0.1:13122:8871/tcp"
+          - "127.0.0.1:43423:8872"
+      register: pod10_info
+
+    - name: Check info
+      assert:
+        that:
+          - pod10_info is not changed
+
+    - name: Start pod again for idempotency
+      containers.podman.podman_pod:
+        executable: "{{ test_executable | default('podman') }}"
+        name: pod1
+        state: started
+      register: pod11_info
+
+    - name: Check info
+      assert:
+        that:
+          - pod11_info is changed
+
+    - name: Start pod with share
+      containers.podman.podman_pod:
+        executable: "{{ test_executable | default('podman') }}"
+        name: pod1
+        state: started
+        share: uts
+      register: pod12_info
+
+    - name: Check info
+      assert:
+        that:
+          - pod12_info is changed
+
+    - name: Start pod with share for idempotency
+      containers.podman.podman_pod:
+        executable: "{{ test_executable | default('podman') }}"
+        name: pod1
+        state: started
+        share: uts
+      register: pod13_info
+
+    - name: Check info
+      assert:
+        that:
+          - pod13_info is not changed
+
+    - name: Start pod with default shares
+      containers.podman.podman_pod:
+        executable: "{{ test_executable | default('podman') }}"
+        name: pod1
+        state: started
+      register: pod15_info
+
+    - name: Check info
+      assert:
+        that:
+          - pod15_info is changed
+
+    - name: Start pod with gidmap and uidmap
+      containers.podman.podman_pod:
+        executable: "{{ test_executable | default('podman') }}"
+        name: pod1
+        uidmap: 0:100:65536
+        gidmap: 0:100:65536
+        state: created
+      register: pod15_a_info
+
+    - name: Check info
+      assert:
+        that:
+          - pod15_a_info is changed
+
+    - name: Start pod with gidmap and uidmap for idempotency
+      containers.podman.podman_pod:
+        executable: "{{ test_executable | default('podman') }}"
+        name: pod1
+        uidmap: 0:100:65536
+        gidmap: 0:100:65536
+        state: created
+      register: pod15_b_info
+
+    - name: Check info
+      assert:
+        that:
+          - pod15_b_info is not changed
+
+    # Reset the namespace check.
+    # This is because changing from `uidmap/gidmap` to `userns` does not
+    # report a difference currently
+    - name: Start pod without uidmap to reset
+      containers.podman.podman_pod:
+        executable: "{{ test_executable | default('podman') }}"
+        name: pod1
+        state: created
+      register: pod15_c_info
+
+    - name: Check info
+      assert:
+        that:
+          - pod15_c_info is changed
+
+    - name: Start pod with userns
+      containers.podman.podman_pod:
+        executable: "{{ test_executable | default('podman') }}"
+        name: pod1
+        userns: auto
+        state: created
+      register: pod_userns_a_info
+
+    - name: Check info
+      assert:
+        that:
+          - pod_userns_a_info is changed
+
+    - name: Start pod with userns for idempotency
+      containers.podman.podman_pod:
+        executable: "{{ test_executable | default('podman') }}"
+        name: pod1
+        userns: auto
+        state: created
+      register: pod_userns_b_info
+
+    - name: Check info
+      assert:
+        that:
+          - pod_userns_b_info is not changed
+
+    - name: Start pod with labels
+      containers.podman.podman_pod:
+        executable: "{{ test_executable | default('podman') }}"
+        name: pod1
+        state: started
+        label:
+          key: cval
+          otherkey: kddkdk
+          somekey: someval
+      register: pod16_info
+
+    - name: Check info
+      assert:
+        that:
+          - pod16_info is changed
+
+    - name: Start pod with labels again for idempotency
+      containers.podman.podman_pod:
+        executable: "{{ test_executable | default('podman') }}"
+        name: pod1
+        state: started
+        label:
+          key: cval
+          otherkey: kddkdk
+          somekey: someval
+      register: pod17_info
+
+    - name: Check info
+      assert:
+        that:
+          - pod17_info is not changed
+
+    - name: Start pod with different labels
+      containers.podman.podman_pod:
+        executable: "{{ test_executable | default('podman') }}"
+        name: pod1
+        state: started
+        label:
+          key: cval
+          otherkey: 23434dfsd
+          somekey: someval
+      register: pod18_info
+
+    - name: Check info
+      assert:
+        that:
+          - pod18_info is changed
+
+    - name: Start pod without labels
+      containers.podman.podman_pod:
+        executable: "{{ test_executable | default('podman') }}"
+        name: pod1
+        state: started
+      register: pod19_info
+
+    - name: Check info
+      assert:
+        that:
+          - pod19_info is changed
+
+    - name: Start pod with dns and hosts settings
+      containers.podman.podman_pod:
+        executable: "{{ test_executable | default('podman') }}"
+        name: pod1
+        state: started
+        add_host:
+          - "google:8.8.8.8"
+          - "site1:127.0.0.1"
+        dns:
+          - 1.1.1.1
+        dns_opt:
+          - "option timeout:3"
+        dns_search:
+          - "redhat.com"
+          - "ibm.com"
+        hostname: happypod
+      register: pod20_info
+
+    - name: Check info
+      assert:
+        that:
+          - pod20_info is changed
+
+    - name: Start pod with dns and hosts settings again
+      containers.podman.podman_pod:
+        executable: "{{ test_executable | default('podman') }}"
+        name: pod1
+        state: started
+        add_host:
+          - "google:8.8.8.8"
+          - "site1:127.0.0.1"
+        dns:
+          - 1.1.1.1
+        dns_opt:
+          - "option timeout:3"
+        dns_search:
+          - "redhat.com"
+          - "ibm.com"
+        hostname: happypod
+      register: pod21_info
+
+    - name: Check info
+      assert:
+        that:
+          - pod21_info is not changed
+
+    - name: Start pod with changed dns
+      containers.podman.podman_pod:
+        executable: "{{ test_executable | default('podman') }}"
+        name: pod1
+        state: started
+        add_host:
+          - "google:8.8.8.8"
+          - "site1:127.0.0.1"
+        dns:
+          - 1.1.1.1
+          - 2.2.2.2
+        dns_opt:
+          - "option timeout:3"
+        dns_search:
+          - "redhat.com"
+          - "ibm.com"
+        hostname: happypod
+      register: pod22_info
+
+    - name: Check info
+      assert:
+        that:
+          - pod22_info is changed
+
+    - name: Start pod with changed add host
+      containers.podman.podman_pod:
+        executable: "{{ test_executable | default('podman') }}"
+        name: pod1
+        state: started
+        add_host:
+          - "google:8.8.8.8"
+          - "site1:127.0.0.2"
+        dns:
+          - 1.1.1.1
+          - 2.2.2.2
+        dns_opt:
+          - "option timeout:3"
+        dns_search:
+          - "redhat.com"
+          - "ibm.com"
+        hostname: happypod
+      register: pod23_info
+
+    - name: Check info
+      assert:
+        that:
+          - pod23_info is changed
+
+    - name: Start pod with changed dns option
+      containers.podman.podman_pod:
+        executable: "{{ test_executable | default('podman') }}"
+        name: pod1
+        state: started
+        add_host:
+          - "google:8.8.8.8"
+          - "site1:127.0.0.2"
+        dns:
+          - 1.1.1.1
+          - 2.2.2.2
+        dns_opt:
+          - "option timeout:2"
+        dns_search:
+          - "redhat.com"
+          - "ibm.com"
+        hostname: happypod
+      register: pod24_info
+
+    - name: Check info
+      assert:
+        that:
+          - pod24_info is changed
+
+    - name: Start pod with changed dns search
+      containers.podman.podman_pod:
+        executable: "{{ test_executable | default('podman') }}"
+        name: pod1
+        state: started
+        add_host:
+          - "google:8.8.8.8"
+          - "site1:127.0.0.2"
+        dns:
+          - 1.1.1.1
+          - 2.2.2.2
+        dns_opt:
+          - "option timeout:2"
+        dns_search:
+          - "redhat.com"
+        hostname: happypod
+      register: pod25_info
+
+    - name: Check info
+      assert:
+        that:
+          - pod25_info is changed
+
+    - name: Start pod with changed hostname
+      containers.podman.podman_pod:
+        executable: "{{ test_executable | default('podman') }}"
+        name: pod1
+        state: started
+        add_host:
+          - "google:8.8.8.8"
+          - "site1:127.0.0.2"
+        dns:
+          - 1.1.1.1
+          - 2.2.2.2
+        dns_opt:
+          - "option timeout:2"
+        dns_search:
+          - "redhat.com"
+        hostname: bestpod
+      register: pod26_info
+
+    - name: Check info
+      assert:
+        that:
+          - pod26_info is changed
+
+    - name: Start pod with removed dns search
+      containers.podman.podman_pod:
+        executable: "{{ test_executable | default('podman') }}"
+        name: pod1
+        state: started
+        add_host:
+          - "google:8.8.8.8"
+          - "site1:127.0.0.2"
+        dns:
+          - 1.1.1.1
+          - 2.2.2.2
+        dns_opt:
+          - "option timeout:2"
+        hostname: bestpod
+      register: pod27_info
+
+    - name: Check info
+      assert:
+        that:
+          - pod27_info is changed
+
+    - name: Start pod with removed dns option
+      containers.podman.podman_pod:
+        executable: "{{ test_executable | default('podman') }}"
+        name: pod1
+        state: started
+        add_host:
+          - "google:8.8.8.8"
+          - "site1:127.0.0.2"
+        dns:
+          - 1.1.1.1
+          - 2.2.2.2
+        hostname: bestpod
+      register: pod28_info
+
+    - name: Check info
+      assert:
+        that:
+          - pod28_info is changed
+
+    - name: Start pod with removed dns
+      containers.podman.podman_pod:
+        executable: "{{ test_executable | default('podman') }}"
+        name: pod1
+        state: started
+        add_host:
+          - "google:8.8.8.8"
+          - "site1:127.0.0.2"
+        hostname: bestpod
+      register: pod29_info
+
+    - name: Check info
+      assert:
+        that:
+          - pod29_info is changed
+
+    - name: Start pod with removed add host
+      containers.podman.podman_pod:
+        executable: "{{ test_executable | default('podman') }}"
+        name: pod1
+        state: started
+        hostname: bestpod
+      register: pod30_info
+
+    - name: Check info
+      assert:
+        that:
+          - pod30_info is changed
+
+    - name: Start pod without infra
+      containers.podman.podman_pod:
+        executable: "{{ test_executable | default('podman') }}"
+        name: pod1
+        state: created
+        infra: false
+      register: pod31_info
+
+    - name: Check info
+      assert:
+        that:
+          - pod31_info is changed
+
+    - name: Start pod without infra again
+      containers.podman.podman_pod:
+        executable: "{{ test_executable | default('podman') }}"
+        name: pod1
+        state: created
+        infra: false
+      register: pod32_info
+
+    - name: Check info
+      assert:
+        that:
+          - pod32_info is not changed
+
+    - name: Start pod with infra
+      containers.podman.podman_pod:
+        executable: "{{ test_executable | default('podman') }}"
+        name: pod1
+        state: started
+      register: pod33_info
+
+    - name: Check info
+      assert:
+        that:
+          - pod33_info is changed
+
+    - name: Start pod with different infra image
+      containers.podman.podman_pod:
+        executable: "{{ test_executable | default('podman') }}"
+        name: pod1
+        state: created
+        infra_image: alpine:3.9
+      register: pod34_info
+
+    - name: Check info
+      assert:
+        that:
+          - pod34_info is changed
+
+    - name: Start pod with different infra image again
+      containers.podman.podman_pod:
+        executable: "{{ test_executable | default('podman') }}"
+        name: pod1
+        state: created
+        infra_image: alpine:3.9
+      register: pod35_info
+
+    - name: Check info
+      assert:
+        that:
+          - pod35_info is not changed
+
+    - name: Start pod2 with default settings
+      containers.podman.podman_pod:
+        executable: "{{ test_executable | default('podman') }}"
+        name: pod2
+        state: created
+      register: pod36_info
+
+    - name: Run container1 in pod
+      containers.podman.podman_container:
+        executable: "{{ test_executable | default('podman') }}"
+        name: container1
+        image: alpine
+        command: top
+        pod: pod2
+        state: started
+
+    - name: Run container2 in pod
+      containers.podman.podman_container:
+        executable: "{{ test_executable | default('podman') }}"
+        name: container2
+        image: alpine
+        command: top
+        pod: pod2
+        state: started
+
+    - name: Start pod2
+      containers.podman.podman_pod:
+        executable: "{{ test_executable | default('podman') }}"
+        name: pod2
+        state: started
+        generate_systemd:
+          path: /tmp/dir1
+          restart_policy: always
+          no_header: true
+          names: true
+          pod_prefix: poditto
+          container_prefix: ainer
+          restart_sec: 10
+          start_timeout: 20
+          stop_timeout: 15
+      register: system1
+
+    - name: Check systemd file exists
+      stat:
+        path: /tmp/dir1/poditto-pod2.service
+      register: podsys_stat
+
+    - name: Check that all settings from systemd are correct
+      assert:
+        that:
+          - system1.podman_systemd.keys() | list | length == 3
+          - "'-t 15 ' in system1.podman_systemd['poditto-pod2']"
+          - "'Restart=always' in system1.podman_systemd['poditto-pod2']"
+          - "'RestartSec=10' in system1.podman_systemd['poditto-pod2']"
+          - "'autogenerated by Podman' not in system1.podman_systemd['poditto-pod2']"
+          - podsys_stat.stat.exists | bool
+
+    - name: Delete pod2
+      containers.podman.podman_pod:
+        executable: "{{ test_executable | default('podman') }}"
+        name: pod2
+        state: absent
+        generate_systemd:
+          path: /tmp/dir1
+          restart_policy: always
+          time: 120
+          no_header: true
+          names: true
+          pod_prefix: poditto
+          container_prefix: ainer
+
+    - name: Check if systemd file exists (should not)
+      stat:
+        path: /tmp/dir1/poditto-pod2.service
+      register: podsys2_stat
+
+    - name: Check that systemd file was removed
+      assert:
+        that:
+          - not podsys2_stat.stat.exists|bool
+
+    - name: Run slirp4netns tests for podman < 5
+      when: podman_version < 5
+      block:
+
+        - name: Run pod2 with network slirp4netns
+          containers.podman.podman_pod:
+            executable: "{{ test_executable | default('podman') }}"
+            name: pod2
+            state: started
+            network: slirp4netns:outbound_addr=10.10.10.46
+
+        - name: Run container1 in pod
+          containers.podman.podman_container:
+            executable: "{{ test_executable | default('podman') }}"
+            name: container1
+            image: alpine
+            command: top
+            pod: pod2
+            state: started
+
+        - name: Run pod2 with network slirp4netns - again
+          containers.podman.podman_pod:
+            executable: "{{ test_executable | default('podman') }}"
+            name: pod2
+            state: started
+            network: slirp4netns:outbound_addr=10.10.10.46
+          register: slip4net_pod
+
+        - name: Run container1 in pod slirp4netns
+          containers.podman.podman_container:
+            executable: "{{ test_executable | default('podman') }}"
+            name: container1
+            image: alpine
+            command: top
+            pod: pod2
+            state: started
+          register: slip4net_cont
+
+        - name: Check that slirp4netns is idempotent
+          assert:
+            that:
+              - slip4net_pod is not changed
+              - slip4net_cont is not changed
+
+        - name: Run pod2 with different network slirp4netns
+          containers.podman.podman_pod:
+            executable: "{{ test_executable | default('podman') }}"
+            name: pod2
+            state: started
+            network: slirp4netns:outbound_addr=10.10.10.47
+          register: slip4net_pod2
+
+        - name: Run container1 in different pod slirp4netns
+          containers.podman.podman_container:
+            executable: "{{ test_executable | default('podman') }}"
+            name: container1
+            image: alpine
+            command: top
+            pod: pod2
+            state: started
+          register: slip4net_cont2
+
+        - name: Check that slirp4netns is idempotent and changed
+          assert:
+            that:
+              - slip4net_pod2 is changed
+              - slip4net_cont2 is changed
+
+    - name: Run pasta tests for podman >= 5
+      when: podman_version >= 5
+      block:
+
+        - name: Run pod2 with network pasta
+          containers.podman.podman_pod:
+            executable: "{{ test_executable | default('podman') }}"
+            name: pod2
+            state: started
+            network:
+              - "pasta:-4,-t,8007,-u,4443,-T,3000"
+
+        - name: Run container1 in pod
+          containers.podman.podman_container:
+            executable: "{{ test_executable | default('podman') }}"
+            name: container1
+            image: alpine
+            command: top
+            pod: pod2
+            state: started
+
+        - name: Run pod2 with network pasta - again
+          containers.podman.podman_pod:
+            executable: "{{ test_executable | default('podman') }}"
+            name: pod2
+            state: started
+            network:
+              - "pasta:-4,-t,8007,-u,4443,-T,3000"
+          register: pasta_pod
+
+        - name: Run container1 in pod pasta
+          containers.podman.podman_container:
+            executable: "{{ test_executable | default('podman') }}"
+            name: container1
+            image: alpine
+            command: top
+            pod: pod2
+            state: started
+          register: pasta_cont
+
+        - name: Check that pasta is idempotent
+          assert:
+            that:
+              - pasta_pod is not changed
+              - pasta_cont is not changed
+
+        - name: Run pod2 with different network pasta
+          containers.podman.podman_pod:
+            executable: "{{ test_executable | default('podman') }}"
+            name: pod2
+            state: started
+            network:
+              - "pasta:-4,-t,8008,-u,4443,-T,3000"
+          register: pasta_pod2
+
+        - name: Run container1 in different pod slirp4netns
+          containers.podman.podman_container:
+            executable: "{{ test_executable | default('podman') }}"
+            name: container1
+            image: alpine
+            command: top
+            pod: pod2
+            state: started
+          register: pasta_cont2
+
+        - name: Check that slirp4netns is idempotent and changed
+          assert:
+            that:
+              - pasta_pod2 is changed
+              - pasta_cont2 is changed
+
+    - name: Create a Quadlet for pod with filename
+      containers.podman.podman_pod:
+        executable: "{{ test_executable | default('podman') }}"
+        name: podq
+        state: quadlet
+        network: examplenet
+        quadlet_dir: /tmp
+        quadlet_filename: customfile
+        quadlet_file_mode: '0644'
+
+    - name: Check if files exists
+      stat:
+        path: /tmp/customfile.pod
+      register: quadlet_file_custom
+
+    - name: Fail if no file is present or wrong mode
+      assert:
+        that:
+          - quadlet_file_custom.stat.exists
+          - quadlet_file_custom.stat.mode == '0644'
+
+    - name: Create a Quadlet pod file
+      containers.podman.podman_pod:
+        executable: "{{ test_executable | default('podman') }}"
+        name: podq
+        state: quadlet
+        network: examplenet
+        share: net
+        subuidname: username1
+        userns: auto
+        publish: 8000:8001
+        sysctl:
+          "net.ipv4.ip_forward": 1
+        add_host:
+          - host1
+        volume:
+          - /tmp:/data
+          - /whocares:/data2:ro
+        quadlet_dir: /tmp
+        quadlet_options:
+          - "Label=somelabel=labelvalue"
+          - |
+            [Install]
+            WantedBy=default.target
+      register: quadlet_pod
+
+    - name: Check if files exists
+      stat:
+        path: /tmp/podq.pod
+      register: quadlet_file
+
+    - name: Check output is correct for Quadlet container in /tmp/podq.pod file
+      assert:
+        that:
+          - quadlet_file.stat.exists
+
+    - name: Check for the existence of lines in /tmp/podq.pod
+      lineinfile:
+        path: /tmp/podq.pod
+        line: "{{ item }}"
+        state: present
+      check_mode: yes
+      register: line_check
+      loop:
+        - "[Pod]"
+        - "Network=examplenet"
+        - "PodName=podq"
+        - "PublishPort=8000:8001"
+        - "Volume=/tmp:/data"
+        - "Volume=/whocares:/data2:ro"
+        - "PodmanArgs=--add-host host1"
+        - "PodmanArgs=--share net"
+        - "PodmanArgs=--subuidname username1"
+        - "PodmanArgs=--userns auto"
+        - "PodmanArgs=--add-host host1"
+        - "PodmanArgs=--sysctl net.ipv4.ip_forward=1"
+        - "Label=somelabel=labelvalue"
+        - "WantedBy=default.target"
+      loop_control:
+        label: "{{ item }}"
+
+    - name: Fail the task if any line is not present
+      fail:
+        msg: "The following line is not present in /tmp/podq.pod: {{ item.item }}"
+      when: item.changed
+      loop: "{{ line_check.results }}"
+      loop_control:
+        label: "{{ item.item }}"
+
+    - name: Create a Quadlet pod file - same
+      containers.podman.podman_pod:
+        executable: "{{ test_executable | default('podman') }}"
+        name: podq
+        state: quadlet
+        network: examplenet
+        share: net
+        subuidname: username1
+        userns: auto
+        publish: 8000:8001
+        sysctl:
+          "net.ipv4.ip_forward": 1
+        add_host:
+          - host1
+        volume:
+          - /tmp:/data
+          - /whocares:/data2:ro
+        quadlet_dir: /tmp
+        quadlet_options:
+          - "Label=somelabel=labelvalue"
+          - |
+            [Install]
+            WantedBy=default.target
+      register: quad2
+
+    - name: Check if quadlet changed
+      assert:
+        that:
+          - quad2 is not changed
+
+    - name: Create a Quadlet pod file - different
+      containers.podman.podman_pod:
+        executable: "{{ test_executable | default('podman') }}"
+        name: podq
+        state: quadlet
+        network: examplenet
+        share: net
+        subuidname: username1
+        userns: auto
+        publish: 8000:8001
+        sysctl:
+          "net.ipv4.ip_forward": 1
+        add_host:
+          - host1
+        volume:
+          - /tmp:/newdata
+          - /whocares:/data2:ro
+        quadlet_dir: /tmp
+        quadlet_options:
+          - "Label=somelabel=labelvalue"
+          - |
+            [Install]
+            WantedBy=default.target
+      register: quad3
+
+    - name: Print diff
+      debug:
+        var: quad3.diff
+
+    - name: Check if changed and diff
+      assert:
+        that:
+          - quad3 is changed
+          - "'newdata' in quad3.diff.after"
+
+  always:
+
+    - name: Delete all pods leftovers from tests
+      containers.podman.podman_pod:
+        executable: "{{ test_executable | default('podman') }}"
+        name: "{{ item }}"
+        state: absent
+      loop:
+        - "pod1"
+        - "pod2"
+
+    - name: Delete all container leftovers from tests
+      containers.podman.podman_container:
+        executable: "{{ test_executable | default('podman') }}"
+        name: "{{ item }}"
+        state: absent
+      loop:
+        - "container1"
+        - "container2"
+
+- name: Test idempotency rootless pods
+  include_tasks: idempotency.yml
+
+- name: Test idempotency for root pods
+  include_tasks: root-pod.yml
+  vars:
+    ansible_python_interpreter: "/usr/bin/python3"
+  args:
+    apply:
+      become: true
+
+- name: Test idempotency for root pods and networks
+  include_tasks: net-pod.yml
+  vars:
+    ansible_python_interpreter: "/usr/bin/python3"
+  args:
+    apply:
+      become: true
+
+- name: Test podman_pod for limiting resources
+  include_tasks: resource-limit.yml
+  vars:
+    ansible_python_interpreter: "/usr/bin/python3"
+  args:
+    apply:
+      become: true

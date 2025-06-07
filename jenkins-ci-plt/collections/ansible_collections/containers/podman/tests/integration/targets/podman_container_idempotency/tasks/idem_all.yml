@@ -1,0 +1,496 @@
+# Other settings
+- name: Remove leftovers from other tests
+  containers.podman.podman_container:
+    executable: "{{ test_executable | default('podman') }}"
+    name: idempotency
+    state: absent
+
+- name: Run container
+  containers.podman.podman_container:
+    executable: "{{ test_executable | default('podman') }}"
+    image: "{{ idem_image }}"
+    name: idempotency
+    state: started
+    command: 1h
+
+- name: Run container again
+  containers.podman.podman_container:
+    executable: "{{ test_executable | default('podman') }}"
+    image: "{{ idem_image }}"
+    name: idempotency
+    state: present
+    command: 1h
+  register: test1
+
+- name: Check info when running container again
+  assert:
+    that: test1 is not changed
+
+- name: Run container with empty vars for list and dict
+  containers.podman.podman_container:
+    executable: "{{ test_executable | default('podman') }}"
+    image: "{{ idem_image }}"
+    name: idempotency
+    state: present
+    env: {}
+    publish: []
+    command: 1h
+  register: test_to_empty
+
+- name: Run container with empty vars for list and dict - again
+  containers.podman.podman_container:
+    executable: "{{ test_executable | default('podman') }}"
+    image: "{{ idem_image }}"
+    name: idempotency
+    state: present
+    env: {}
+    publish: []
+    command: 1h
+  register: test_empty
+
+- name: Run container again w/o empty vars
+  containers.podman.podman_container:
+    executable: "{{ test_executable | default('podman') }}"
+    image: "{{ idem_image }}"
+    name: idempotency
+    state: present
+    command: 1h
+  register: test_from_empty
+
+- name: Check info when running container again
+  assert:
+    that:
+      - test_to_empty is not changed
+      - test_empty is not changed
+      - test_from_empty is not changed
+
+- name: Run container with environment vars
+  containers.podman.podman_container:
+    executable: "{{ test_executable | default('podman') }}"
+    image: "{{ idem_image }}"
+    name: idempotency
+    state: present
+    env:
+      mykey: "amazing value"
+      ENV1: "one=two=three"
+    command: 1h
+  register: test2
+
+- name: Check info with environment vars
+  assert:
+    that: test2 is changed
+
+- name: Run container with environment vars again
+  containers.podman.podman_container:
+    executable: "{{ test_executable | default('podman') }}"
+    image: "{{ idem_image }}"
+    name: idempotency
+    state: present
+    env:
+      mykey: "amazing value"
+      ENV1: "one=two=three"
+    command: 1h
+  register: test3
+
+- name: Check info with environment vars again
+  assert:
+    that: test3 is not changed
+
+- name: Run container with changed environment vars
+  containers.podman.podman_container:
+    executable: "{{ test_executable | default('podman') }}"
+    image: "{{ idem_image }}"
+    name: idempotency
+    state: present
+    env:
+      mykey: "amazing value1"
+      ENV1: "one=two=three"
+    command: 1h
+  register: test4
+
+- name: Check info with changed environment vars
+  assert:
+    that: test4 is changed
+
+- name: Run container with log opt tag
+  containers.podman.podman_container:
+    executable: "{{ test_executable | default('podman') }}"
+    image: "{{ idem_image }}"
+    name: idempotency
+    state: present
+    log_opt:
+      tag: nonotag
+    log_driver: journald
+    command: 1h
+  register: test9
+
+- name: Check info with log opt tag
+  assert:
+    that: test9 is changed
+
+- name: Run container with log opt tag - again
+  containers.podman.podman_container:
+    executable: "{{ test_executable | default('podman') }}"
+    image: "{{ idem_image }}"
+    name: idempotency
+    state: present
+    log_opt:
+      tag: nonotag
+    log_driver: journald
+    command: 1h
+  register: test10
+
+- name: Check info with log opt tag - again
+  assert:
+    that: test10 is not changed
+
+- name: Run container with default log opt tag
+  containers.podman.podman_container:
+    executable: "{{ test_executable | default('podman') }}"
+    image: "{{ idem_image }}"
+    name: idempotency
+    state: present
+    command: 1h
+    log_driver: journald
+  register: test11
+
+- name: Check info with default log opt tag
+  assert:
+    that: test11 is changed
+
+- name: Run container with log opt path
+  containers.podman.podman_container:
+    executable: "{{ test_executable | default('podman') }}"
+    image: "{{ idem_image }}"
+    name: idempotency
+    state: present
+    log_opt:
+      path: /tmp/container.log
+    log_driver: journald
+    command: 1h
+  register: test12
+
+- name: Check info with log opt path
+  assert:
+    that: test12 is changed
+
+- name: Run container with changed log opt path
+  containers.podman.podman_container:
+    executable: "{{ test_executable | default('podman') }}"
+    image: "{{ idem_image }}"
+    name: idempotency
+    state: present
+    log_opt:
+      path: /tmp/container2.log
+    log_driver: journald
+    command: 1h
+  register: test13
+
+- name: Check info with changed log opt path
+  assert:
+    that: test13 is changed
+
+- name: Run container with default log opt path
+  containers.podman.podman_container:
+    executable: "{{ test_executable | default('podman') }}"
+    image: "{{ idem_image }}"
+    name: idempotency
+    state: present
+    log_driver: journald
+    command: 1h
+  register: test14
+
+- name: Check info with default log opt path
+  assert:
+    that: test14 is changed
+
+- name: Run container with all log-opts
+  containers.podman.podman_container:
+    executable: "{{ test_executable | default('podman') }}"
+    image: "{{ idem_image }}"
+    name: idempotency
+    state: present
+    log_driver: journald
+    log_opt:
+      path: /tmp/container3.log
+      max_size: 100mb
+      tag: sometag
+    command: 1h
+
+- name: Run container with mounted /dev/fuse
+  containers.podman.podman_container:
+    executable: "{{ test_executable | default('podman') }}"
+    image: "{{ idem_image }}"
+    name: idempotency
+    state: started
+    command: 1h
+    device:
+      - /dev/fuse
+  register: test15
+
+- name: Run container with mounted /dev/fuse again
+  containers.podman.podman_container:
+    executable: "{{ test_executable | default('podman') }}"
+    image: "{{ idem_image }}"
+    name: idempotency
+    state: started
+    command: 1h
+    device:
+      - /dev/fuse
+  register: test16
+
+- name: Run container with mounted /dev/fuse:/dev/fuse
+  containers.podman.podman_container:
+    executable: "{{ test_executable | default('podman') }}"
+    image: "{{ idem_image }}"
+    name: idempotency
+    state: started
+    command: 1h
+    device:
+      - /dev/fuse:/dev/fuse
+  register: test17
+
+- name: Run container with mounted /dev/fuse third time
+  containers.podman.podman_container:
+    executable: "{{ test_executable | default('podman') }}"
+    image: "{{ idem_image }}"
+    name: idempotency
+    state: started
+    command: 1h
+    device:
+      - /dev/fuse
+  register: test18
+
+- name: Run container without mounted device
+  containers.podman.podman_container:
+    executable: "{{ test_executable | default('podman') }}"
+    image: "{{ idem_image }}"
+    name: idempotency
+    state: started
+    command: 1h
+  register: test19
+
+- name: Check info with mounted devices
+  assert:
+    that:
+      - test15 is changed
+      - test16 is not changed
+      - test17 is changed
+      - test18 is changed
+      - test19 is changed
+
+- name: Run container with etc_hosts
+  containers.podman.podman_container:
+    executable: "{{ test_executable | default('podman') }}"
+    image: "{{ idem_image }}"
+    name: idempotency
+    state: present
+    etc_hosts:
+      host1: 127.0.0.1
+      host2: fd00::1
+    command: 1h
+  register: test20
+
+- name: Check info with etc_hosts
+  assert:
+    that: test20 is changed
+
+- name: Run container with etc_hosts again
+  containers.podman.podman_container:
+    executable: "{{ test_executable | default('podman') }}"
+    image: "{{ idem_image }}"
+    name: idempotency
+    state: present
+    etc_hosts:
+      host1: 127.0.0.1
+      host2: fd00::1
+    command: 1h
+  register: test21
+
+- name: Check info with etc_hosts again
+  assert:
+    that: test21 is not changed
+
+- name: Run default container
+  containers.podman.podman_container:
+    executable: "{{ test_executable | default('podman') }}"
+    image: "{{ idem_image }}"
+    name: idempotency
+    state: present
+
+- name: Run container with restart policy always
+  containers.podman.podman_container:
+    executable: "{{ test_executable | default('podman') }}"
+    image: "{{ idem_image }}"
+    name: idempotency
+    state: present
+    restart_policy: always
+  register: test22
+
+- name: Check info with restart policy always
+  assert:
+    that: test22 is changed
+
+- name: Run container with restart policy always again
+  containers.podman.podman_container:
+    executable: "{{ test_executable | default('podman') }}"
+    image: "{{ idem_image }}"
+    name: idempotency
+    state: present
+    restart_policy: always
+  register: test23
+
+- name: Check info with restart policy always again
+  assert:
+    that: test23 is not changed
+
+- name: Run container with a different restart policy on-failure
+  containers.podman.podman_container:
+    executable: "{{ test_executable | default('podman') }}"
+    image: "{{ idem_image }}"
+    name: idempotency
+    state: present
+    restart_policy: on-failure
+  register: test24
+
+- name: Check info with restart policy on-failure
+  assert:
+    that: test24 is changed
+
+- name: Run default container w/o restart policy
+  containers.podman.podman_container:
+    executable: "{{ test_executable | default('podman') }}"
+    image: "{{ idem_image }}"
+    name: idempotency
+    state: present
+  register: test25
+
+- name: Check info w/o restart policy
+  assert:
+    that: test25 is changed
+
+- name: Run container for linking with PID
+  containers.podman.podman_container:
+    executable: "{{ test_executable | default('podman') }}"
+    image: "{{ idem_image }}"
+    name: idempotency
+    state: present
+  register: test26
+
+- name: Check info with PID
+  assert:
+    that: test26 is not changed
+
+- name: Run second container for linking with PID
+  containers.podman.podman_container:
+    executable: "{{ test_executable | default('podman') }}"
+    image: "{{ idem_image }}"
+    name: idempotency2
+    state: present
+    pid: "container:idempotency"
+  register: test27
+
+- name: Check info of second container with PID
+  assert:
+    that: test27 is changed
+
+- name: Run second container for linking with PID
+  containers.podman.podman_container:
+    executable: "{{ test_executable | default('podman') }}"
+    image: "{{ idem_image }}"
+    name: idempotency2
+    state: present
+    pid: "container:idempotency"
+  register: test28
+
+- name: Check info of second container with PID again
+  assert:
+    that: test28 is not changed
+
+- name: Run second container for linking with PID with container ID
+  containers.podman.podman_container:
+    executable: "{{ test_executable | default('podman') }}"
+    image: "{{ idem_image }}"
+    name: idempotency2
+    state: present
+    pid: "container:{{ test26.container.Id }}"
+  register: test29
+
+- name: Check info of second container with PID of container ID again
+  assert:
+    that: test29 is changed
+
+- name: Run container with complex command
+  containers.podman.podman_container:
+    executable: "{{ test_executable | default('podman') }}"
+    name: idempotency2
+    image: alpine
+    command:
+      - sh
+      - -c
+      - read
+      - -p
+      - 8012
+    interactive: true
+    tty: true
+    device:
+      - /dev/fuse
+  register: test30
+
+- name: Run container with complex command again
+  containers.podman.podman_container:
+    executable: "{{ test_executable | default('podman') }}"
+    name: idempotency2
+    image: alpine
+    command:
+      - sh
+      - -c
+      - read
+      - -p
+      - 8012
+    interactive: true
+    tty: true
+    device:
+      - /dev/fuse
+  register: test31
+
+- name: Run container with different complex command
+  containers.podman.podman_container:
+    executable: "{{ test_executable | default('podman') }}"
+    name: idempotency2
+    image: alpine
+    command:
+      - sh
+      - -c
+      - read
+      - -p
+      - 8015
+    interactive: true
+    tty: true
+    device:
+      - /dev/fuse
+  register: test32
+
+- name: Check info of container with complex command
+  assert:
+    that: test30 is changed
+
+- name: Check info of container with complex command again
+  assert:
+    that: test31 is not changed
+
+- name: Check info of container with complex command
+  assert:
+    that: test32 is changed
+
+- name: Remove dependent test container
+  containers.podman.podman_container:
+    executable: "{{ test_executable | default('podman') }}"
+    name: idempotency2
+    state: absent
+
+- name: Remove test container
+  containers.podman.podman_container:
+    executable: "{{ test_executable | default('podman') }}"
+    name: idempotency
+    state: absent

@@ -1,0 +1,23 @@
+all:
+  children:
+    agents:
+      hosts:
+        jenkins-agent0.lab.example.com:
+          ansible_host: serverb.lab.example.com
+        jenkins-agent1.lab.example.com:
+          ansible_host: serverc.lab.example.com
+    control_scm:
+      hosts:
+        workstation.lab.example.com:
+    master:
+      hosts:
+        jenkins-master.lab.example.com:
+          ansible_host: servera.lab.example.com
+    artifact:
+      hosts:
+        nexus3.lab.example.com:
+          ansible_host: serverd.lab.example.com
+    apptest:
+      hosts:
+        utility.lab.example.com:
+    ungrouped: {}

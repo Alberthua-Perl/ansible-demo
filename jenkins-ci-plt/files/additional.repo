@@ -1,0 +1,17 @@
+[ansible-automation-platform-2.2-for-rhel-9-x86_64-rpms]
+baseurl = http://content.example.com/rhel9.0/x86_64/rhel9-additional/ansible-automation-platform-2.2-for-rhel-9-x86_64-rpms
+enabled = true
+gpgcheck = false
+name = Red Hat Ansible Automation Platform 2.2 for RHEL 9 x86_64 (RPMs)
+
+[rhel-9-for-x86_64-baseos-rpms-updates]
+baseurl = http://content.example.com/rhel9.0/x86_64/rhel9-additional/rhel-9-for-x86_64-baseos-rpms
+enabled = true
+gpgcheck = false
+name = Red Hat Enterprise Linux 9 for x86_64 - BaseOS (RPMs) - Updates
+
+[rhel-9-for-x86_64-appstream-rpms-updates]
+baseurl = http://content.example.com/rhel9.0/x86_64/rhel9-additional/rhel-9-for-x86_64-appstream-rpms
+enabled = true
+gpgcheck = false
+name = Red Hat Enterprise Linux 9 for x86_64 - AppStream (RPMs) - Updates

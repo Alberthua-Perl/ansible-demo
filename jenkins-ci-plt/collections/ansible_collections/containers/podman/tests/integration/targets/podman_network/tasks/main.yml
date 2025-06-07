@@ -1,0 +1,836 @@
+- name: Test podman_network
+  become: true
+  block:
+
+    - name: Print podman version
+      command: podman version
+
+    - name: Check if dnsname plugin is installed
+      block:
+
+        - name: Check if plugin is installed
+          stat:
+            path: "{{ item }}"
+          loop:
+            - /usr/libexec/cni/dnsname
+            - /usr/lib/cni/dnsname
+            - /opt/cni/bin/dnsname
+            - /opt/bridge/bin/dnsname
+          register: plugin_results
+
+        - name: Set plugin fact
+          set_fact:
+            dns_plugin: "{{ true in plugin_results.results|map(attribute='stat.exists') }}"
+
+    - name: Generate random value for network name
+      set_fact:
+        network_name: "{{ 'ansible-test-podman-%0x' % ((2**32) | random) }}"
+
+    - name: Make sure network doesn't exist
+      containers.podman.podman_network:
+        executable: "{{ test_executable | default('podman') }}"
+        name: "{{ network_name }}"
+        state: absent
+
+    - name: Get missing network info
+      containers.podman.podman_network_info:
+        executable: "{{ test_executable | default('podman') }}"
+        name: "{{ network_name }}"
+      register: info
+      ignore_errors: true
+
+    - name: Check results
+      assert:
+        that:
+          - info is failed
+
+    - name: Create network
+      containers.podman.podman_network:
+        executable: "{{ test_executable | default('podman') }}"
+        name: "{{ network_name }}"
+      register: net
+
+    - name: Get existing network info
+      containers.podman.podman_network_info:
+        executable: "{{ test_executable | default('podman') }}"
+        name: "{{ network_name }}"
+      register: info1
+
+    - name: Check info
+      assert:
+        that:
+          - info1 | length > 1
+          - info1.networks.0.name == network_name
+          - net is changed
+
+    - name: Create network again
+      containers.podman.podman_network:
+        executable: "{{ test_executable | default('podman') }}"
+        name: "{{ network_name }}"
+        state: present
+      register: info2
+
+    - name: Check info
+      assert:
+        that:
+          - info2 is not changed
+
+    # TODO: Enable it when podman v4 is available in CI
+
+    # - name: Create network with disable DNS
+    #   containers.podman.podman_network:
+    #     executable: "{{ test_executable | default('podman') }}"
+    #     name: "{{ network_name }}"
+    #     state: present
+    #     disable_dns: true
+    #   register: info3
+
+    # - name: Check info
+    #   assert:
+    #     that:
+    #       - >-
+    #         info3 is changed and dns_plugin|bool or
+    #         info3 is not changed and not dns_plugin|bool
+
+    # - name: Create network with disable DNS again
+    #   containers.podman.podman_network:
+    #     executable: "{{ test_executable | default('podman') }}"
+    #     name: "{{ network_name }}"
+    #     state: present
+    #     disable_dns: true
+    #   register: info4
+
+    # - name: Check info
+    #   assert:
+    #     that:
+    #       - info4 is not changed
+
+    # - name: Create network w/o disable DNS
+    #   containers.podman.podman_network:
+    #     executable: "{{ test_executable | default('podman') }}"
+    #     name: "{{ network_name }}"
+    #     state: present
+    #   register: info5
+
+    # - name: Check info
+    #   assert:
+    #     that:
+    #       - >-
+    #         info5 is changed and dns_plugin|bool or
+    #         info5 is not changed and not dns_plugin|bool
+
+    - name: Create network with custom gateway
+      containers.podman.podman_network:
+        executable: "{{ test_executable | default('podman') }}"
+        name: "{{ network_name }}"
+        state: present
+        gateway: 10.100.100.100
+        subnet: 10.100.100.0/24
+      register: info6
+
+    - name: Check info
+      assert:
+        that:
+          - info6 is changed
+      ignore_errors: true
+      # In v4 subnets are added automatically and gateway idempotency is disabled
+
+    - name: Create network with custom gateway again
+      containers.podman.podman_network:
+        executable: "{{ test_executable | default('podman') }}"
+        name: "{{ network_name }}"
+        state: present
+        gateway: 10.100.100.100
+        subnet: 10.100.100.0/24
+      register: info7
+
+    - name: Check info
+      assert:
+        that:
+          - info7 is not changed
+
+    - name: Create internal network
+      containers.podman.podman_network:
+        executable: "{{ test_executable | default('podman') }}"
+        name: "{{ network_name }}"
+        state: present
+        internal: true
+      register: info9
+
+    - name: Check info
+      assert:
+        that:
+          - info9 is changed
+
+    - name: Create internal network again
+      containers.podman.podman_network:
+        executable: "{{ test_executable | default('podman') }}"
+        name: "{{ network_name }}"
+        state: present
+        internal: true
+      register: info10
+
+    - name: Check info
+      assert:
+        that:
+          - info10 is not changed
+
+    - name: Create a regular external network
+      containers.podman.podman_network:
+        executable: "{{ test_executable | default('podman') }}"
+        name: "{{ network_name }}"
+        state: present
+      register: info11
+
+    - name: Check info
+      assert:
+        that:
+          - info11 is changed
+
+    - name: Create network with subnet
+      containers.podman.podman_network:
+        executable: "{{ test_executable | default('podman') }}"
+        name: "{{ network_name }}"
+        state: present
+        subnet: 10.200.200.0/24
+        recreate: true
+      register: info12
+
+    - name: Check info
+      assert:
+        that:
+          - info12 is changed
+      # In v4 subnets are added automatically and subnets idempotency is disabled
+
+    - name: Create network with subnet again
+      containers.podman.podman_network:
+        executable: "{{ test_executable | default('podman') }}"
+        name: "{{ network_name }}"
+        state: present
+        subnet: 10.200.200.0/24
+      register: info13
+
+    - name: Check info
+      assert:
+        that:
+          - info13 is not changed
+
+    - name: Create network with ipv6 subnet
+      containers.podman.podman_network:
+        executable: "{{ test_executable | default('podman') }}"
+        name: "{{ network_name }}"
+        state: present
+        subnet: 2001:cafe::/64
+        ipv6: true
+
+    - name: Make sure network doesn't exist
+      containers.podman.podman_network:
+        executable: "{{ test_executable | default('podman') }}"
+        name: "{{ network_name }}"
+        state: absent
+
+    - name: Get existing network info
+      containers.podman.podman_network_info:
+        executable: "{{ test_executable | default('podman') }}"
+        name: "{{ network_name }}"
+      register: info100
+      ignore_errors: true
+
+    - name: Check results
+      assert:
+        that:
+          - info100 is failed
+
+    - name: Create network with opts MTU
+      containers.podman.podman_network:
+        executable: "{{ test_executable | default('podman') }}"
+        name: "{{ network_name }}"
+        state: present
+        opt:
+          mtu: 1311
+      register: opt1
+
+    - name: Create network with opts VLAN
+      containers.podman.podman_network:
+        executable: "{{ test_executable | default('podman') }}"
+        name: "{{ network_name }}"
+        state: present
+        opt:
+          vlan: 4000
+      register: opt2
+
+    - name: Create network with opts MTU and VLAN
+      containers.podman.podman_network:
+        executable: "{{ test_executable | default('podman') }}"
+        name: "{{ network_name }}"
+        state: present
+        opt:
+          mtu: 1311
+          vlan: 4000
+      register: opt3
+
+    - name: Create network with opts MTU and VLAN again
+      containers.podman.podman_network:
+        executable: "{{ test_executable | default('podman') }}"
+        name: "{{ network_name }}"
+        state: present
+        opt:
+          mtu: 1311
+          vlan: 4000
+      register: opt4
+
+    - name: Check results for network opts
+      assert:
+        that:
+          - opt1 is changed
+          - opt2 is changed
+          - opt3 is changed
+          - opt4 is not changed
+
+  always:
+
+    - name: Cleanup
+      command: podman network rm -f {{ network_name }}
+      ignore_errors: true
+
+- name: Test podman_network rootless
+  become: false
+  block:
+
+    - name: Create network
+      containers.podman.podman_network:
+        executable: "{{ test_executable | default('podman') }}"
+        name: "{{ network_name }}"
+      register: net1
+
+    - name: Get existing network info
+      containers.podman.podman_network_info:
+        executable: "{{ test_executable | default('podman') }}"
+        name: "{{ network_name }}"
+      register: info15
+
+    - name: Check info
+      assert:
+        that:
+          - info15 | length > 1
+          - info15.networks.0.name == network_name
+          - net1 is changed
+
+    - name: Create network again
+      containers.podman.podman_network:
+        executable: "{{ test_executable | default('podman') }}"
+        name: "{{ network_name }}"
+        state: present
+      register: info16
+
+    - name: Check info
+      assert:
+        that:
+          - info16 is not changed
+
+    - name: Create network with IPv6 'exploded' - dual stack
+      containers.podman.podman_network:
+        executable: "{{ test_executable | default('podman') }}"
+        name: "{{ network_name }}"
+        ipv6: true
+        subnet: fd4f:552c:830f::/64
+        state: present
+
+    - name: Create network with IPv6 'exploded' - dual stack again
+      containers.podman.podman_network:
+        executable: "{{ test_executable | default('podman') }}"
+        name: "{{ network_name }}"
+        ipv6: true
+        subnet: fd4f:552c:830f::/64
+        state: present
+      register: info17
+
+    - name: Check info
+      assert:
+        that:
+          - info17 is not changed
+
+    - name: Create network with DNS
+      containers.podman.podman_network:
+        executable: "{{ test_executable | default('podman') }}"
+        name: "{{ network_name }}"
+        state: present
+        dns:
+          - 1.1.1.1
+          - 2.2.2.2
+      register: resultn2
+
+    - name: Check output - Create network with DNS
+      assert:
+        that:
+          - resultn2 is changed
+
+    - name: Create network with DNS again
+      containers.podman.podman_network:
+        executable: "{{ test_executable | default('podman') }}"
+        name: "{{ network_name }}"
+        state: present
+        dns:
+          - 1.1.1.1
+          - 2.2.2.2
+      register: resultn3
+
+    - name: Check output - Create network with DNS again
+      assert:
+        that:
+          - resultn3 is not changed
+
+    - name: Create network with DNS - different
+      containers.podman.podman_network:
+        executable: "{{ test_executable | default('podman') }}"
+        name: "{{ network_name }}"
+        state: present
+        dns:
+          - 1.1.1.1
+      register: resultn4
+
+    - name: Check output - Create network with DNS - different
+      assert:
+        that:
+          - resultn4 is changed
+
+    - name: Create network with routes
+      containers.podman.podman_network:
+        executable: "{{ test_executable | default('podman') }}"
+        name: "{{ network_name }}"
+        state: present
+        route:
+          - 1.1.1.1/32,2.2.2.2
+          - 3.3.3.0/24,4.4.4.4,240
+          - 7.7.0.0/16,9.9.9.9,100
+      register: resultn5
+
+    - name: Check output - Create network with routes
+      assert:
+        that:
+          - resultn5 is changed
+
+    - name: Create network with routes again
+      containers.podman.podman_network:
+        executable: "{{ test_executable | default('podman') }}"
+        name: "{{ network_name }}"
+        state: present
+        route:
+          - 1.1.1.1/32,2.2.2.2
+          - 3.3.3.0/24,4.4.4.4,240
+          - 7.7.0.0/16,9.9.9.9,100
+      register: resultn6
+
+    - name: Check output - Create network with routes again
+      assert:
+        that:
+          - resultn6 is not changed
+
+    - name: Create network with routes - different
+      containers.podman.podman_network:
+        executable: "{{ test_executable | default('podman') }}"
+        name: "{{ network_name }}"
+        state: present
+        route:
+          - 1.1.1.1/32,2.2.2.2
+          - 3.3.3.0/24,4.4.4.4,280
+      register: resultn7
+
+    - name: Check output - Create network with routes - different
+      assert:
+        that:
+          - resultn7 is changed
+
+    - name: Create network with IPAM driver none
+      containers.podman.podman_network:
+        executable: "{{ test_executable | default('podman') }}"
+        name: "{{ network_name }}"
+        state: present
+        ipam_driver: none
+      register: resultn8
+
+    - name: Check output - Create network with IPAM driver none
+      assert:
+        that:
+          - resultn8 is changed
+
+    - name: Create network with IPAM driver none again
+      containers.podman.podman_network:
+        executable: "{{ test_executable | default('podman') }}"
+        name: "{{ network_name }}"
+        state: present
+        ipam_driver: none
+      register: resultn9
+
+    - name: Check output - Create network with IPAM driver none again
+      assert:
+        that:
+          - resultn9 is not changed
+
+    - name: Create network without IPAM driver
+      containers.podman.podman_network:
+        executable: "{{ test_executable | default('podman') }}"
+        name: "{{ network_name }}"
+        state: present
+      register: resultn10
+
+    - name: Check output - Create network without IPAM driver
+      assert:
+        that:
+          - resultn10 is not changed
+
+    - name: Create network with IPAM driver host-local
+      containers.podman.podman_network:
+        executable: "{{ test_executable | default('podman') }}"
+        name: "{{ network_name }}"
+        state: present
+        ipam_driver: "host-local"
+      register: resultn11
+
+    - name: Check output - Create network with IPAM driver host-local
+      assert:
+        that:
+          - resultn11 is changed
+
+    - name: Delete network
+      containers.podman.podman_network:
+        executable: "{{ test_executable | default('podman') }}"
+        name: "{{ network_name }}"
+        state: absent
+
+    - name: Create a network with multiple subnets
+      containers.podman.podman_network:
+        executable: "{{ test_executable | default('podman') }}"
+        name: "{{ network_name }}"
+        net_config:
+          - subnet: 10.44.44.0/24
+            gateway: 10.44.44.44
+            ip_range: 10.44.44.128/30
+          - subnet: 10.22.22.0/24
+            gateway: 10.22.22.244
+          - subnet: 10.11.1.0/24
+            gateway: 10.11.1.33
+
+    - name: Create a network with multiple subnets again
+      containers.podman.podman_network:
+        executable: "{{ test_executable | default('podman') }}"
+        name: "{{ network_name }}"
+        net_config:
+          - subnet: 10.44.44.0/24
+            gateway: 10.44.44.44
+            ip_range: 10.44.44.128/30
+          - subnet: 10.22.22.0/24
+            gateway: 10.22.22.244
+          - subnet: 10.11.1.0/24
+            gateway: 10.11.1.33
+      register: net2conf
+
+    - name: Check output - Create a network with multiple subnets again
+      assert:
+        that:
+          - net2conf is not changed
+
+    - name: Create a network with multiple subnets - different
+      containers.podman.podman_network:
+        executable: "{{ test_executable | default('podman') }}"
+        name: "{{ network_name }}"
+        net_config:
+          - subnet: 10.44.44.0/24
+            gateway: 10.44.44.44
+            ip_range: 10.44.44.128/30
+          - subnet: 10.11.12.0/24
+            gateway: 10.11.12.33
+      register: net2conf1
+
+    - name: Check output - Create a network with multiple subnets - different
+      assert:
+        that:
+          - net2conf1 is changed
+
+    - name: Create a network with multiple subnets - different gateway
+      containers.podman.podman_network:
+        executable: "{{ test_executable | default('podman') }}"
+        name: "{{ network_name }}"
+        net_config:
+          - subnet: 10.44.44.0/24
+            gateway: 10.44.44.41
+            ip_range: 10.44.44.128/30
+          - subnet: 10.11.12.0/24
+            gateway: 10.11.12.33
+      register: net2conf2
+
+    - name: Check output - Create a network with multiple subnets - different gateway
+      assert:
+        that:
+          - net2conf2 is changed
+
+    - name: Create a network with multiple subnets again - same
+      containers.podman.podman_network:
+        executable: "{{ test_executable | default('podman') }}"
+        name: "{{ network_name }}"
+        net_config:
+          - subnet: 10.44.44.0/24
+            gateway: 10.44.44.41
+            ip_range: 10.44.44.128/30
+          - subnet: 10.11.12.0/24
+            gateway: 10.11.12.33
+      register: net2conf3
+
+    - name: Check output - Create a network with multiple subnets again - same
+      assert:
+        that:
+          - net2conf3 is not changed
+
+    - name: Create a network with single subnet
+      containers.podman.podman_network:
+        executable: "{{ test_executable | default('podman') }}"
+        name: "{{ network_name }}"
+        subnet: 10.44.44.0/24
+        gateway: 10.44.44.41
+      register: net2conf4
+
+    - name: Check output - Create a network with single subnet
+      assert:
+        that:
+          - net2conf4 is changed
+
+    - name: Create a network with single subnet - again
+      containers.podman.podman_network:
+        executable: "{{ test_executable | default('podman') }}"
+        name: "{{ network_name }}"
+        subnet: 10.44.44.0/24
+        gateway: 10.44.44.41
+      register: net2conf5
+
+    - name: Check output - Create a network with single subnet - again
+      assert:
+        that:
+          - net2conf5 is not changed
+
+    - name: Create a network with single subnet and changed gateway
+      containers.podman.podman_network:
+        executable: "{{ test_executable | default('podman') }}"
+        name: "{{ network_name }}"
+        subnet: 10.44.44.0/24
+        gateway: 10.44.44.42
+      register: net2conf6
+
+    - name: Check output - Create a network with single subnet and changed gateway
+      assert:
+        that:
+          - net2conf6 is changed
+
+    - name: Create a network with single subnet - without gateway
+      containers.podman.podman_network:
+        executable: "{{ test_executable | default('podman') }}"
+        name: "{{ network_name }}"
+        subnet: 10.44.44.0/24
+      register: net2conf7
+
+    - name: Check output - Create a network with single subnet - without gateway
+      assert:
+        that:
+          - net2conf7 is not changed
+
+    - name: Create a network with multiple subnets
+      containers.podman.podman_network:
+        executable: "{{ test_executable | default('podman') }}"
+        name: "{{ network_name }}"
+        net_config:
+          - subnet: 10.44.44.0/24
+            gateway: 10.44.44.44
+            ip_range: 10.44.44.128/30
+          - subnet: 10.22.22.0/24
+            gateway: 10.22.22.244
+          - subnet: 10.17.1.0/24
+            gateway: 10.17.1.33
+
+    - name: Create a network with multiple subnets again
+      containers.podman.podman_network:
+        executable: "{{ test_executable | default('podman') }}"
+        name: "{{ network_name }}"
+        net_config:
+          - subnet: 10.44.44.0/24
+            gateway: 10.44.44.44
+            ip_range: 10.44.44.128/30
+          - subnet: 10.22.22.0/24
+            gateway: 10.22.22.244
+          - subnet: 10.17.1.0/24
+            gateway: 10.17.1.33
+      register: net2conf
+
+    - name: Check output - Create a network with multiple subnets again
+      assert:
+        that:
+          - net2conf is not changed
+
+    - name: Create a IPv6 network with multiple subnets
+      containers.podman.podman_network:
+        executable: "{{ test_executable | default('podman') }}"
+        name: "{{ network_name }}"
+        net_config:
+          - subnet: 2002:db8:1::/64
+            gateway: 2002:db8:1::12
+            ip_range: 2002:db8:1::128/68
+          - subnet: 2004:db9:1::/64
+            gateway: 2004:db9:1::15
+          - subnet: 10.15.11.0/24
+            gateway: 10.15.11.124
+      register: net6conf
+
+    - name: Check output - Create a network with multiple subnets again
+      assert:
+        that:
+          - net6conf is changed
+
+    - name: Create a IPv6 network with multiple subnets again
+      containers.podman.podman_network:
+        executable: "{{ test_executable | default('podman') }}"
+        name: "{{ network_name }}"
+        net_config:
+          - subnet: 2002:db8:1::/64
+            gateway: 2002:db8:1::12
+            ip_range: 2002:db8:1::128/68
+          - subnet: 2004:db9:1::/64
+            gateway: 2004:db9:1::15
+          - subnet: 10.15.11.0/24
+            gateway: 10.15.11.124
+      register: net6conf1
+
+    - name: Check output - Create a network with multiple subnets again
+      assert:
+        that:
+          - net6conf1 is not changed
+
+    - name: Create a Quadlet for network with filename
+      containers.podman.podman_network:
+        executable: "{{ test_executable | default('podman') }}"
+        name: testnet
+        state: quadlet
+        quadlet_dir: /tmp
+        quadlet_filename: customfile
+        quadlet_file_mode: '0644'
+
+    - name: Check if files exists
+      stat:
+        path: /tmp/customfile.network
+      register: quadlet_file_custom
+
+    - name: Fail if no file is present or wrong mode
+      assert:
+        that:
+          - quadlet_file_custom.stat.exists
+          - quadlet_file_custom.stat.mode == '0644'
+
+    - name: Create quadlet network file
+      containers.podman.podman_network:
+        executable: "{{ test_executable | default('podman') }}"
+        name: testnet
+        state: quadlet
+        disable_dns: true
+        subnet: "10.123.12.0"
+        internal: false
+        opt:
+          isolate: true
+          mtu: 1511
+          vlan: 111
+        quadlet_dir: /tmp
+        quadlet_options:
+          - "Label=Test=network"
+          - "Label=foo=bar"
+
+    - name: Check if files exists
+      stat:
+        path: /tmp/testnet.network
+      register: quadlet_file
+
+    - name: Check output is correct for Quadlet network in /tmp/testnet.network file
+      assert:
+        that:
+          - quadlet_file.stat.exists
+
+    - name: Check for the existence of lines in /tmp/testnet.network
+      lineinfile:
+        path: /tmp/testnet.network
+        line: "{{ item }}"
+        state: present
+      check_mode: yes
+      register: line_check
+      loop:
+        - "[Network]"
+        - "NetworkName=testnet"
+        - "Subnet=10.123.12.0"
+        - "DisableDNS=true"
+        - "Internal=false"
+        - "Options=isolate=True"
+        - "Options=mtu=1511"
+        - "Options=vlan=111"
+        - "Label=Test=network"
+        - "Label=foo=bar"
+      loop_control:
+        label: "{{ item }}"
+
+    - name: Fail the task if any line is not present
+      fail:
+        msg: "The following line is not present in /tmp/testnet.network: {{ item.item }}"
+      when: item.changed
+      loop: "{{ line_check.results }}"
+      loop_control:
+        label: "{{ item.item }}"
+
+    - name: Create quadlet network file - same
+      containers.podman.podman_network:
+        executable: "{{ test_executable | default('podman') }}"
+        name: testnet
+        state: quadlet
+        disable_dns: true
+        subnet: "10.123.12.0"
+        internal: false
+        opt:
+          isolate: true
+          mtu: 1511
+          vlan: 111
+        quadlet_dir: /tmp
+        quadlet_options:
+          - "Label=Test=network"
+          - "Label=foo=bar"
+      register: quad2
+
+    - name: Check if quadlet changed
+      assert:
+        that:
+          - quad2 is not changed
+
+    - name: Create quadlet network file - different
+      containers.podman.podman_network:
+        executable: "{{ test_executable | default('podman') }}"
+        name: testnet
+        state: quadlet
+        disable_dns: true
+        subnet: "10.123.15.0"
+        internal: false
+        opt:
+          isolate: true
+          mtu: 1511
+          vlan: 111
+        quadlet_dir: /tmp
+        quadlet_options:
+          - "Label=Test=network"
+          - "Label=foo=bar"
+      register: quad3
+
+    - name: Print diff
+      debug:
+        var: quad3.diff
+
+    - name: Check if changed and diff
+      assert:
+        that:
+          - quad3 is changed
+          - "'10.123.15.0' in quad3.diff.after"
+
+  always:
+
+    - name: Cleanup
+      command: podman network rm -f {{ network_name }}
+      ignore_errors: true

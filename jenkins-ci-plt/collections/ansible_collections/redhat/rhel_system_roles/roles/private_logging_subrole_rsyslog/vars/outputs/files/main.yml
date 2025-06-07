@@ -1,0 +1,28 @@
+---
+# SPDX-License-Identifier: GPL-3.0-only
+
+# Local file output configuration setting
+# ---------------------------------------
+
+# List of rpm packages for Files output.
+__rsyslog_files_output_packages: []
+
+# Files Rsyslog output configuration rules
+# ---------------------------------
+__rsyslog_files_output_rules:
+  - '{{ __rsyslog_conf_files_output_modules }}'
+
+# __rsyslog_conf_files_output_modules:
+__rsyslog_conf_files_output_modules:
+
+  - name: 'output-files-modules'
+    type: 'modules'
+    sections:
+
+      - comment: 'Log messages into files with timestamp format either traditional or default'
+        options: |-
+          {% if rsyslog_basics_use_traditional_timestamp_format | d(true) %}
+          module(load="builtin:omfile" Template="RSYSLOG_TraditionalFileFormat")
+          {% else %}
+          module(load="builtin:omfile")
+          {% endif %}

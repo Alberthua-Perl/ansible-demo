@@ -1,0 +1,73 @@
+- name: Check if selinux role sets SELinux port mapping
+  hosts: all
+  become: true
+
+  tasks:
+    - name: initial changes
+      include_role:
+        name: redhat.rhel_system_roles.selinux
+      vars:
+        selinux_ports_purge: true
+        selinux_ports:
+          - {ports: '22100', proto: 'tcp', setype: 'ssh_port_t', state: 'present'}
+
+    - name: include test variables
+      import_tasks: set_selinux_variables.yml
+
+    - name: save state after initial changes and before other changes
+      set_fact:
+        port_before: "{{ selinux_role_port.stdout }}"
+
+    - name: Check if there are SELinux port mapping changes
+      assert:
+        that: port_before | length > 0
+
+    - name: subsequent changes
+      include_role:
+        name: redhat.rhel_system_roles.selinux
+      vars:
+        selinux_ports_purge: false
+        selinux_ports:
+          - {ports: '22022', proto: 'tcp', setype: 'ssh_port_t', state: 'present'}
+
+    - name: include test variables
+      import_tasks: set_selinux_variables.yml
+
+    - name: save state after other changes
+      set_fact:
+        port_after: "{{ selinux_role_port.stdout }}"
+
+    - name: Check if there are SELinux port mapping changes
+      assert:
+        that: "{{ port_before != port_after }}"
+
+    - name: revert subsequent changes
+      include_role:
+        name: redhat.rhel_system_roles.selinux
+      vars:
+        selinux_ports_purge: false
+        selinux_ports:
+          - {ports: '22022', proto: 'tcp', setype: 'ssh_port_t', state: 'absent'}
+
+    - name: include test variables
+      import_tasks: set_selinux_variables.yml
+
+    - name: save state after reverting other changes
+      set_fact:
+        port_after: "{{ selinux_role_port.stdout }}"
+
+    - name: Check if SELinux port mapping is as before
+      assert:
+        that: "{{ port_before == port_after }}"
+
+    - include_role:
+        name: redhat.rhel_system_roles.selinux
+      vars:
+        selinux_ports_purge: true
+
+    - name: include test variables
+      import_tasks: set_selinux_variables.yml
+
+    - name: Check if there are no SELinux port mapping changes
+      assert:
+        that: selinux_role_port.stdout | length == 0

@@ -1,0 +1,105 @@
+---
+- name: Synchronize /etc/hosts to all nodes
+  hosts: all
+  vars:
+    selinux_policy: targeted
+    selinux_state: permissive
+  tags:
+    - base_config
+
+  roles:
+    - redhat.rhel_system_roles.selinux
+    # Note:
+    #   Must config selinux permissive, or podman build ERROR as to permission denied.
+
+  tasks:
+    - name: Synchronize /etc/hosts and yum repo file
+      ansible.builtin.copy:
+        src: ../files/{{ item.src }}
+        dest: "{{ item.dest }}"
+      with_items:
+        - src: hosts
+          dest: /etc/hosts
+        - src: additional.repo
+          dest: /etc/yum.repos.d/additional.repo
+        - src: rhel_dvd.repo
+          dest: /etc/yum.repos.d/rhel_dvd.repo
+    - name: Generate .vimrc file
+      ansible.builtin.copy:
+        src: ../files/vimrc
+        dest: ~/.vimrc
+      become: False
+
+- name: Workstation -- Prepare container image and directory
+  hosts: control_scm
+  become: False
+  vars_files:
+    - ../vars/all_vars.yml
+  tags:
+    - scm_config
+
+  tasks:
+    - name: Install container tools
+      ansible.builtin.dnf:
+        name:
+          - podman
+          - skopeo
+          - jq
+        state: present
+      become: true
+    - name: Create container images directory
+      ansible.builtin.file:
+        path: "{{ container_image_dir }}"
+        state: directory
+        mode: 0755
+#    - name: Create container config and data directory
+#      ansible.builtin.file:
+#        path: "{{ item }}"
+#        state: directory
+#        mode: 0777
+#      with_items: "{{ scm_config_dir }}"
+#      Note:
+#        Because NO ENOUGH STORAGE SPACE on workstation, so execute following commands:
+#          1. create additional storage named /dev/mapper/vgcode-lvcode on new disk
+#          2. create /home/devops/middleware/ and mount on lvcode lvm
+#          3. create /home/devops/middleware/gitlab-ce/{config,data,logs}
+#          4. change mode 0777 for previous directories
+#          5. modify /etc/fstab
+    - name: Download container image tarball
+      ansible.builtin.get_url:
+        url: "{{ scm_image_url }}"
+        dest: "{{ container_image_dir }}"
+
+- name: Serverd -- Prepare container image and directory
+  hosts: artifact
+  become: False
+  vars_files:
+    - ../vars/all_vars.yml
+  tags:
+    - artifact_config
+
+  tasks:
+    - name: Install container tools
+      ansible.builtin.dnf:
+        name:  
+          - podman                                      
+          - skopeo
+          - jq
+        state: present                                  
+      become: true                                      
+    - name: Create container images directory           
+      ansible.builtin.file:                             
+        path: "{{ container_image_dir }}"               
+        state: directory                                
+        mode: 0755
+    - name: Create container config and data directory
+      ansible.builtin.file:
+        path: "{{ item }}"                         
+        state: directory                           
+        mode: 0777
+      with_items: "{{ nexus3_config_dir }}"           
+    - name: Download container image tarball       
+      ansible.builtin.get_url:                     
+        url: "{{ nexus3_image_url }}"                 
+        dest: "{{ container_image_dir }}"        
+

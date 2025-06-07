@@ -1,0 +1,100 @@
+# SPDX-License-Identifier: BSD-3-Clause
+---
+- hosts: all
+  vars:
+    controller_profile: bond0
+    controller_device: deprecated-bond
+    port1_profile: bond0.0
+    dhcp_interface1: test1
+    port2_profile: bond0.1
+    dhcp_interface2: test2
+  tags:
+    - "tests::expfail"
+  tasks:
+    - name: "INIT Prepare setup"
+      debug:
+        msg: "##################################################"
+    - import_tasks: tasks/create_test_interfaces_with_dhcp.yml
+    - import_tasks: tasks/assert_device_present.yml
+      vars:
+        interface: "{{ dhcp_interface1 }}"
+    - import_tasks: tasks/assert_device_present.yml
+      vars:
+        interface: "{{ dhcp_interface2 }}"
+    - block:
+        - name: "TEST Add Bond with 2 ports using deprecated 'master' argument"
+          debug:
+            msg: "##################################################"
+        - name: Import network role
+          import_role:
+            name: redhat.rhel_system_roles.network
+          vars:
+            network_connections:
+            # Create a bond controller
+              - name: "{{ controller_profile }}"
+                state: up
+                type: bond
+                interface_name: "{{ controller_device }}"
+                bond:
+                  mode: active-backup
+                  miimon: 110
+            # add an ethernet to the bond
+              - name: "{{ port1_profile }}"
+                state: up
+                type: ethernet
+                interface_name: "{{ dhcp_interface1 }}"
+                master: "{{ controller_profile }}"
+            # add a second ethernet to the bond
+              - name: "{{ port2_profile }}"
+                state: up
+                type: ethernet
+                interface_name: "{{ dhcp_interface2 }}"
+                master: "{{ controller_profile }}"
+        - import_tasks: tasks/assert_device_present.yml
+          vars:
+            interface: "{{ controller_device }}"
+        - include_tasks: tasks/assert_profile_present.yml
+          vars:
+            profile: "{{ item }}"
+          loop:
+            - "{{ controller_profile }}"
+            - "{{ port1_profile }}"
+            - "{{ port2_profile }}"
+        - command: grep 'Polling Interval' /proc/net/bonding/{{ controller_device }}
+          name: "** TEST check polling interval"
+          register: result
+          until: "'110' in result.stdout"
+        - command: ip -4 a s {{ controller_device }}
+          name: "** TEST check IPv4"
+          register: result
+          until: "'192.0.2' in result.stdout"
+          retries: 20
+          delay: 2
+        - command: ip -6 a s {{ controller_device }}
+          name: "** TEST check IPv6"
+          register: result
+          until: "'2001' in result.stdout"
+          retries: 20
+          delay: 2
+      always:
+        - block:
+            - name: Import network role
+              import_role:
+                name: redhat.rhel_system_roles.network
+              vars:
+                network_connections:
+                  - name: "{{ port2_profile }}"
+                    persistent_state: absent
+                    state: down
+                  - name: "{{ port1_profile }}"
+                    persistent_state: absent
+                    state: down
+                  - name: "{{ controller_profile }}"
+                    persistent_state: absent
+                    state: down
+              ignore_errors: true
+            - command: ip link del {{ controller_device }}
+              ignore_errors: true
+            - import_tasks: tasks/remove_test_interfaces_with_dhcp.yml
+          tags:
+            - "tests::cleanup"

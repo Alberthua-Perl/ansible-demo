@@ -1,0 +1,54 @@
+# SPDX-License-Identifier: BSD-3-Clause
+---
+- name: Test configuring bridges
+  hosts: all
+  vars:
+    interface: LSR-TST-br31
+
+  tasks:
+    - name: "set interface={{ interface }}"
+      set_fact:
+        interface: "{{ interface }}"
+    - include_tasks: tasks/show_interfaces.yml
+    - include_tasks: tasks/assert_device_absent.yml
+
+- name: Add test bridge
+  hosts: all
+  vars:
+    network_connections:
+      - name: "{{ interface }}"
+        interface_name: "{{ interface }}"
+        state: up
+        type: bridge
+        ip:
+          dhcp4: no
+          auto6: yes
+  roles:
+    - redhat.rhel_system_roles.network
+
+- import_playbook: run_tasks.yml
+  vars:
+    task: tasks/assert_device_present.yml
+
+- import_playbook: run_tasks.yml
+  vars:
+    profile: "{{ interface }}"
+    task: tasks/assert_profile_present.yml
+
+- import_playbook: down_profile+delete_interface.yml
+  vars:
+    profile: "{{ interface }}"
+# FIXME: assert profile/device down
+
+- import_playbook: remove_profile.yml
+  vars:
+    profile: "{{ interface }}"
+
+- import_playbook: run_tasks.yml
+  vars:
+    profile: "{{ interface }}"
+    task: tasks/assert_profile_absent.yml
+
+- import_playbook: run_tasks.yml
+  vars:
+    task: tasks/assert_device_absent.yml

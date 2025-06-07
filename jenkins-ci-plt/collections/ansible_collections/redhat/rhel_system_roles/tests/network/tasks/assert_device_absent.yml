@@ -1,0 +1,7 @@
+# SPDX-License-Identifier: BSD-3-Clause
+---
+- include: get_interface_stat.yml
+- name: "assert that interface {{ interface }} is absent"
+  assert:
+    that: not interface_stat.stat.exists
+    msg: "{{ interface }} exists"

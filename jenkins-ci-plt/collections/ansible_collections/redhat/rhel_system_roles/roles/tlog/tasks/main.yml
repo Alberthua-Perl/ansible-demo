@@ -1,0 +1,69 @@
+---
+- name: Set platform/version specific variables
+  include_vars: "{{ __tlog_vars_file }}"
+  loop:
+    - "{{ ansible_facts['os_family'] }}.yml"
+    - "{{ ansible_facts['distribution'] }}.yml"
+    - >-
+      {{ ansible_facts['distribution'] ~ '_' ~
+      ansible_facts['distribution_major_version'] }}.yml
+    - >-
+      {{ ansible_facts['distribution'] ~ '_' ~
+      ansible_facts['distribution_version'] }}.yml
+  vars:
+    __tlog_vars_file: "{{ role_path }}/vars/{{ item }}"
+  when: __tlog_vars_file is file
+
+- name: install session recording packages
+  package:
+    name: "{{ __tlog_packages }}"
+
+- name: get the rpm package facts
+  package_facts:
+    manager: auto
+
+- name: install cockpit session recording
+  package:
+    name: "{{ __tlog_cockpit_packages }}"
+  when:
+    - "'cockpit' in ansible_facts.packages"
+
+- name: configure basic sssd
+  redhat.rhel_system_roles.ini_file:
+    path: "{{ __tlog_sssd_conf }}"
+    section: sssd
+    option: "{{ item.key }}"
+    value: "{{ item.value }}"
+    state: present
+    create: true
+    owner: root
+    group: root
+    mode: 0600
+  loop:
+    - key: enable_files_domain
+      value: "true"
+    - key: services
+      value: nss
+  when:
+    - tlog_use_sssd | bool
+    - "'sssd' in ansible_facts.packages"
+    - __tlog_enable_sssd_files | bool
+  notify: tlog_handler restart sssd
+
+- name: configure sssd session recording config
+  template:
+    src: sssd-session-recording.conf
+    dest: "{{ __tlog_sssd_session_recording_conf }}"
+    owner: root
+    group: root
+    mode: 0600
+  when: tlog_use_sssd
+  notify: tlog_handler restart sssd
+
+- name: configure tlog rec session
+  template:
+    src: tlog-rec-session.conf
+    dest: "{{ __tlog_rec_session_conf }}"
+    owner: root
+    group: root
+    mode: 0644

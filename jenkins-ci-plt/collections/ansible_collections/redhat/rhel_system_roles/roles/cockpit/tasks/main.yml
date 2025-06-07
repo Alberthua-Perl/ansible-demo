@@ -1,0 +1,68 @@
+- name: Set version specific variables
+  include_vars: "{{ item }}"
+  with_first_found:
+    - "{{ ansible_distribution }}-{{ ansible_distribution_version }}.yml"
+    - "{{ ansible_distribution }}-{{ ansible_distribution_major_version }}.yml"
+    - "{{ ansible_distribution }}.yml"
+    - "{{ ansible_os_family }}.yml"
+    - "default.yml"
+
+- name: Enable the Extras repository on RHEL 7
+  when:
+    - ansible_distribution == 'RedHat'
+    - ansible_distribution_major_version == '7'
+  block:
+    - name: List active RHEL repositories
+      command:
+        cmd: yum repolist
+        warn: no
+      register: __cockpit_repolist
+      changed_when: no
+      check_mode: no
+
+    - name: Enable RHEL repositories
+      command: subscription-manager repos --enable rhel-7-server-extras-rpms
+      when: "'rhel-7-server-extras-rpms' not in __cockpit_repolist.stdout"
+
+- name: Manage cockpit packages using platform specific package manager if applicable
+  include_tasks: "{{ item }}"
+  with_first_found:
+    - "setup-{{ ansible_pkg_mgr }}.yml"
+    - "setup-default.yml"
+
+- name: Ensure Cockpit Web Console is started/stopped and enabled/disabled
+  service:
+    name: "{{ __cockpit_daemon }}"
+    enabled: "{{ cockpit_enabled | bool }}"
+    state: "{{ 'started' if cockpit_started | bool else 'stopped' }}"
+
+- name: Create cockpit.conf configuration file
+  template:
+    src: templates/cockpit.conf.j2
+    dest: /etc/cockpit/cockpit.conf
+    mode: 0644
+    owner: root
+    group: root
+    backup: true
+  when: cockpit_config is defined
+  notify: restart cockpit
+
+- name: Link to configured existing certificate
+  file:
+    src: "{{ cockpit_cert }}"
+    path: /etc/cockpit/ws-certs.d/50-system-role.crt
+    state: link
+    force: yes
+  when:
+    - cockpit_cert is defined
+    - cockpit_private_key is defined
+
+- name: Link to configured existing certificate key
+  file:
+    src: "{{ cockpit_private_key }}"
+    path: /etc/cockpit/ws-certs.d/50-system-role.key
+    state: link
+    force: yes
+  when:
+    - cockpit_cert is defined
+    - cockpit_private_key is defined

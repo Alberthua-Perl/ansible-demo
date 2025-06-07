@@ -1,0 +1,55 @@
+# SPDX-License-Identifier: BSD-3-Clause
+---
+- name: Ensure state in ["present", "absent"]
+  fail:
+    msg: "state needs to be present or absent, not '{{ state }}'"
+  when: state not in ["present", "absent"]
+
+- name: Ensure type in ["dummy", "tap", "veth"]
+  fail:
+    msg: "type needs to be dummy, tap or veth, not '{{ type }}'"
+  when: type not in ["dummy", "tap", "veth"]
+
+- include: show_interfaces.yml
+
+- name: Install iproute
+  package:
+    name: iproute
+    state: present
+
+# veth
+- name: Create veth interface {{ interface }}
+  command: "{{ item }}"
+  with_items:
+    - ip link add {{ interface }} type veth peer name peer{{ interface }}
+    - ip link set peer{{ interface }} up
+    - ip link set {{ interface }} up
+  when: "type == 'veth' and state == 'present' and interface not in current_interfaces"
+- name: Set up veth as managed by NetworkManager
+  command: nmcli d set {{ interface }} managed true
+# The varible for `network_provider` is not exists yet,
+# just ignore error for initscripts
+  ignore_errors: yes # noqa ignore-errors
+  when: "type == 'veth' and state == 'present'"
+
+- name: Delete veth interface {{ interface }}
+  command: ip link del {{ interface }} type veth
+  when: "type == 'veth' and state == 'absent' and interface in current_interfaces"
+
+# dummy
+- name: Create dummy interface {{ interface }}
+  command: ip link add "{{ interface }}" type dummy
+  when: "type == 'dummy' and state == 'present' and interface not in current_interfaces"
+
+- name: Delete dummy interface {{ interface }}
+  command: ip link del "{{ interface }}" type dummy
+  when: "type == 'dummy' and state == 'absent' and interface in current_interfaces"
+
+# tap
+- name: Create tap interface {{ interface }}
+  command: ip tuntap add dev {{ interface }} mode tap
+  when: "type == 'tap' and state == 'present' and interface not in current_interfaces"
+
+- name: Delete tap interface {{ interface }}
+  command: ip tuntap del dev {{ interface }} mode tap
+  when: "type == 'tap' and state == 'absent' and interface in current_interfaces"

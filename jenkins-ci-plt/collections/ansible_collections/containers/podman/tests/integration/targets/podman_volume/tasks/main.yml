@@ -1,0 +1,373 @@
+- name: Test podman_volume
+  block:
+
+    - name: Print podman version
+      command: "{{ podman_cmd | default('podman') }} version"
+
+    - name: Generate random value for volume name
+      set_fact:
+        volume_name: "{{ 'ansible-test-podman-%0x' % ((2**32) | random) }}"
+
+    - name: Make sure volume doesn't exist
+      containers.podman.podman_volume:
+        executable: "{{ test_executable | default('podman') }}"
+        name: "{{ volume_name }}"
+        state: absent
+
+    - name: Get missing volume info
+      containers.podman.podman_volume_info:
+        executable: "{{ test_executable | default('podman') }}"
+        name: "{{ volume_name }}"
+      register: info
+      ignore_errors: true
+
+    - name: Check results
+      assert:
+        that:
+          - info is failed
+
+    - name: Create volume
+      containers.podman.podman_volume:
+        executable: "{{ test_executable | default('podman') }}"
+        name: "{{ volume_name }}"
+      register: vol
+
+    - name: Get existing volume info
+      containers.podman.podman_volume_info:
+        executable: "{{ test_executable | default('podman') }}"
+        name: "{{ volume_name }}"
+      register: info1
+
+    - name: Check info
+      assert:
+        that:
+          - info1 | length > 1
+          - info1.volumes.0.Name == volume_name
+          - vol is changed
+
+    - name: Create volume again
+      containers.podman.podman_volume:
+        executable: "{{ test_executable | default('podman') }}"
+        name: "{{ volume_name }}"
+        state: present
+      register: info2
+
+    - name: Check info
+      assert:
+        that:
+          - info2 is not changed
+
+    - name: Create volume with labels
+      containers.podman.podman_volume:
+        executable: "{{ test_executable | default('podman') }}"
+        name: "{{ volume_name }}"
+        state: present
+        label:
+          key: val
+          nokey: noval
+      register: info3
+
+    - name: Check info
+      assert:
+        that:
+          - info3 is changed
+
+    - name: Create volume with labels again
+      containers.podman.podman_volume:
+        executable: "{{ test_executable | default('podman') }}"
+        name: "{{ volume_name }}"
+        state: present
+        label:
+          key: val
+          nokey: noval
+      register: info4
+
+    - name: Check info
+      assert:
+        that:
+          - info4 is not changed
+
+    - name: Create volume w/o labels
+      containers.podman.podman_volume:
+        executable: "{{ test_executable | default('podman') }}"
+        name: "{{ volume_name }}"
+        state: present
+      register: info5
+
+    - name: Check info
+      assert:
+        that:
+          - info5 is changed
+
+    - name: Create volume with options
+      containers.podman.podman_volume:
+        executable: "{{ test_executable | default('podman') }}"
+        name: "{{ volume_name }}"
+        state: present
+        options:
+          - "device=/dev/something"
+          - "type=ext4"
+      register: info6
+
+    - name: Check info
+      assert:
+        that:
+          - info6 is changed
+
+    - name: Create volume with options again
+      containers.podman.podman_volume:
+        executable: "{{ test_executable | default('podman') }}"
+        name: "{{ volume_name }}"
+        state: present
+        options:
+          - "device=/dev/something"
+          - "type=ext4"
+      register: info7
+
+    - name: Check info
+      assert:
+        that:
+          - info7 is not changed
+
+    - name: Create volume w/o options
+      containers.podman.podman_volume:
+        executable: "{{ test_executable | default('podman') }}"
+        name: "{{ volume_name }}"
+        state: present
+      register: info8
+
+    - name: Check info
+      assert:
+        that:
+          - info8 is changed
+
+    - name: Make sure volume doesn't exist
+      containers.podman.podman_volume:
+        executable: "{{ test_executable | default('podman') }}"
+        name: "{{ volume_name }}"
+        state: absent
+      register: delete
+
+    - name: Get existing volume info
+      containers.podman.podman_volume_info:
+        executable: "{{ test_executable | default('podman') }}"
+        name: "{{ volume_name }}"
+      register: info10
+      ignore_errors: true
+
+    - name: Check results
+      assert:
+        that:
+          - info10 is failed
+          - delete.volume == {}
+
+    - name: Mount non existing volume
+      containers.podman.podman_volume:
+        executable: "{{ test_executable | default('podman') }}"
+        name: nonexistent
+        state: mounted
+      register: mount1
+
+    - name: Check results
+      assert:
+        that:
+          - mount1 is success
+          - "'mount_point' in mount1"
+
+    - name: Create volume for mount
+      containers.podman.podman_volume:
+        executable: "{{ test_executable | default('podman') }}"
+        name: mountme
+        state: present
+
+    - name: Mount existing volume
+      containers.podman.podman_volume:
+        executable: "{{ test_executable | default('podman') }}"
+        name: mountme
+        state: mounted
+      register: mount2
+
+    - name: Check results
+      assert:
+        that:
+          - mount2 is success
+          - "'mount_point' in mount2"
+
+    - name: Unmount volume
+      containers.podman.podman_volume:
+        executable: "{{ test_executable | default('podman') }}"
+        name: mountme
+        state: unmounted
+      register: unmount
+
+    - name: Check results
+      assert:
+        that:
+          - unmount is success
+          - "'mount_point' not in unmount"
+
+    - name: Mount as root
+      become: true
+      containers.podman.podman_volume:
+        executable: "{{ test_executable | default('podman') }}"
+        name: rootmount
+        state: mounted
+      register: mount3
+
+    - name: Check results
+      assert:
+        that:
+          - mount3 is success
+          - "'mount_point' in mount3"
+
+    - name: Unmount as root
+      become: true
+      containers.podman.podman_volume:
+        executable: "{{ test_executable | default('podman') }}"
+        name: rootmount
+        state: unmounted
+      register: unmount2
+
+    - name: Check results
+      assert:
+        that:
+          - unmount2 is success
+          - "'mount_point' not in unmount2"
+
+    - name: Create a Quadlet for volume with filename
+      containers.podman.podman_volume:
+        executable: "{{ test_executable | default('podman') }}"
+        name: testvol
+        state: quadlet
+        quadlet_dir: /tmp
+        quadlet_filename: customfile
+        quadlet_file_mode: '0644'
+
+    - name: Check if files exists
+      stat:
+        path: /tmp/customfile.volume
+      register: quadlet_file_custom
+
+    - name: Fail if no file is present or wrong mode
+      assert:
+        that:
+          - quadlet_file_custom.stat.exists
+          - quadlet_file_custom.stat.mode == '0644'
+
+    - name: Create quadlet volume file
+      containers.podman.podman_volume:
+        executable: "{{ test_executable | default('podman') }}"
+        name: testvol
+        state: quadlet
+        driver: local
+        label:
+          namelabel: value
+          foo: bar
+        debug: true
+        options:
+          - "device=/dev/loop1"
+          - "type=ext4"
+        quadlet_dir: /tmp
+        quadlet_options:
+          - "Label=Test=volume"
+          - "Label=test1=value1"
+
+    - name: Check if files exists
+      stat:
+        path: /tmp/testvol.volume
+      register: quadlet_file
+
+    - name: Check output is correct for Quadlet volume in /tmp/testvol.volume file
+      assert:
+        that:
+          - quadlet_file.stat.exists
+
+    - name: Check for the existence of lines in /tmp/testvol.volume
+      lineinfile:
+        path: /tmp/testvol.volume
+        line: "{{ item }}"
+        state: present
+      check_mode: yes
+      register: line_check
+      loop:
+        - "[Volume]"
+        - "VolumeName=testvol"
+        - "Driver=local"
+        - "Label=namelabel=value"
+        - "Label=foo=bar"
+        - "Label=Test=volume"
+        - "Label=test1=value1"
+        - "PodmanArgs=--opt device=/dev/loop1"
+        - "PodmanArgs=--opt type=ext4"
+        - "GlobalArgs=--log-level debug"
+      loop_control:
+        label: "{{ item }}"
+
+    - name: Fail the task if any line is not present
+      fail:
+        msg: "The following line is not present in /tmp/testvol.volume: {{ item.item }}"
+      when: item.changed
+      loop: "{{ line_check.results }}"
+      loop_control:
+        label: "{{ item.item }}"
+
+    - name: Create quadlet volume file - same
+      containers.podman.podman_volume:
+        executable: "{{ test_executable | default('podman') }}"
+        name: testvol
+        state: quadlet
+        driver: local
+        label:
+          namelabel: value
+          foo: bar
+        debug: true
+        options:
+          - "device=/dev/loop1"
+          - "type=ext4"
+        quadlet_dir: /tmp
+        quadlet_options:
+          - "Label=Test=volume"
+          - "Label=test1=value1"
+      register: quad2
+
+    - name: Check if quadlet changed
+      assert:
+        that:
+          - quad2 is not changed
+
+    - name: Create quadlet volume file - different
+      containers.podman.podman_volume:
+        executable: "{{ test_executable | default('podman') }}"
+        name: testvol
+        state: quadlet
+        driver: local
+        label:
+          namelabel: value
+          foo: bar
+        debug: true
+        options:
+          - "device=/dev/loop5"
+          - "type=ext4"
+        quadlet_dir: /tmp
+        quadlet_options:
+          - "Label=Test=volume"
+          - "Label=test1=value1"
+      register: quad3
+
+    - name: Print diff
+      debug:
+        var: quad3.diff
+
+    - name: Check if changed and diff
+      assert:
+        that:
+          - quad3 is changed
+          - "'loop5' in quad3.diff.after"
+
+  always:
+
+    - name: Make sure volume doesn't exist
+      containers.podman.podman_volume:
+        executable: "{{ test_executable | default('podman') }}"
+        name: "{{ volume_name }}"
+        state: absent

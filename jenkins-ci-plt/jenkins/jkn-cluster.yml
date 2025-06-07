@@ -1,0 +1,54 @@
+---
+- name: Config Jenkins Associated Nodes
+  hosts: master,agents
+  tags:
+    - jkn_config
+    - master_config
+
+  tasks:
+    - name: Install dependent packages
+      ansible.builtin.dnf:
+        name:
+          - fontconfig
+          - java-17-openjdk
+          - git
+          - jq
+          - podman
+        state: present
+    - name: Stop firewalld service
+      ansible.builtin.service:
+        name: firewalld
+        state: stopped
+        enabled: False
+
+- name: Deploy Jenkins Compent
+  hosts: master
+  vars_files:
+    - ../vars/all_vars.yml
+  tags:
+    - master_config
+
+  tasks:
+    - name: Download jenkins rpm package
+      ansible.builtin.get_url:
+        url: "{{ jenkins_pkg_url }}"
+        dest: /tmp
+        mode: '0644'
+    - name: Import jenkins gpg check file
+      ansible.builtin.command: rpm --import {{ jenkins_gpg_url }}
+    - name: Install jenkins service
+      ansible.builtin.dnf:
+        name: /tmp/{{ jenkins_version }}
+        state: present
+    - name: Start and enable jenkins service
+      ansible.builtin.service:
+        name: jenkins
+        state: started
+        enabled: True
+    - name: Get jenkins service status
+      ansible.builtin.command: systemctl status jenkins.service
+      register: jkn_status
+    - name: Report jenkins service status
+      ansible.builtin.debug:
+        var: jkn_status
+

@@ -1,0 +1,26 @@
+---
+- name: Prepare Node.js run and build environment
+  hosts: master,agents,apptest
+  vars_files:
+    - ../vars/all_vars.yml
+
+  tasks:
+    - name: Setup Node.js repository
+      ansible.builtin.shell: curl -sL https://rpm.nodesource.com/setup_18.x | sudo -E bash -
+      become: False
+    - name: Install nodejs environment
+      ansible.builtin.dnf:
+        name: nodejs
+        state: present
+    - name: Install pnpm module
+      ansible.builtin.command: npm install -g pnpm@10.10.0
+    - name: Generate .npmrc to authenticate nexus3 registry
+      ansible.builtin.lineinfile:
+        path: ~/.npmrc
+        line: |
+          registry=http://{{ npm_proxy_url }}
+          always-auth=true
+          //{{ npm_proxy_url }}:_auth={{ user_passwd_base64 }}
+          //{{ npm_hosted_url }}:_auth={{ user_passwd_base64 }}
+        create: yes
+      become: False

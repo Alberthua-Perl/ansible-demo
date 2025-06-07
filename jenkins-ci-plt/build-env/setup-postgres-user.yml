@@ -1,0 +1,58 @@
+---
+- name: Create and setup postgresql server user account and database
+  hosts: artifact
+  vars_files:
+    - ../vars/all_vars.yml
+  tags:
+    - create_user_db
+
+  tasks:
+    - name: Install python3-psycopg2 supported package
+      ansible.builtin.dnf:
+        name: python3-psycopg2
+        state: present
+    - name: Create postgres user -- {{ pg_user }}
+      community.postgresql.postgresql_user:
+        login_host: "{{ pg_host }}"
+        login_user: postgres
+        login_password: "{{ login_password }}"
+        name: "{{ pg_user }}"
+        password: "{{ pg_password }}"
+        state: present
+    - name: Create postgres database -- {{ pg_db }}
+      community.postgresql.postgresql_db:
+        comment: Store etherpad-lite application contents
+        login_host: "{{ pg_host }}"           
+        login_user: postgres
+        login_password: "{{ login_password }}"
+        name: "{{ pg_db }}"
+        owner: "{{ pg_user }}"
+        state: present
+    - name: Grant privileges for {{ pg_user }} on {{ pg_db }}
+      community.postgresql.postgresql_privs:
+        login_host: "{{ pg_host }}"           
+        login_user: postgres
+        login_password: "{{ login_password }}"
+        login_db: "{{ pg_db }}"
+        privs: ALL
+        type: database
+        role: "{{ pg_user }}"
+
+- name: Remove postgresql server user account and database
+  hosts: artifact
+  vars_files:
+    - ../vars/all_vars.yml
+  tags:
+    - revoke_user_db
+
+  tasks:
+    - name: Revoke {{ pg_db }} and {{ pg_user }}
+      ansible.builtin.shell: |
+        export PGPASSWORD={{ login_password }} 
+        psql -U postgres -h {{ pg_host }} -c "DROP DATABASE {{ pg_db }};"
+        psql -U postgres -h {{ pg_host }} -c "DROP USER {{ pg_user }};"
+      # Note:
+      #   Don't use several pg commands in transaction block, because drop database is very important operator,
+      #   so use single command to run it. 
+      #   Errors like this: 'ERROR:  DROP DATABASE cannot run inside a transaction block'
+

@@ -1,0 +1,11 @@
+
+ ################################################################
+ #                                                              #
+ #     Welcome to devops@workstation.lab.example.com!           #
+ #                                                              #
+ #     Please run following commands:                           #
+ #     [devops@workstation ~]$ eval $(ssh-agent)                #
+ #     [devops@workstation ~]$ ssh-add ~/.ssh/devops-jenkins    #
+ #                                                              #
+ ################################################################
+

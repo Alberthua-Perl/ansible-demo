@@ -1,0 +1,20 @@
+---
+# Deploy configuration files
+- name: "Install/Update files output packages and generate configuration files in /etc/rsyslog.d"
+  vars:
+    __rsyslog_packages: "{{ __rsyslog_files_output_packages }}"
+    __rsyslog_rules: "{{ __rsyslog_files_output_rules }}"
+  include_tasks:
+    file: "{{ role_path }}/tasks/deploy.yml"
+
+- name: "Create files output configuration file output-files-{{ __rsyslog_output.name }} in /etc/rsyslog.d"
+  vars:
+    __rsyslog_packages: []
+    __rsyslog_rules:
+      - name: "output-files-{{ __rsyslog_output.name }}"
+        type: "output"
+        state: "{{ __rsyslog_output.state | d('present') }}"
+        sections:
+          - options: "{{ lookup('template', 'output_files.j2') }}"
+  include_tasks:
+    file: "{{ role_path }}/tasks/deploy.yml"

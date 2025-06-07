@@ -1,0 +1,91 @@
+---
+- name: Pull image
+  containers.podman.podman_image:
+    executable: "{{ test_executable | default('podman') }}"
+    name: registry.k8s.io/pause
+
+- name: Save image
+  containers.podman.podman_save:
+    executable: "{{ test_executable | default('podman') }}"
+    image: registry.k8s.io/pause
+    dest: /tmp/image.tar
+
+- name: Load image
+  containers.podman.podman_load:
+    executable: "{{ test_executable | default('podman') }}"
+    input: /tmp/image.tar
+  register: image
+
+- name: Check it's loaded
+  assert:
+    that:
+      - image.image != {}
+      - image.image.NamesHistory.0 == "registry.k8s.io/pause:latest"
+
+- name: Save image
+  containers.podman.podman_save:
+    executable: "{{ test_executable | default('podman') }}"
+    image: registry.k8s.io/pause
+    dest: /tmp/imagedir
+    format: oci-dir
+
+- name: Load image from oci-dir
+  containers.podman.podman_load:
+    executable: "{{ test_executable | default('podman') }}"
+    input: /tmp/imagedir
+  register: image
+
+- name: Check it's loaded
+  assert:
+    that:
+      - image.image != {}
+      - image.image.NamesHistory.0 == "localhost/tmp/imagedir:latest"
+
+- name: Save image with multi image archive
+  containers.podman.podman_save:
+    executable: "{{ test_executable | default('podman') }}"
+    image: registry.k8s.io/pause
+    dest: /tmp/image2.tar
+    multi_image_archive: true
+
+- name: Load image from oci-dir multi image archive
+  containers.podman.podman_load:
+    executable: "{{ test_executable | default('podman') }}"
+    input: /tmp/image2.tar
+  register: image
+
+- name: Check it's loaded
+  assert:
+    that:
+      - image.image != {}
+      - image.image.NamesHistory.0 == "registry.k8s.io/pause:latest"
+
+- name: Pull images
+  containers.podman.podman_image:
+    executable: "{{ test_executable | default('podman') }}"
+    name: '{{ item }}'
+  loop:
+    - registry.k8s.io/coredns/coredns:v1.9.3
+    - gcr.io/kubernetes-e2e-test-images/echoserver:2.2
+
+- name: Clean up multifile
+  ansible.builtin.file:
+    path: /tmp/multi.tar
+    state: absent
+
+- name: Create multi image file
+  shell: >-
+    podman save registry.k8s.io/coredns/coredns:v1.9.3 gcr.io/kubernetes-e2e-test-images/echoserver:2.2 -o /tmp/multi.tar
+
+- name: Load image from oci-dir multi image archive
+  containers.podman.podman_load:
+    executable: "{{ test_executable | default('podman') }}"
+    input: /tmp/multi.tar
+  register: image
+
+- name: Check it's loaded
+  assert:
+    that:
+      - image.image != {}
+      - '"registry.k8s.io/coredns/coredns:v1.9.3" in image.image.NamesHistory'
+      - '"gcr.io/kubernetes-e2e-test-images/echoserver:2.2" in image.image.NamesHistory'

@@ -1,0 +1,7 @@
+---
+collections:
+  - http://content.example.com/jenkins-ci-plt/containers-podman-1.16.2.tar.gz
+  - http://content.example.com/jenkins-ci-plt/community-general-9.5.7.tar.gz
+  - http://content.example.com/jenkins-ci-plt/ansible-posix-1.5.2.tar.gz
+  - http://content.example.com/jenkins-ci-plt/community-postgresql-4.0.0.tar.gz
+  - http://content.example.com/jenkins-ci-plt/redhat-rhel_system_roles-1.16.2.tar.gz

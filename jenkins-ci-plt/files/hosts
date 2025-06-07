@@ -1,0 +1,16 @@
+172.25.254.254 classroom.lab.example.com classroom
+172.25.254.254 content.example.com content
+
+172.25.250.254 bastion.lab.example.com bastion
+172.25.250.9   workstation.lab.example.com workstation
+172.25.250.220 utility.lab.example.com utility
+172.25.250.10  servera.lab.example.com servera
+172.25.250.11  serverb.lab.example.com serverb
+172.25.250.12  serverc.lab.example.com serverc
+172.25.250.13  serverd.lab.example.com serverd
+
+172.25.250.9   gitlab-ce.lab.example.com gitlab-ce
+172.25.250.10  jenkins-master.lab.example.com jenkins-master
+172.25.250.11  jenkins-agent0.lab.example.com jenkins-agent0
+172.25.250.12  jenkins-agent1.lab.example.com jenkins-agent1
+172.25.250.13  nexus3.lab.example.com nexus3

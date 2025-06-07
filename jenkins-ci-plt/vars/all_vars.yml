@@ -1,0 +1,49 @@
+---
+### prep container images
+scm_image_url: http://content.example.com/jenkins-ci-plt/gitlab-ce_17.9.8-ce.0.tar
+nexus3_image_url: http://content.example.com/jenkins-ci-plt/nexus3_3.9.0.tar
+container_image_dir: /home/devops/images
+
+### container config dir
+scm_config_dir:
+  - /home/devops/middleware/gitlab-ce/config
+  - /home/devops/middleware/gitlab-ce/data
+  - /home/devops/middleware/gitlab-ce/logs
+nexus3_config_dir: /home/devops/middleware/nexus-data
+
+scm_config: /home/devops/middleware/gitlab-ce/config
+scm_data: /home/devops/middleware/gitlab-ce/data
+scm_log: /home/devops/middleware/gitlab-ce/logs
+
+### registry
+registry_prefix: quay.io/alberthua
+
+### jenkins package
+jenkins_pkg_url: http://content.example.com/jenkins-ci-plt/jenkins-2.479.1-1.1.noarch.rpm
+jenkins_gpg_url: http://content.example.com/jenkins-ci-plt/jenkins.io-2023.key
+jenkins_version: jenkins-2.479.1-1.1.noarch.rpm
+
+### nexus3 registry
+npm_proxy_url: nexus3.lab.example.com:8881/repository/npm-proxy/
+npm_hosted_url: nexus3.lab.example.com:8881/repository/npm-hosted/ 
+user_passwd_base64: ZGV2dXNlcjA6MXFhelpTRSQ=
+# use following command to generate base64 encoder:
+#   $ echo -n "devuser0:1qazZSE$" | base64
+#   $ echo -n "devuser0:1qazZSE$" | openssl base64
+
+### postgresql configure
+content_list:
+  - key: "^#listen_addresses = 'localhost'"
+    value: "listen_addresses = '*'"
+  - key: "^#port = 5432"
+    value: "port = 5432"
+  - key: "^#max_connections = 100"
+    value: "max_connections = 100"
+pg_conf: /var/lib/pgsql/data/postgresql.conf
+pg_hba: /var/lib/pgsql/data/pg_hba.conf
+pg_host: serverd.lab.example.com
+login_password: 1qazZSE$
+pg_user: etherpad_user
+pg_password: redhat
+pg_db: etherpad_db
+

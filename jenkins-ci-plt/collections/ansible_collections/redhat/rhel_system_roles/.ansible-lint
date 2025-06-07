@@ -1,0 +1,16 @@
+skip_list:
+- '106'
+- '208'
+- '306'
+- '403'
+- '502'
+- '602'
+- '701'
+- '303'
+- ignore-errors
+- var-naming
+- '305'
+warn_list:
+- '106'
+- '306'
+- load-failure

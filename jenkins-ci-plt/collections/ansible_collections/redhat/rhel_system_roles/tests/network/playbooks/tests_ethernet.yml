@@ -1,0 +1,66 @@
+# SPDX-License-Identifier: BSD-3-Clause
+---
+- hosts: all
+  tasks:
+    - name: Show inside ethernet tests
+      debug:
+        msg: Inside ethernet tests
+    - name: Show network_provider
+      debug:
+        var: network_provider
+
+- name: Test configuring ethernet devices
+  hosts: all
+  vars:
+    type: veth
+    interface: lsr27
+
+  tasks:
+    - name: "set type={{ type }} and interface={{ interface }}"
+      set_fact:
+        type: "{{ type }}"
+        interface: "{{ interface }}"
+    - include_tasks: tasks/show_interfaces.yml
+    - include_tasks: tasks/manage_test_interface.yml
+      vars:
+        state: present
+    - include_tasks: tasks/assert_device_present.yml
+
+- name: Test static interface up
+  hosts: all
+  vars:
+    network_connections:
+      - name: "{{ interface }}"
+        interface_name: "{{ interface }}"
+        state: up
+        type: ethernet
+        autoconnect: yes
+        ip:
+          address: 192.0.2.1/24
+  roles:
+    - redhat.rhel_system_roles.network
+  tasks:
+    - include_tasks: tasks/assert_output_in_stderr_without_warnings.yml
+
+- hosts: all
+  tasks:
+    - name: Show network_provider
+      debug:
+        var: network_provider
+
+# FIXME: assert profile present
+# FIXME: assert profile/device up + IP address
+- import_playbook: down_profile+delete_interface.yml
+  vars:
+    profile: "{{ interface }}"
+# FIXME: assert profile/device down
+- import_playbook: remove_profile.yml
+  vars:
+    profile: "{{ interface }}"
+- name: Assert device and profile are absent
+  hosts: all
+  tasks:
+    - include_tasks: tasks/assert_profile_absent.yml
+      vars:
+        profile: "{{ interface }}"
+    - include_tasks: tasks/assert_device_absent.yml

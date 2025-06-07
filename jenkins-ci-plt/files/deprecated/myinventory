@@ -1,0 +1,12 @@
+[control]
+workstation.lab.example.com
+
+[master]
+jenkins-master.lab.example.com  ansible_host=servera.lab.example.com
+
+[agents]
+jenkins-agent0.lab.example.com  ansible_host=serverb.lab.example.com
+jenkins-agent1.lab.example.com  ansible_host=serverc.lab.example.com
+
+[scm_artifact]
+scm-artifact.lab.example.com  ansible_host=serverd.lab.example.com

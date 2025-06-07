@@ -1,0 +1,58 @@
+---
+- name: Deploy and setup PostgreSQL server
+  hosts: artifact
+  vars_files:
+    - ../vars/all_vars.yml
+
+  tasks:
+    - name: Install postgresql-server package
+      ansible.builtin.dnf:
+        name: postgresql-server
+        state: present
+    - name: Init postgresql server
+      ansible.builtin.command: postgresql-setup --initdb
+      # JUST generate postgresql server config files after postgresql server setup init
+      register: pg_state
+    - name: Ensure postgresql init status
+      ansible.builtin.debug:
+        var: pg_state
+    - name: Backup postgresql.conf file
+      ansible.builtin.command: cp {{ item }} {{ item }}.bak
+      with_items:
+        - "{{ pg_conf }}"
+        - "{{ pg_hba }}"
+    - name: Replace several configures in postgresql.conf
+      ansible.builtin.lineinfile:
+        path: "{{ pg_conf }}"
+        regexp: "{{ item.key }}"
+        line: "{{ item.value }}"
+      with_items: "{{ content_list }}"
+    - name: Allow remote host to connect postgresql server
+      ansible.builtin.lineinfile:
+        path: "{{ pg_hba }}"
+        line: "host    all    all    0.0.0.0/0    md5"
+    - name: Allow local user to connect postgresql server
+      ansible.builtin.shell: sed -i -e 's/^local.*peer/local  all  all  md5/g' {{ pg_hba }}
+      notify: Restart postgresql server
+      tags:
+        - allow_local
+    # Note:
+    #   1. First, please use following commands to set password for postgres user:
+    #      $ su - postgres
+    #      $ psql -c "ALTER USER postgres WITH PASSWORD '1qazZSE$';"
+    #   2. Second, run following command to allow local login:
+    #      $ ansible-navigator run build-env/setup-postgres.yml --tag allow_local
+    - name: Start and enable postgresql server
+      ansible.builtin.service:
+        name: postgresql
+        state: started
+        enabled: True
+      when: pg_state.rc == 0
+
+  handlers:
+    - name: Restart postgresql server to effect config file
+      ansible.builtin.service:
+        name: postgresql
+        state: restarted
+      listen: Restart postgresql server
+      

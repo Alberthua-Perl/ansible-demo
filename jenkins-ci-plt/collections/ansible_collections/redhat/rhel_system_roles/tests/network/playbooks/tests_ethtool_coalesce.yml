@@ -1,0 +1,158 @@
+# SPDX-License-Identifier: BSD-3-Clause
+---
+- hosts: all
+  vars:
+    interface: testnic1
+    type: veth
+  tasks:
+    - name: Show playbook name
+      debug:
+        msg: "this is: playbooks/tests_ethtool_coalesce.yml"
+      tags:
+        - always
+
+    - name: "INIT: Ethtool coalesce tests"
+      debug:
+        msg: "##################################################"
+    - include_tasks: tasks/show_interfaces.yml
+    - include_tasks: tasks/manage_test_interface.yml
+      vars:
+        state: present
+    - include_tasks: tasks/assert_device_present.yml
+    - name: Install ethtool (test dependency)
+      package:
+        name: ethtool
+        state: present
+
+    - block:
+        - name: >-
+            TEST: I can create a profile without any coalescing option.
+          debug:
+            msg: "##################################################"
+        - name: Import network role
+          import_role:
+            name: redhat.rhel_system_roles.network
+          vars:
+            network_connections:
+              - name: "{{ interface }}"
+                type: ethernet
+                state: up
+                ip:
+                  dhcp4: no
+                  auto6: no
+
+        - name: Get profile's coalescing options
+          command: nmcli -g ethtool.coalesce-rx-frames c show {{ interface }}
+          register: no_coalesce_nm
+          when:
+            - network_provider == "nm"
+        - name: "ASSERT: The profile does not contain coalescing options"
+          assert:
+            that: no_coalesce_nm.stdout | length == 0
+          when:
+            - network_provider == "nm"
+        - name: Get profile's coalescing options
+          command: grep ETHTOOL /etc/sysconfig/network-scripts/ifcfg-{{ interface }}
+          register: no_coalesce_initscripts
+          ignore_errors: true
+          when:
+            - network_provider == "initscripts"
+        - name: "ASSERT: The profile does not contain coalescing options"
+          assert:
+            that: no_coalesce_initscripts.stdout | length == 0
+          when:
+            - network_provider == "initscripts"
+
+        - name: >-
+            TEST: I can set rx-frames.
+          debug:
+            msg: "##################################################"
+        - name: Import network role
+          import_role:
+            name: redhat.rhel_system_roles.network
+          vars:
+            network_connections:
+              - name: "{{ interface }}"
+                type: ethernet
+                state: up
+                ip:
+                  dhcp4: no
+                  auto6: no
+                ethtool:
+                  coalesce:
+                    rx_frames: 128
+        - name: Get profile's coalescing options
+          command: nmcli -g ethtool.coalesce-rx-frames c show {{ interface }}
+          register: with_coalesce_nm
+          when:
+            - network_provider == "nm"
+        - name: Assert coalesce options set in profile
+          assert:
+            that: with_coalesce_nm.stdout == '128'
+          when:
+            - network_provider == "nm"
+
+        - name: Get profile's coalescing options
+          command: grep ETHTOOL /etc/sysconfig/network-scripts/ifcfg-{{ interface }}
+          register: with_coalesce_initscripts
+          ignore_errors: true
+          when:
+            - network_provider == "initscripts"
+        - name: Assert coalesce options set in profile
+          assert:
+            that: '"rx-frames 128" in with_coalesce_initscripts.stdout'
+          when:
+            - network_provider == "initscripts"
+
+        - name: "TEST: I can clear coalescing options"
+          debug:
+            msg: "##################################################"
+        - name: Import network role
+          import_role:
+            name: redhat.rhel_system_roles.network
+          vars:
+            network_connections:
+              - name: "{{ interface }}"
+                type: ethernet
+                state: up
+                ip:
+                  dhcp4: no
+                  auto6: no
+
+        - name: Get profile's coalescing options
+          command: nmcli -g ethtool.coalesce-rx-frames c show {{ interface }}
+          when:
+            - network_provider == "nm"
+          register: clear_coalesce_nm
+        - name: "ASSERT: The profile does reset coalescing options"
+          assert:
+            that: clear_coalesce_nm.stdout | length == 0
+          when:
+            - network_provider == "nm"
+        - name: Get profile's coalescing options
+          command: grep ETHTOOL /etc/sysconfig/network-scripts/ifcfg-{{ interface }}
+          register: clear_coalesce_initscripts
+          ignore_errors: true
+          when:
+            - network_provider == "initscripts"
+        - name: "ASSERT: The profile does reset coalescing options"
+          assert:
+            that: clear_coalesce_initscripts.stdout | length == 0
+          when:
+            - network_provider == "initscripts"
+
+      always:
+        - block:
+            - name: Import network role
+              import_role:
+                name: redhat.rhel_system_roles.network
+              vars:
+                network_connections:
+                  - name: "{{ interface }}"
+                    persistent_state: absent
+              ignore_errors: true
+            - include_tasks: tasks/manage_test_interface.yml
+              vars:
+                state: absent
+          tags:
+            - "tests::cleanup"

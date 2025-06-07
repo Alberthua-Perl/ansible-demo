@@ -1,0 +1,512 @@
+- name: Test podman play kube
+  block:
+
+    - name: Discover podman version
+      shell: podman version | grep "^Version:" | awk {'print $2'}
+      register: podman_v
+
+    - name: Discover cgroups version
+      shell: podman info | grep cgroupVersion | awk {'print $2'}
+      register: cgroups
+
+    - name: Set cgroups version
+      set_fact:
+        cgroups_version: "{{ cgroups.stdout }}"
+
+    - name: Copy files to known place
+      copy:
+        src: "{{ item }}"
+        dest: "/tmp/{{ item }}"
+        remote_src: false
+      loop:
+        - play1.yaml
+        - play3.yaml
+        - play-root1.yaml
+        - play-root3.yaml
+        - envdata.yaml
+
+    - name: Delete all pods leftovers from tests
+      containers.podman.podman_pod:
+        executable: "{{ test_executable | default('podman') }}"
+        name: "{{ item }}"
+        state: absent
+      loop:
+        - web-deploy
+        - web-deploy-pod
+        - web-deploy-pod-0
+
+    - name: Play kube file
+      containers.podman.podman_play:
+        executable: "{{ test_executable | default('podman') }}"
+        kube_file: /tmp/play1.yaml
+        state: started
+      register: play1
+
+    - name: Play same kube file again
+      containers.podman.podman_play:
+        executable: "{{ test_executable | default('podman') }}"
+        kube_file: /tmp/play1.yaml
+        state: started
+      register: play2
+
+    - name: Check info
+      assert:
+        that:
+          - play1 is changed
+          - play2 is not changed
+
+    - name: Recreate play
+      containers.podman.podman_play:
+        executable: "{{ test_executable | default('podman') }}"
+        kube_file: /tmp/play1.yaml
+        state: started
+        recreate: true
+      register: play3
+
+    - name: Check info
+      assert:
+        that:
+          - play3 is changed
+
+    - name: Check 'created' after 'started'
+      containers.podman.podman_play:
+        executable: "{{ test_executable | default('podman') }}"
+        kube_file: /tmp/play1.yaml
+        state: created
+      register: play4
+
+    - name: Check info
+      assert:
+        that:
+          - play4 is not changed
+
+    - name: Run with configmap
+      containers.podman.podman_play:
+        executable: "{{ test_executable | default('podman') }}"
+        kube_file: /tmp/play3.yaml
+        debug: true
+        state: started
+        recreate: true
+        configmap:
+          - /tmp/envdata.yaml
+      register: play5
+
+    - name: Check info
+      assert:
+        that:
+          - play5 is changed
+
+    - name: Check if pod is running well
+      containers.podman.podman_pod_info:
+        executable: "{{ test_executable | default('podman') }}"
+        name: web-deploy-pod
+      register: info1
+
+    - name: Check pod info
+      assert:
+        that:
+          - info1['pods'][0]['State'] == 'Running'
+
+    - name: Remove pods created by kube play
+      containers.podman.podman_play:
+        executable: "{{ test_executable | default('podman') }}"
+        kube_file: /tmp/play3.yaml
+        state: absent
+      register: remove_pod
+
+    - name: Remove pods created by kube play - again
+      containers.podman.podman_play:
+        executable: "{{ test_executable | default('podman') }}"
+        kube_file: /tmp/play3.yaml
+        state: absent
+      register: remove_pod2
+
+    - name: Check if the pod was removed as expected
+      assert:
+        that:
+          - remove_pod is changed
+          - remove_pod2 is not changed
+
+    - name: Get deleted pod info
+      containers.podman.podman_pod_info:
+        executable: "{{ test_executable | default('podman') }}"
+        name: web-deploy-pod
+      register: nonexist
+
+    - name: Check if the result is as expected
+      assert:
+        that:
+          - nonexist.pods == []
+
+    - name: Run with file content
+      containers.podman.podman_play:
+        executable: "{{ test_executable | default('podman') }}"
+        debug: true
+        state: started
+        kube_file_content: |
+          kind: ConfigMap
+          metadata:
+            name: new
+          data:
+            FOO1: bar1
+          ---
+          apiVersion: v1
+          kind: Pod
+          metadata:
+            name: contentpod
+          spec:
+            containers:
+            - command:
+              - top
+              name: container-42
+              image: alpine
+              envFrom:
+              - configMapRef:
+                  name: new
+                  optional: false
+          ---
+          apiVersion: v1
+          kind: ConfigMap
+          metadata:
+            name: newest
+          data:
+              FOO3: bar3
+      register: playc1
+
+    - name: Get info about pods
+      containers.podman.podman_pod_info:
+        executable: "{{ test_executable | default('podman') }}"
+      register: infopods
+
+    - name: Check if the pod was created
+      assert:
+        that:
+          - "'contentpod' in (infopods.pods | map(attribute='Name') | list)"
+
+    - name: Run with file content - again
+      containers.podman.podman_play:
+        executable: "{{ test_executable | default('podman') }}"
+        debug: true
+        state: started
+        kube_file_content: |
+          kind: ConfigMap
+          metadata:
+            name: new
+          data:
+            FOO1: bar1
+          ---
+          apiVersion: v1
+          kind: Pod
+          metadata:
+            name: contentpod
+          spec:
+            containers:
+            - command:
+              - top
+              name: container-42
+              image: alpine
+              envFrom:
+              - configMapRef:
+                  name: new
+                  optional: false
+          ---
+          apiVersion: v1
+          kind: ConfigMap
+          metadata:
+            name: newest
+          data:
+              FOO3: bar3
+      register: playc2
+
+    - name: Check info
+      assert:
+        that:
+          - playc1 is changed
+          - playc2 is not changed
+
+    - name: Remove with file content
+      containers.podman.podman_play:
+        executable: "{{ test_executable | default('podman') }}"
+        debug: true
+        state: absent
+        kube_file_content: |
+          kind: ConfigMap
+          metadata:
+            name: new
+          data:
+            FOO1: bar1
+          ---
+          apiVersion: v1
+          kind: Pod
+          metadata:
+            name: contentpod
+          spec:
+            containers:
+            - command:
+              - top
+              name: container-42
+              image: alpine
+              envFrom:
+              - configMapRef:
+                  name: new
+                  optional: false
+          ---
+          apiVersion: v1
+          kind: ConfigMap
+          metadata:
+            name: newest
+          data:
+              FOO3: bar3
+      register: playc3
+
+    - name: Remove with file content - again
+      containers.podman.podman_play:
+        executable: "{{ test_executable | default('podman') }}"
+        debug: true
+        state: absent
+        kube_file_content: |
+          kind: ConfigMap
+          metadata:
+            name: new
+          data:
+            FOO1: bar1
+          ---
+          apiVersion: v1
+          kind: Pod
+          metadata:
+            name: contentpod
+          spec:
+            containers:
+            - command:
+              - top
+              name: container-42
+              image: alpine
+              envFrom:
+              - configMapRef:
+                  name: new
+                  optional: false
+          ---
+          apiVersion: v1
+          kind: ConfigMap
+          metadata:
+            name: newest
+          data:
+              FOO3: bar3
+      register: playc4
+
+    - name: Check info
+      assert:
+        that:
+          - playc3 is changed
+          - playc4 is not changed
+
+    - name: Get info about pods
+      containers.podman.podman_pod_info:
+        executable: "{{ test_executable | default('podman') }}"
+      register: infopods2
+
+    - name: Check if the pod was created
+      assert:
+        that:
+          - "'contentpod' not in (infopods2.pods | map(attribute='Name') | list)"
+
+    - name: Create a Quadlet for kube with filename
+      containers.podman.podman_play:
+        executable: "{{ test_executable | default('podman') }}"
+        kube_file: /home/kubeuser/tmp/multipod.yaml
+        state: quadlet
+        quadlet_dir: /tmp
+        quadlet_filename: customfile
+        quadlet_file_mode: '0644'
+
+    - name: Check if files exists
+      stat:
+        path: /tmp/customfile.kube
+      register: quadlet_file_custom
+
+    - name: Fail if no file is present or wrong mode
+      assert:
+        that:
+          - quadlet_file_custom.stat.exists
+          - quadlet_file_custom.stat.mode == '0644'
+
+    - name: Create a kube quadlet without filename
+      containers.podman.podman_play:
+        executable: "{{ test_executable | default('podman') }}"
+        kube_file: /home/kubeuser/tmp/multipod.yaml
+        state: quadlet
+        quadlet_dir: /tmp
+      register: quadlet_file_no_name
+      ignore_errors: true
+
+    - name: Check that task failed
+      assert:
+        that:
+          - quadlet_file_no_name is failed
+
+    - name: Create a kube quadlet
+      containers.podman.podman_play:
+        executable: "{{ test_executable | default('podman') }}"
+        kube_file: /home/kubeuser/tmp/multipod.yaml
+        state: quadlet
+        userns: keep-id:uid=200,gid=210
+        log_driver: journald
+        network: host
+        configmap:
+          - /tmp/configmap1
+          - /tmp/configmap2
+        debug: true
+        quadlet_dir: /tmp
+        quadlet_filename: quadlet
+        quadlet_options:
+          - "PodmanArgs=--annotation=key1=value1"
+          - "PodmanArgs=--context-dir /my/path"
+          - |
+            [Install]
+            WantedBy=default.target
+
+    - name: Check if files exists
+      stat:
+        path: /tmp/quadlet.kube
+      register: quadlet_file
+
+    - name: Check output is correct for Quadlet container in /tmp/quadlet.kube file
+      assert:
+        that:
+          - quadlet_file.stat.exists
+
+    - name: Check for the existence of lines in /tmp/quadlet.kube
+      lineinfile:
+        path: /tmp/quadlet.kube
+        line: "{{ item }}"
+        state: present
+      check_mode: yes
+      register: line_check
+      loop:
+        - "[Kube]"
+        - "ConfigMap=/tmp/configmap1"
+        - "ConfigMap=/tmp/configmap2"
+        - "LogDriver=journald"
+        - "Network=host"
+        - "Yaml=/home/kubeuser/tmp/multipod.yaml"
+        - "UserNS=keep-id:uid=200,gid=210"
+        - "GlobalArgs=--log-level debug"
+        - "WantedBy=default.target"
+      loop_control:
+        label: "{{ item }}"
+
+    - name: Fail the task if any line is not present
+      fail:
+        msg: "The following line is not present in /tmp/quadlet.kube: {{ item.item }}"
+      when: item.changed
+      loop: "{{ line_check.results }}"
+      loop_control:
+        label: "{{ item.item }}"
+
+    - name: Create a kube quadlet - same
+      containers.podman.podman_play:
+        executable: "{{ test_executable | default('podman') }}"
+        kube_file: /home/kubeuser/tmp/multipod.yaml
+        state: quadlet
+        userns: keep-id:uid=200,gid=210
+        log_driver: journald
+        network: host
+        configmap:
+          - /tmp/configmap1
+          - /tmp/configmap2
+        debug: true
+        quadlet_dir: /tmp
+        quadlet_filename: quadlet.kube
+        quadlet_options:
+          - "PodmanArgs=--annotation=key1=value1"
+          - "PodmanArgs=--context-dir /my/path"
+          - |
+            [Install]
+            WantedBy=default.target
+      register: quad2
+
+    - name: Check if quadlet changed
+      assert:
+        that:
+          - quad2 is not changed
+
+    - name: Create a kube quadlet - different
+      containers.podman.podman_play:
+        executable: "{{ test_executable | default('podman') }}"
+        kube_file: /home/kubeuser/tmp/multipod.yaml
+        state: quadlet
+        userns: keep-id:uid=200,gid=210
+        log_driver: journald
+        network: host
+        configmap:
+          - /tmp/configmap55
+          - /tmp/configmap2
+        debug: true
+        quadlet_dir: /tmp
+        quadlet_filename: quadlet.kube
+        quadlet_options:
+          - "PodmanArgs=--annotation=key1=value1"
+          - "PodmanArgs=--context-dir /my/path"
+          - |
+            [Install]
+            WantedBy=default.target
+      register: quad3
+
+    - name: Print diff
+      debug:
+        var: quad3.diff
+
+    - name: Check if changed and diff
+      assert:
+        that:
+          - quad3 is changed
+          - "'configmap55' in quad3.diff.after"
+
+  always:
+
+    - name: Delete all pods leftovers from tests
+      containers.podman.podman_pod:
+        executable: "{{ test_executable | default('podman') }}"
+        name: "{{ item }}"
+        state: absent
+      loop:
+        - web-deploy
+        - web-deploy-pod
+        - web-deploy-pod-0
+        - web-deploy-pod-1
+        - web-deploy-pod-2
+        - contentpod
+
+- name: Test idempotency for root pods
+  include_tasks: root-play.yml
+  vars:
+    ansible_python_interpreter: "/usr/bin/python"
+  args:
+    apply:
+      become: true
+
+- name: Test play kube with on-demand image build
+  include_tasks: play-with-build.yml
+  vars:
+    ansible_python_interpreter: "/usr/bin/python"
+
+- name: Test play kube options
+  include_tasks: play-with-options.yml
+  vars:
+    ansible_python_interpreter: "/usr/bin/python"
+    target_pod: web-deploy
+    target_container: web-deploy-alpinex
+    log_opt:
+      path: /tmp/mycontainer.json
+      size: 10mb
+    userns: host
+    kube_dir: /tmp
+    kube_file: play-pod.yaml
+
+- name: Test play kube with multi doc yaml
+  include_tasks: play-multi-yaml.yml
+  vars:
+    ansible_python_interpreter: "/usr/bin/python"
+    kube_dir: /tmp
+    kube_file: multi-yaml.yml
+    target_container: foobar-container-1

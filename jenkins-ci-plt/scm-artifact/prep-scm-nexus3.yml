@@ -1,0 +1,91 @@
+---
+- name: Run Nexus3 Container
+  hosts: artifact
+  become: False
+  vars_files:
+    - ../vars/all_vars.yml
+
+  tasks:
+    - block:
+        - name: Load nexus3 container image
+          containers.podman.podman_load:
+            input: "{{ container_image_dir }}/nexus3_3.9.0.tar"
+        - name: Ensure nexus3 container status
+          ansible.builtin.shell: podman inspect gitlab-ce | jq .[0].State.Status
+          register: container_status
+        - name: Remove stopped gitlab-ce container
+          ansible.builtin.command: podman rm gitlab-ce
+          when: container_status.stdout == "\"exited\""
+        - name: Run nexus3 container
+          containers.podman.podman_container:
+            name: nexus3
+            hostname: nexus3.lab.example.com
+            restart_policy: always  #conflict with rm option
+            publish:
+              - 8881:8081
+              - 8882:8082
+              - 8883:8083
+              - 8884:8084
+              - 8885:8085
+            volume:
+              - "{{ nexus3_config_dir }}:/nexus-data:Z"
+            #memory: 4096m  #setup memory usage for container
+            image: "{{ registry_prefix }}/nexus3:3.9.0"
+            state: started
+            #rm: true
+          #when: ansible_facts.memory_mb.real.free > 4096
+        - name: Stop firewalld service
+          ansible.builtin.service:
+            name: firewalld
+            state: stopped
+            enabled: False
+          become: True
+      tags:
+        - nexus3
+
+- name: Run GitLab-CE Container
+  hosts: control_scm
+  become: False
+  vars_files:
+    - ../vars/all_vars.yml
+  tags:
+    - gitlab-ce
+
+  tasks:
+    - name: Load gitlab-ce container image
+      containers.podman.podman_load:
+        input: "{{ container_image_dir }}/gitlab-ce_17.9.8-ce.0.tar"
+    - name: Ensure gitlab-ce container status
+      ansible.builtin.shell: podman inspect gitlab-ce | jq .[0].State.Status
+      register: container_status
+    - name: Debug container_status variable
+      debug:
+        msg: "{{ container_status }}"
+    - name: Remove stopped gitlab-ce container
+      ansible.builtin.command: podman rm gitlab-ce
+      when: container_status.stdout == "\"exited\""
+    - name: Run gitlab-ce container
+      containers.podman.podman_container:
+        name: gitlab-ce
+        hostname: workstation.lab.example.com
+        #restart_policy: always
+        publish:
+          - 8880:80
+          - 8443:443
+          - "8882:22"  #quoted port mapping
+        volume:
+          - "{{ scm_config }}:/etc/gitlab:Z"
+          - "{{ scm_data }}:/var/opt/gitlab:Z"
+          - "{{ scm_log }}:/var/log/gitlab:Z"
+        memory: 4096m
+        image: "{{ registry_prefix }}/gitlab-ce:17.9.8-ce.0"
+        state: started
+        #rm: true
+      #when: ansible_facts.memory_mb.real.free > 4096
+    - name: Stop firewalld service
+      ansible.builtin.service:
+        name: firewalld
+        state: stopped
+        enabled: False
+      become: True
+
