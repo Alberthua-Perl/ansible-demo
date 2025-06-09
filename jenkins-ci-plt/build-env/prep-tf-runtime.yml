@@ -1,0 +1,29 @@
+---
+- name: Prepare TensorFlow and Flask runtime for CNN module
+  hosts: master,agents
+  become: False
+
+  tasks:
+    - name: Install python3-pip package
+      ansible.builtin.dnf:
+        name: python3-pip
+        state: present
+      become: True
+    - name: Create ~/.config/pip/ directory
+      ansible.builtin.file:
+        path: ~/.config/pip/
+        state: directory
+        mode: '0755'
+    - name: Setup pip3 upstream module source
+      ansible.builtin.copy:
+        src: ../files/pip.conf
+        dest: ~/.config/pip/
+    - name: Install TensorFlow and dependency modules
+      ansible.builtin.pip:
+        name:
+          - pysocks
+          - tensorflow==2.18.0
+          - matplotlib
+          - flask
+      # Note: 
+      #   $ pip3 install --ignore-installed <module_name>==<version>
