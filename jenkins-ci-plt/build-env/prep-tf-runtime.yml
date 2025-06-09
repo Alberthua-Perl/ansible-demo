@@ -1,29 +1,44 @@
 ---
 - name: Prepare TensorFlow and Flask runtime for CNN module
-  hosts: master,agents
-  become: False
+  hosts: master,!agents
+  vars_files:
+    - ../vars/all_vars.yml
 
   tasks:
     - name: Install python3-pip package
       ansible.builtin.dnf:
         name: python3-pip
         state: present
-      become: True
-    - name: Create ~/.config/pip/ directory
+    - name: Create {{ jenkins_pip_conf }} directory
       ansible.builtin.file:
-        path: ~/.config/pip/
+        path: "{{ jenkins_pip_conf }}"
         state: directory
+        owner: jenkins
+        group: jenkins
         mode: '0755'
     - name: Setup pip3 upstream module source
       ansible.builtin.copy:
         src: ../files/pip.conf
-        dest: ~/.config/pip/
+        dest: "{{ jenkins_pip_conf }}"
+        owner: jenkins
+        group: jenkins
     - name: Install TensorFlow and dependency modules
       ansible.builtin.pip:
         name:
           - pysocks
           - tensorflow==2.18.0
           - matplotlib
-          - flask
+          #- flask
+      become: True
+      become_user: jenkins
       # Note: 
       #   $ pip3 install --ignore-installed <module_name>==<version>
+    - name: Ensure TensorFlow modules
+      ansible.builtin.shell: pip list | grep -e pysocks -e tensorflow -e matplotlib
+      register: tf_state
+      become: True
+      become_user: jenkins
+    - name: Verify tf_state variable
+      ansible.builtin.debug:
+        var: tf_state
+

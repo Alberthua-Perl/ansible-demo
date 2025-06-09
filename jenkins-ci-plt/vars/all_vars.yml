@@ -18,10 +18,11 @@ scm_log: /home/devops/middleware/gitlab-ce/logs
 ### registry
 registry_prefix: quay.io/alberthua
 
-### jenkins package
+### jenkins variables
 jenkins_pkg_url: http://content.example.com/jenkins-ci-plt/jenkins-2.479.1-1.1.noarch.rpm
 jenkins_gpg_url: http://content.example.com/jenkins-ci-plt/jenkins.io-2023.key
 jenkins_version: jenkins-2.479.1-1.1.noarch.rpm
+jenkins_pip_conf: /var/lib/jenkins/.config/pip/
 
 ### nexus3 registry
 npm_proxy_url: nexus3.lab.example.com:8881/repository/npm-proxy/
