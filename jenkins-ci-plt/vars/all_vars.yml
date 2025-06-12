@@ -1,7 +1,7 @@
 ---
-### prep container images
-scm_image_url: http://content.example.com/jenkins-ci-plt/gitlab-ce_17.9.8-ce.0.tar
-nexus3_image_url: http://content.example.com/jenkins-ci-plt/nexus3_3.9.0.tar
+### container images
+scm_image_url: http://content.example.com/jenkins-ci-plt/container-images/gitlab-ce_17.9.8-ce.0.tar
+nexus3_image_url: http://content.example.com/jenkins-ci-plt/container-images/nexus3_3.9.0.tar
 container_image_dir: /home/devops/images
 
 ### container config dir
@@ -18,13 +18,13 @@ scm_log: /home/devops/middleware/gitlab-ce/logs
 ### registry
 registry_prefix: quay.io/alberthua
 
-### jenkins variables
-jenkins_pkg_url: http://content.example.com/jenkins-ci-plt/jenkins-2.479.1-1.1.noarch.rpm
-jenkins_gpg_url: http://content.example.com/jenkins-ci-plt/jenkins.io-2023.key
+### jenkins
+jenkins_pkg_url: http://content.example.com/jenkins-ci-plt/packages/jenkins-2.479.1-1.1.noarch.rpm
+jenkins_gpg_url: http://content.example.com/jenkins-ci-plt/packages/jenkins.io-2023.key
 jenkins_version: jenkins-2.479.1-1.1.noarch.rpm
 jenkins_pip_conf: /var/lib/jenkins/.config/pip/
 
-### nexus3 registry
+### nexus3
 npm_proxy_url: nexus3.lab.example.com:8881/repository/npm-proxy/
 npm_hosted_url: nexus3.lab.example.com:8881/repository/npm-hosted/ 
 user_passwd_base64: ZGV2dXNlcjA6MXFhelpTRSQ=
@@ -32,7 +32,7 @@ user_passwd_base64: ZGV2dXNlcjA6MXFhelpTRSQ=
 #   $ echo -n "devuser0:1qazZSE$" | base64
 #   $ echo -n "devuser0:1qazZSE$" | openssl base64
 
-### postgresql configure
+### postgresql
 content_list:
   - key: "^#listen_addresses = 'localhost'"
     value: "listen_addresses = '*'"
@@ -48,3 +48,7 @@ pg_user: etherpad_user
 pg_password: redhat
 pg_db: etherpad_db
 
+### apache maven
+maven_url_prefix: http://content.example.com/jenkins-ci-plt/packages
+maven_package: apache-maven-3.9.9-bin.tar.gz
+maven_dir: /usr/local

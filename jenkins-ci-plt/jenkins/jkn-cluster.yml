@@ -1,6 +1,8 @@
 ---
 - name: Config Jenkins Associated Nodes
   hosts: master,agents
+  vars_files:
+    - ../vars/all_vars.yml
   tags:
     - jkn_config
     - master_config
@@ -15,6 +17,15 @@
           - jq
           - podman
         state: present
+    - name: Download apache-maven tarball
+      ansible.builtin.get_url:
+        url: "{{ maven_url_prefix }}/{{ maven_package }}"
+        dest: /tmp
+    - name: Unarchive apache-maven tarball and install mvn
+      ansible.builtin.unarchive:
+        src: /tmp/{{ maven_package }}
+        dest: "{{ maven_dir }}"
+        remote_src: yes
     - name: Stop firewalld service
       ansible.builtin.service:
         name: firewalld
