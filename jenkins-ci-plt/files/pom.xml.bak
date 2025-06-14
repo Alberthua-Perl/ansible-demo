@@ -67,6 +67,7 @@
                 </snapshots>
             </repository>
         </repositories>
+
         <pluginRepositories>
             <pluginRepository>
                 <id>maven-group</id>
@@ -80,6 +81,19 @@
                 </snapshots>
             </pluginRepository>
         </pluginRepositories>
+
+        <distributionManagement>
+						<repository>
+        				<id>maven-group</id>
+        				<name>Maven2 Group Local Repository</name>
+        				<url>http://nexus3.lab.example.com:8881/repository/maven-group/</url>
+    				</repository>
+    				<snapshotRepository>
+        				<id>maven-group</id>
+        				<name>Maven2 Group Local Repository</name>
+        				<url>http://nexus3.lab.example.com:8881/repository/maven-group/</url>
+    				</snapshotRepository>
+				</distributionManagement>
         <!-- edited by hualongfeiyyy@163.com -->
 
 </project>
