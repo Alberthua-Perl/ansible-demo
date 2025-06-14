@@ -17,7 +17,4 @@ all:
       hosts:
         nexus3.lab.example.com:
           ansible_host: serverd.lab.example.com
-    apptest:
-      hosts:
-        utility.lab.example.com:
     ungrouped: {}

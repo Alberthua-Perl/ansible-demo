@@ -1,6 +1,6 @@
 ---
 - name: Prepare Node.js run and build environment
-  hosts: master,agents,apptest
+  hosts: master,agents
   vars_files:
     - ../vars/all_vars.yml
 

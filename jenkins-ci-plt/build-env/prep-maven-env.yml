@@ -1,0 +1,23 @@
+---
+- name: Prepare and setup Maven runtime environment
+  hosts: master,agents
+  vars_files:
+    - ../vars/all_vars.yml
+
+  tasks:
+    - name: Download Apache Maven tarball
+      ansible.builtin.get_url:       
+        url: "{{ maven_url_prefix }}/{{ maven_package }}"
+        dest: /tmp
+    - name: Unarchive Apache Maven tarball and install mvn
+      ansible.builtin.unarchive:     
+        src: /tmp/{{ maven_package }}
+        dest: "{{ maven_dir }}"      
+        remote_src: yes              
+    - name: Replace Apache Maven configure file
+      ansible.builtin.template:      
+        src: ../files/settings.xml.j2
+        dest: "{{ maven_conf_file }}"
+        # Note:
+        #   Maven config file settings.xml definied <servers> and <mirrors>,
+        #   which allow maven to connect private nexus3 repository.

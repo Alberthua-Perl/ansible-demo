@@ -52,3 +52,8 @@ pg_db: etherpad_db
 maven_url_prefix: http://content.example.com/jenkins-ci-plt/packages
 maven_package: apache-maven-3.9.9-bin.tar.gz
 maven_dir: /usr/local
+maven_conf_file: /usr/local/apache-maven-3.9.9/conf/settings.xml
+maven_repo_id: maven-group
+maven_repo_username: devuser0
+maven_repo_password: 1qazZSE$
+maven_repo_url: http://nexus3.lab.example.com:8881/repository/maven-group/
