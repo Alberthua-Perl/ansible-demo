@@ -3,7 +3,7 @@
 echo -e "\n---> Create build env..."
 mkdir build/
 shopt -s extglob
-mv !(build) build/
+mv !(build) build/ && mv .[a-zA-Z]* build/
 
 echo -e "\n---> Train MNIST and generate module..."
 cd build/
@@ -30,6 +30,7 @@ echo -e "\n---> Build app-tf-flask app image..."
 podman build -t app-tf-flask:v1.0 --format=docker .
 if [[ $? -eq 0 ]]; then
   podman tag localhost/app-tf-flask:v1.0 nexus3.lab.example.com:8882/app-tf-flask:v1.0
+  echo -e "\n---> Push app-tf-flask app image..."
   podman push --tls-verify=false nexus3.lab.example.com:8882/app-tf-flask:v1.0
   if [[ $? -eq 0 ]]; then
     echo -e "\n--> Remove local builded image..."

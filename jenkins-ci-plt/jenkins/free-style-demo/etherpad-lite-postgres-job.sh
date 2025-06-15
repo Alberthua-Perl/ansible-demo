@@ -41,7 +41,11 @@ podman pull --tls-verify=false nexus3.lab.example.com:8882/node-pnpm:10.11.0
 podman build -t etherpad-lite-postgres:v1.0 --format=docker .  #指定构建镜像格式执行构建
 if [[ $? -eq 0 ]]; then
   podman tag localhost/etherpad-lite-postgres:v1.0 nexus3.lab.example.com:8882/etherpad-lite-postgres:v1.0
+  echo -e "\n---> Push etherpad-lite-postgres app image..."
   podman push --tls-verify=false nexus3.lab.example.com:8882/etherpad-lite-postgres:v1.0
+  if [[ $? -eq 0 ]]; then
+		podman rmi localhost/etherpad-lite-postgres:v1.0 nexus3.lab.example.com:8882/etherpad-lite-postgres:v1.0
+  fi
 else
   echo -e "\n---> [ERROR] Build failure..."
   exit 10
