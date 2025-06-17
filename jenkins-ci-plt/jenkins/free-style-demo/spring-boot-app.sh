@@ -5,10 +5,12 @@ mkdir build/
 shopt -s extglob
 mv !(build) build/ && mv .[a-zA-Z]* build/
 
-echo -e "\n---> Install mvn modules and test..."
+echo -e "\n---> Install mvn modules..."
 cd build/
 export PATH=$PATH:/usr/local/apache-maven-3.9.9/bin
 mvn clean install -DskipTest
+
+echo -e "\n---> Test spring app..."
 mvn test
 
 echo -e "\n---> Generate Containerfile..."
@@ -24,7 +26,7 @@ WORKDIR /app
 
 EXPOSE 8080
 
-ENTRYPOINT ["java", "-jar", "spring-boot-helloworld-0.9.6-SNAPSHOT.jar"]
+ENTRYPOINT ["sh", "-c", "/opt/openjdk-17/bin/java -jar spring-boot-helloworld-0.9.6-SNAPSHOT.jar --server.port=80]
 EOF
 
 echo -e "\n---> Login and pull base image..."
