@@ -4,8 +4,7 @@
   vars_files:
     - ../vars/all_vars.yml
   tags:
-    - jkn_config
-    - master_config
+    - all_config
 
   tasks:
     - name: Install dependent packages
@@ -27,8 +26,6 @@
   hosts: master
   vars_files:
     - ../vars/all_vars.yml
-  tags:
-    - master_config
 
   tasks:
     - name: Download jenkins rpm package

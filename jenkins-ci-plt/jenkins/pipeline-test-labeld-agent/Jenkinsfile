@@ -1,0 +1,45 @@
+pipeline {
+  agent {
+    label 'node && maven && flask'
+  }
+ 
+  stages {
+    stage('Non-Paralles Stage') {
+      steps {
+        echo "This stage will be executed first."
+      }
+    }
+ 
+    stage('Parallel Stage') {
+      failFast true
+      parallel {
+        stage('Parallel One') {
+          steps {
+            echo "Parallel One"
+          }
+        }
+        
+        stage('Parallel Two') {
+          steps {
+            echo "Parallel Two"
+          }
+				}
+        
+        stage('Parallel Three') {
+          stages {
+            stage('Nested 1') {
+              steps {
+                echo "In stage Nested 1 within Branch C"
+              }
+            }
+            stage('Nested 2') {
+              steps {
+                echo "In stage Nested 2 within Branch C"
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
