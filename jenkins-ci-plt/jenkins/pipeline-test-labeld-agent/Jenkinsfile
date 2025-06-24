@@ -4,14 +4,14 @@ pipeline {
   }
  
   stages {
-		stage('Print Agent Hostname') {
-			steps {
-				script {
-					def hostname = sh(script: 'hostname', returnStdout: true).trim()
-					echo "Running on agent with hostname: ${hostname}"
-				}
-			}
-		}
+    stage('Print Agent Hostname') {
+      steps {
+        script {
+          def hostname = sh(script: 'hostname', returnStdout: true).trim()
+          echo "Running on agent with hostname: ${hostname}"
+        }
+      }
+    }
 
     stage('Non-Paralles Stage') {
       steps {
