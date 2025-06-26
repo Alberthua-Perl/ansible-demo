@@ -4,7 +4,8 @@
   vars_files:
     - ../vars/all_vars.yml
   tags:
-    - all_config
+    - master_config
+    - agent_config
 
   tasks:
     - name: Install dependent packages
@@ -22,10 +23,12 @@
         state: stopped
         enabled: False
 
-- name: Deploy Jenkins Compent
+- name: Deploy Jenkins Master Component
   hosts: master
   vars_files:
     - ../vars/all_vars.yml
+  tags:
+    - master_config
 
   tasks:
     - name: Download jenkins rpm package
@@ -50,4 +53,24 @@
     - name: Report jenkins service status
       ansible.builtin.debug:
         var: jkn_status
+
+- name: Setup Jenkins SSH Agent
+  hosts: agents
+  vars_files:
+    - ../vars/all_vars.yml
+  tags:
+    - agent_config
+
+  tasks:
+    - name: Create jenkins user account as ssh agent user
+      ansible.builtin.user:
+        name: "{{ jenkins_user }}"
+        password: "{{ jenkins_password | password_hash('sha512') }}"
+        shell: /bin/bash
+    - name: Create jenkins ssh agent data directory
+      ansible.builtin.file:
+        path: "{{ jenkins_agent_dir }}"
+        state: directory
+        owner: "{{ jenkins_user }}"
+        group: "{{ jenkins_group }}"
 
