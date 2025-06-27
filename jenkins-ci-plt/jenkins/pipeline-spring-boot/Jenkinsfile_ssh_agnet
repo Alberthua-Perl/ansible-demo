@@ -1,0 +1,135 @@
+// Store Jenkinsfile in source code directory (spring-boot-helloworld).
+// 
+// Because in pipeline-spring-boot project, use `Pipeline -> Definition
+// (Pipeline script from SCM)` parameter, and git url and credential
+// must be filled in blank. So in this Jenkinsfile, no git url has been 
+// definied. Jenkins can parse Jenkinsfile in code directory.
+
+pipeline {
+    agent {
+				label 'spring'
+		}
+
+    environment {
+        MAVEN_HOME = '/usr/local/apache-maven-3.9.9'
+        PATH = "${MAVEN_HOME}/bin:${env.PATH}"
+    }
+
+    stages {
+				stage('Print Agent Node Hostname') {
+						steps {
+								script {
+										def hostname = sh(script: 'hostname', returnStdout: true).trim()
+										echo "Running job on agent hostname: ${hostname}"
+								}
+						}
+				}
+
+        stage('Create Build Environment') {
+            steps {
+                script {
+                    echo "---> Create build env..."
+                    sh """
+                    mkdir -p build/
+                    shopt -s extglob
+                    mv !(build) build/ && mv .[a-zA-Z]* build/
+                    """
+                }
+            }
+        }
+
+        stage('Install Maven Modules') {
+            steps {
+                script {
+                    echo "---> Install mvn modules..."
+                    dir('build') {
+                        sh 'mvn clean install -DskipTest'
+                    }
+                }
+            }
+        }
+
+        stage('Test Spring App') {
+            steps {
+               script {
+                    echo "---> Test spring-boot app..."
+                    dir('build') {
+                        sh 'mvn test'
+                    }
+               }
+            }
+        }
+
+        stage('Generate Containerfile') {
+            steps {
+                script {
+                    echo "---> Generate Containerfile..."
+                    def fileContent = """
+                    FROM nexus3.lab.example.com:8882/openjdk:17-jdk-alpine
+                    MAINTAINER hualongfeiyyy@163.com
+
+                    RUN mkdir /app
+                    ADD ./build/target/spring-boot-helloworld-0.9.6-SNAPSHOT.jar /app
+
+                    WORKDIR /app
+
+                    EXPOSE 8080
+
+                    ENTRYPOINT ["sh", "-c", "/opt/openjdk-17/bin/java -jar spring-boot-helloworld-0.9.6-SNAPSHOT.jar --server.port=80]
+                    """
+                    writeFile file: 'Containerfile', text: fileContent
+                }
+            }
+        }
+
+        stage('Login and Pull Base Image') {
+            steps {
+                script {
+                    echo "---> Login and pull base image..."
+                    sh """
+                    podman login --tls-verify=false --username devuser0 --password 1qazZSE\$ nexus3.lab.example.com:8882
+                    podman pull --tls-verify=false nexus3.lab.example.com:8882/openjdk:17-jdk-alpine
+                    """
+                }
+            }
+        }
+
+        stage('Build Spring App Image') {
+            steps {
+                script {
+                    echo "---> Build spring app image..."
+                    sh """
+                    podman build -t spring-boot-app:v1.0 --format=docker .
+                    if [[ \$? -eq 0 ]]; then
+                        podman tag localhost/spring-boot-app:v1.0 nexus3.lab.example.com:8882/spring-boot-app:v1.0
+                    else
+                        echo "[ERROR] Build failure..."
+                    fi
+                    """
+                }
+            }
+        }
+
+        stage('Push Spring App Image'){
+            steps {
+                script {
+                    echo "---> Push spring app image..."
+                    echo "Current build result: ${currentBuild.result}"
+                    sh """
+                    podman push --tls-verify=false nexus3.lab.example.com:8882/spring-boot-app:v1.0
+                    if [[ \$? -eq 0 ]]; then
+                        echo "--> Remove local builded image..."
+                        podman rmi localhost/spring-boot-app:v1.0 nexus3.lab.example.com:8882/spring-boot-app:v1.0
+                    fi
+                    """
+                }
+            }
+        }
+    }
+
+    post {
+        always {
+            echo "Pipeline execution completed."
+        }
+    }
+}

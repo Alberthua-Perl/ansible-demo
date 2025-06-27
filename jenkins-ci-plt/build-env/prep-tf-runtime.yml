@@ -1,4 +1,10 @@
 ---
+# JUST use the playbook to setup module runtime to test training
+# on master which helps to conduct how to build tensorflow image.
+# So the playbook could not be runned during testing module.
+# 
+# Please ignore it !!!
+#
 - name: Prepare TensorFlow and Flask runtime for CNN module
   hosts: master,!agents
   vars_files:

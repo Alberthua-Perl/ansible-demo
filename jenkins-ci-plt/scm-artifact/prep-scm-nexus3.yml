@@ -55,6 +55,7 @@
     - name: Load gitlab-ce container image
       containers.podman.podman_load:
         input: "{{ container_image_dir }}/gitlab-ce_17.9.8-ce.0.tar"
+      ignore_errors: yes
     - name: Ensure gitlab-ce container status
       ansible.builtin.shell: podman inspect gitlab-ce | jq .[0].State.Status
       register: container_status
