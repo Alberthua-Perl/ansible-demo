@@ -73,4 +73,18 @@
         state: directory
         owner: "{{ jenkins_user }}"
         group: "{{ jenkins_group }}"
+    - name: Setup jenkins ssh agent SSH directory
+      ansible.builtin.file:
+        path: /home/jenkins/.ssh
+        state: directory
+        owner: "{{ jenkins_user }}"
+        group: "{{ jenkins_group }}"
+        mode: '0700'
+    - name: Generate jenkins authorized_keys file
+      ansible.builtin.file:
+        path: /home/jenkins/.ssh/authorized_keys
+        state: touch
+        owner: "{{ jenkins_user }}"
+        group: "{{ jenkins_group }}"
+        mode: '0600'
 
