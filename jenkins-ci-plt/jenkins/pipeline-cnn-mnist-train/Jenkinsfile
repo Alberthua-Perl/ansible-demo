@@ -4,10 +4,10 @@
 // and build the job.
 
 pipeline {
-    agent any
-    //agent {
-	  //   label "node && maven && flask"
-    //}
+    //agent any
+    agent {
+       label "spring"
+    }
 
     environment {
         GIT_CREDENTIALS_ID = 'gitlab-ce-devuser0'

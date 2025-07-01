@@ -23,6 +23,7 @@ jenkins_pkg_url: http://content.example.com/jenkins-ci-plt/packages/jenkins-2.47
 jenkins_gpg_url: http://content.example.com/jenkins-ci-plt/packages/jenkins.io-2023.key
 jenkins_version: jenkins-2.479.1-1.1.noarch.rpm
 jenkins_pip_conf: /var/lib/jenkins/.config/pip/
+jenkins_local_pip_conf: /home/jenkins/.config/pip/
 
 ### Jenkins Agent ###
 jenkins_user: jenkins

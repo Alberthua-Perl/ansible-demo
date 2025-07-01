@@ -1,12 +1,12 @@
 ---
-# JUST use the playbook to setup module runtime to test training
+# Use the playbook to setup module runtime to test training
 # on master which helps to conduct how to build tensorflow image.
-# So the playbook could not be runned during testing module.
 # 
-# Please ignore it !!!
+# Also run the playbook to prepare tensorflow environment on agent
+# node as to run Jenkinsfile from CNN project.
 #
 - name: Prepare TensorFlow and Flask runtime for CNN module
-  hosts: master,!agents
+  hosts: master,jenkins-agent1.lab.example.com
   vars_files:
     - ../vars/all_vars.yml
 
@@ -22,12 +22,29 @@
         owner: jenkins
         group: jenkins
         mode: '0755'
-    - name: Setup pip3 upstream module source
+      when: inventory_hostname == 'jenkins-master.lab.example.com'
+    - name: Create {{ jenkins_local_pip_conf }} directory
+      ansible.builtin.file:
+        path: "{{ jenkins_local_pip_conf }}"
+        state: directory
+        owner: jenkins
+        group: jenkins
+        mode: '0755'
+      when: inventory_hostname == 'jenkins-agent1.lab.example.com'
+    - name: Setup pip3 upstream module source for master
       ansible.builtin.copy:
         src: ../files/pip.conf
         dest: "{{ jenkins_pip_conf }}"
         owner: jenkins
         group: jenkins
+      when: inventory_hostname == 'jenkins-master.lab.example.com'
+    - name: Setup pip3 upstream module source for agent
+      ansible.builtin.copy:
+        src: ../files/pip.conf
+        dest: "{{ jenkins_local_pip_conf }}"
+        owner: jenkins
+        group: jenkins
+      when: inventory_hostname == 'jenkins-agent1.lab.example.com'
     - name: Install TensorFlow and dependency modules
       ansible.builtin.pip:
         name:
