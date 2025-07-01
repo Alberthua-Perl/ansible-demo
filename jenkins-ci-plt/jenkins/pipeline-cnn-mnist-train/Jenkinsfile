@@ -1,21 +1,123 @@
 pipeline {
-		agent any
+    agent any
+    //agent {
+	  //   label "node && maven && flask"
+    //}
 
-		stages {
-				stage() {
-						steps {
-								script {
+    environment {
+        GIT_CREDENTIALS_ID = 'gitlab-ce-devuser0'
+    }
 
-								}
-						}
-				}
+    stages {
+        stage('Print agent node hostname') {
+            steps {
+                script {
+                    def hostname = sh(script: 'hostname', returnStdout: true).trim()
+                    echo "Running job on agent hostname: ${hostname}"
+                }
+            }
+        }
 
-				stage() {
-						steps {
-								script {
+        stage('Checkout source code') {
+            steps {
+                script {
+                    echo '---> Checkout source code from Git repository...'
+                    checkout([$class: 'GitSCM', userRemoteConfigs: [[credentialsId: "${GIT_CREDENTIALS_ID}", url: 'git@workstation.lab.example.com:devuser0/cnn_mnist_train.git']], branches: [[name: 'main']]])
+                }
+            }
+        }
 
-								}
-						}
-				}
-		}
+        stage('Create build env') {
+            steps {
+                echo '---> Create build env...'
+                sh '''
+                mkdir build/
+                shopt -s extglob
+                mv !(build) build/ && mv .[a-zA-Z]* build/
+                '''
+            }
+        }
+
+        stage('Train MNIST and generate module') {
+            steps {
+                dir('build') {
+                    echo '---> Train MNIST and generate module...'
+                    sh '''
+                    python ./train_mnist_model_tf.py
+                    tree .
+                    '''
+                }
+            }
+        }
+
+        stage('Generate Containerfile') {
+            steps {
+                dir('./') {
+                    echo '---> Generate Containerfile...'
+                    script {
+                        def currentDir = sh(script: 'pwd', returnStdout: true).trim()
+                        echo "Current directory: ${currentDir}"
+                        def fileContent = """
+                        FROM nexus3.lab.example.com:8882/tf-flask:2.18.0
+
+                        ADD build/ /app
+                        WORKDIR /app
+
+                        EXPOSE 5000
+
+                        ENTRYPOINT ["python", "app.py"]
+                        """
+                        writeFile file: 'Containerfile', text: fileContent
+                    }
+                }
+            }
+        }
+
+        stage('Login and pull tf-flask image') {
+            steps {
+                echo '---> Login and pull tf-flask image...'
+                sh '''
+                podman login --tls-verify=false --username devuser0 --password 1qazZSE\$ nexus3.lab.example.com:8882
+                podman pull --tls-verify=false nexus3.lab.example.com:8882/tf-flask:2.18.0
+                '''
+            }
+        }
+
+        stage('Build app-tf-flask app image') {
+            steps {
+                echo '---> Build app-tf-flask app image...'
+                sh 'podman build -t app-tf-flask:v1.0 --format=docker .'
+                script {
+                    def buildResult = sh(script: 'echo $?', returnStdout: true).trim()
+                    if (buildResult != '0') {
+                        error('---> [ERROR] Build failure...')
+                    }
+                }
+            }
+        }
+
+        stage('Tag and push app-tf-flask app image') {
+            steps {
+                echo '---> Tag and push app-tf-flask app image...'
+                sh '''
+                podman tag localhost/app-tf-flask:v1.0 nexus3.lab.example.com:8882/app-tf-flask:v1.0
+                podman push --tls-verify=false nexus3.lab.example.com:8882/app-tf-flask:v1.0
+                '''
+            }
+        }
+
+        stage('Remove local builded image') {
+            steps {
+                echo '---> Remove local builded image...'
+                sh 'podman rmi localhost/app-tf-flask:v1.0 nexus3.lab.example.com:8882/app-tf-flask:v1.0'
+            }
+        }
+    }
+
+    post {
+        failure {
+            echo '---> [ERROR] Build failure...'
+        }
+    }
 }
+

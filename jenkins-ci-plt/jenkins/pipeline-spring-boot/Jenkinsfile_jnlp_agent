@@ -7,8 +7,8 @@
 
 pipeline {
     agent {
-				label 'spring'
-		}
+        label 'node && maven && flask'
+    }
 
     environment {
         MAVEN_HOME = '/usr/local/apache-maven-3.9.9'
@@ -16,14 +16,14 @@ pipeline {
     }
 
     stages {
-				stage('Print Agent Node Hostname') {
-						steps {
-								script {
-										def hostname = sh(script: 'hostname', returnStdout: true).trim()
-										echo "Running job on agent hostname: ${hostname}"
-								}
-						}
-				}
+        stage('Print Agent Node Hostname') {
+            steps {
+                script {
+                    def hostname = sh(script: 'hostname', returnStdout: true).trim()
+                    echo "Running job on agent hostname: ${hostname}"
+                }
+            }
+        }
 
         stage('Create Build Environment') {
             steps {
