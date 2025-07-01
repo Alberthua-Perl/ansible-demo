@@ -1,3 +1,8 @@
+// Use this Jenkinsfile directly in pipeline-cnn-mnist-train
+// project. Not define git repository and credential, rather than
+// type following content into `Pipeline -> Definition -> Pipeline script`
+// and build the job.
+
 pipeline {
     agent any
     //agent {
