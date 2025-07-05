@@ -1,0 +1,8 @@
+---
+db_port: 3306
+db_root_password: 1qazZSE$
+db_user: ansible
+db_password: redhat
+db_database: ansible
+db_host: '%'
+db_priv: '*.*:ALL'

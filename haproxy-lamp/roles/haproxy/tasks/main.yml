@@ -1,0 +1,28 @@
+---
+- name: Install HAProxy package
+  ansible.builtin.dnf:
+    name: haproxy-2.4.7-2.el9_0.x86_64
+    state: present
+
+- name: Transfer haproxy.cfg
+  ansible.builtin.template:
+    src: haproxy.cfg.j2
+    dest: /etc/haproxy/haproxy.cfg
+    owner: root
+    group: root
+    mode: '0644'
+  notify:
+    - Restart HAProxy service
+
+- name: Start HAProxy service
+  ansible.builtin.service:
+    name: haproxy
+    state: started
+    enabled: true
+
+- name: Allow HAProxy service through firewalld
+  ansible.posix.firewalld:
+    port: 80/tcp
+    permanent: true
+    state: enabled
+    immediate: true

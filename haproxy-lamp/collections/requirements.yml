@@ -1,0 +1,5 @@
+---
+collections:
+  - http://content.example.com/jenkins-ci-plt/collections/ansible-posix-1.5.2.tar.gz
+  - http://content.example.com/jenkins-ci-plt/collections/community-general-9.5.7.tar.gz
+  - http://content.example.com/jenkins-ci-plt/collections/community-mysql-3.12.0.tar.gz

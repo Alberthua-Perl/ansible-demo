@@ -1,0 +1,66 @@
+---
+#安装与设置 MariaDB 数据库服务器
+- name: Install MariaDB server package
+  ansible.builtin.yum: 
+    name:
+      - mariadb  #mariadb 客户端
+      - mariadb-server
+      - python3-PyMySQL
+    state: present
+  when: 
+    - ansible_facts.distribution == 'RedHat'
+    - ansible_facts.distribution_major_version == '9'
+    - ansible_facts.memfree_mb >= 2048
+
+- name: Transfer .my.cnf config file for root  #设置 .my.cnf 用于 root 连接认证
+  ansible.builtin.template: 
+    src: files/my.cnf.j2
+    dest: /root/.my.cnf
+
+- name: Start MariaDB server
+  ansible.builtin.service:
+    name: mariadb
+    state: started
+    enabled: true
+
+- name: Allow MariaDB server through firewalld
+  ansible.posix.firewalld:
+    port: "{{ db_port }}/tcp"
+    permanent: true
+    state: enabled
+    immediate: true
+
+#设置 MariaDB 的 root 用户、其他用户与数据库
+- name: Assign password to MariaDB root user
+  community.mysql.mysql_user:
+    name: root
+    host_all: true
+    update_password: always
+    password: "{{ db_root_password }}"
+
+- name: Remove anonymous user accounts
+  community.mysql.mysql_user:
+    name: ''
+    host_all: true
+    state: absent
+
+- name: Remove test database
+  community.mysql.mysql_db:
+    name: test
+    state: absent
+  notify:
+    - Restart MariaDB server
+
+- name: Create users and set password if not present
+  community.mysql.mysql_user:
+    name: "{{ db_user }}"
+    password: "{{ db_password }}"
+    update_password: on_create
+    priv: "{{ db_priv }}"
+    host: "{{ db_host }}"
+    state: present
+
+- name: Create database in MariaDB server
+  community.mysql.mysql_db:
+    name: "{{ db_database }}"
+    state: present

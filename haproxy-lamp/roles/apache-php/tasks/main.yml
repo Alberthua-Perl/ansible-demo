@@ -1,0 +1,39 @@
+---
+- name: Install Apache HTTPD and PHP package
+  ansible.builtin.yum:
+    name:
+      - httpd
+      - php
+      - php-gd
+      - php-mysqlnd  #PHP GD 图像渲染
+      - python3-libsemanage
+      - python3-libselinux
+    state: present
+  when: ansible_facts.distribution == 'RedHat' and ansible_facts.distribution_major_version == '9' and ansible_facts.memfree_mb >= 2048
+
+- name: Transfer index.php.j2
+  ansible.builtin.template:
+    src: index.php.j2
+    dest: /var/www/html/index.php
+
+- name: Apache HTTPD service status
+  ansible.builtin.service:
+    name: httpd
+    state: started
+    enabled: true
+
+- name: Allow Apache HTTPD service through firewalld
+  ansible.posix.firewalld:
+    service: http
+    permanent: true
+    state: enabled
+
+#设置 SELinux 布尔值规则
+- name: Setup selinux boolean to connect database
+  ansible.builtin.command:
+    cmd: "{{ item }}"
+  loop:
+    - setsebool -P httpd_can_network_connect on
+    - setsebool -P httpd_can_network_connect_db on
+  notify:
+    - Restart Apache HTTPD server
