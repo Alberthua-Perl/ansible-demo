@@ -9,6 +9,7 @@
       - my_service: ' '
       - my_service: " "
       - my_service:
+      - my_service: ~
 
   tasks:
     - name: Test varisbles is null and space
@@ -16,4 +17,9 @@
       #when: item.service is defined
       when: item.service is not defined
       loop: "{{ test_def }}"
+
+  #关于 Ansible 中的变量定义：
+  #  1. 变量在引用的上下文中如果从未出现过，那么这个变量即为未定义。
+  #  2. 如果变量在引用的上下文中被赋值为空字符串、NULL、一个或者多个空白等，那么此变量即便是在后面引用的过程中报错，
+  #     它也是一个被定义的变量。    
 ...

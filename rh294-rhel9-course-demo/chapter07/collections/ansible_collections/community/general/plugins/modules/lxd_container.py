@@ -34,32 +34,33 @@ options:
     project:
         description:
           - 'Project of an instance.
-            See U(https://github.com/lxc/lxd/blob/master/doc/projects.md).'
+            See U(https://documentation.ubuntu.com/lxd/en/latest/projects/).'
         required: false
         type: str
         version_added: 4.8.0
     architecture:
         description:
-          - 'The architecture for the instance (for example C(x86_64) or C(i686)).
-            See U(https://github.com/lxc/lxd/blob/master/doc/rest-api.md#post-1).'
+          - 'The architecture for the instance (for example V(x86_64) or V(i686)).
+            See U(https://documentation.ubuntu.com/lxd/en/latest/api/#/instances/instance_get).'
         type: str
         required: false
     config:
         description:
-          - 'The config for the instance (for example C({"limits.cpu": "2"})).
-            See U(https://github.com/lxc/lxd/blob/master/doc/rest-api.md#post-1).'
+          - 'The config for the instance (for example V({"limits.cpu": "2"})).
+            See U(https://documentation.ubuntu.com/lxd/en/latest/api/#/instances/instance_get).'
           - If the instance already exists and its "config" values in metadata
-            obtained from the LXD API U(https://github.com/lxc/lxd/blob/master/doc/rest-api.md#instances-containers-and-virtual-machines)
-            are different, this module tries to apply the configurations.
-          - The keys starting with C(volatile.) are ignored for this comparison when I(ignore_volatile_options=true).
+            obtained from the LXD API U(https://documentation.ubuntu.com/lxd/en/latest/api/#/instances/instance_get)
+            are different, then this module tries to apply the configurations
+            U(https://documentation.ubuntu.com/lxd/en/latest/api/#/instances/instance_put).
+          - The keys starting with C(volatile.) are ignored for this comparison when O(ignore_volatile_options=true).
         type: dict
         required: false
     ignore_volatile_options:
         description:
-          - If set to C(true), options starting with C(volatile.) are ignored. As a result,
+          - If set to V(true), options starting with C(volatile.) are ignored. As a result,
             they are reapplied for each execution.
-          - This default behavior can be changed by setting this option to C(false).
-          - The default value changed from C(true) to C(false) in community.general 6.0.0.
+          - This default behavior can be changed by setting this option to V(false).
+          - The default value changed from V(true) to V(false) in community.general 6.0.0.
         type: bool
         required: false
         default: false
@@ -72,26 +73,23 @@ options:
     devices:
         description:
           - 'The devices for the instance
-            (for example C({ "rootfs": { "path": "/dev/kvm", "type": "unix-char" }})).
-            See U(https://github.com/lxc/lxd/blob/master/doc/rest-api.md#post-1).'
+            (for example V({ "rootfs": { "path": "/dev/kvm", "type": "unix-char" }})).
+            See U(https://documentation.ubuntu.com/lxd/en/latest/api/#/instances/instance_get).'
         type: dict
         required: false
     ephemeral:
         description:
-          - Whether or not the instance is ephemeral (for example C(true) or C(false)).
-            See U(https://github.com/lxc/lxd/blob/master/doc/rest-api.md#post-1).
+          - Whether or not the instance is ephemeral (for example V(true) or V(false)).
+            See U(https://documentation.ubuntu.com/lxd/en/latest/api/#/instances/instance_get).
         required: false
         type: bool
     source:
         description:
           - 'The source for the instance
-            (e.g. { "type": "image",
-                    "mode": "pull",
-                    "server": "https://images.linuxcontainers.org",
-                    "protocol": "lxd",
-                    "alias": "ubuntu/xenial/amd64" }).'
-          - 'See U(https://github.com/lxc/lxd/blob/master/doc/rest-api.md#post-1) for complete API documentation.'
-          - 'Note that C(protocol) accepts two choices: C(lxd) or C(simplestreams).'
+            (for example V({ "type": "image", "mode": "pull", "server": "https://cloud-images.ubuntu.com/releases/",
+            "protocol": "simplestreams", "alias": "22.04" })).'
+          - 'See U(https://documentation.ubuntu.com/lxd/en/latest/api/) for complete API documentation.'
+          - 'Note that C(protocol) accepts two choices: V(lxd) or V(simplestreams).'
         required: false
         type: dict
     state:
@@ -125,7 +123,7 @@ options:
         type: int
     type:
         description:
-          - Instance type can be either C(virtual-machine) or C(container).
+          - Instance type can be either V(virtual-machine) or V(container).
         required: false
         default: container
         choices:
@@ -135,7 +133,7 @@ options:
         version_added: 4.1.0
     wait_for_ipv4_addresses:
         description:
-          - If this is true, the C(lxd_container) waits until IPv4 addresses
+          - If this is V(true), the C(lxd_container) waits until IPv4 addresses
             are set to the all network interfaces in the instance after
             starting or restarting.
         required: false
@@ -143,14 +141,14 @@ options:
         type: bool
     wait_for_container:
         description:
-            - If set to C(true), the tasks will wait till the task reports a
+            - If set to V(true), the tasks will wait till the task reports a
               success status when performing container operations.
         default: false
         type: bool
         version_added: 4.4.0
     force_stop:
         description:
-          - If this is true, the C(lxd_container) forces to stop the instance
+          - If this is V(true), the C(lxd_container) forces to stop the instance
             when it stops or restarts the instance.
         required: false
         default: false
@@ -201,11 +199,15 @@ notes:
     2.1, the later requires python to be installed in the instance which can
     be done with the command module.
   - You can copy a file from the host to the instance
-    with the Ansible M(ansible.builtin.copy) and M(ansible.builtin.template) module and the C(community.general.lxd) connection plugin.
+    with the Ansible M(ansible.builtin.copy) and M(ansible.builtin.template) module
+    and the P(community.general.lxd#connection) connection plugin.
     See the example below.
   - You can copy a file in the created instance to the localhost
     with C(command=lxc file pull instance_name/dir/filename filename).
     See the first example below.
+  - linuxcontainers.org has phased out LXC/LXD support with March 2024
+    (U(https://discuss.linuxcontainers.org/t/important-notice-for-lxd-users-image-server/18479)).
+    Currently only Ubuntu is still providing images.
 '''
 
 EXAMPLES = '''
@@ -221,9 +223,9 @@ EXAMPLES = '''
         source:
           type: image
           mode: pull
-          server: https://images.linuxcontainers.org
-          protocol: lxd # if you get a 404, try setting protocol: simplestreams
-          alias: ubuntu/xenial/amd64
+          server: https://cloud-images.ubuntu.com/releases/
+          protocol: simplestreams
+          alias: "22.04"
         profiles: ["default"]
         wait_for_ipv4_addresses: true
         timeout: 600
@@ -265,6 +267,26 @@ EXAMPLES = '''
         wait_for_ipv4_addresses: true
         timeout: 600
 
+# An example of creating a ubuntu-minial container
+- hosts: localhost
+  connection: local
+  tasks:
+    - name: Create a started container
+      community.general.lxd_container:
+        name: mycontainer
+        ignore_volatile_options: true
+        state: started
+        source:
+          type: image
+          mode: pull
+          # Provides Ubuntu minimal images
+          server: https://cloud-images.ubuntu.com/minimal/releases/
+          protocol: simplestreams
+          alias: "22.04"
+        profiles: ["default"]
+        wait_for_ipv4_addresses: true
+        timeout: 600
+
 # An example for creating container in project other than default
 - hosts: localhost
   connection: local
@@ -279,8 +301,8 @@ EXAMPLES = '''
           protocol: simplestreams
           type: image
           mode: pull
-          server: https://images.linuxcontainers.org
-          alias: ubuntu/20.04/cloud
+          server: https://cloud-images.ubuntu.com/releases/
+          alias: "22.04"
         profiles: ["default"]
         wait_for_ipv4_addresses: true
         timeout: 600
@@ -348,7 +370,7 @@ EXAMPLES = '''
         source:
           type: image
           mode: pull
-          alias: ubuntu/xenial/amd64
+          alias: "22.04"
         target: node01
 
     - name: Create container on another node
@@ -359,7 +381,7 @@ EXAMPLES = '''
         source:
           type: image
           mode: pull
-          alias: ubuntu/xenial/amd64
+          alias: "22.04"
         target: node02
 
 # An example for creating a virtual machine
@@ -378,7 +400,7 @@ EXAMPLES = '''
           protocol: simplestreams
           type: image
           mode: pull
-          server: https://images.linuxcontainers.org
+          server: [...] # URL to the image server
           alias: debian/11
         timeout: 600
 '''
@@ -437,12 +459,12 @@ ANSIBLE_LXD_DEFAULT_URL = 'unix:/var/lib/lxd/unix.socket'
 
 # CONFIG_PARAMS is a list of config attribute names.
 CONFIG_PARAMS = [
-    'architecture', 'config', 'devices', 'ephemeral', 'profiles', 'source'
+    'architecture', 'config', 'devices', 'ephemeral', 'profiles', 'source', 'type'
 ]
 
 # CONFIG_CREATION_PARAMS is a list of attribute names that are only applied
 # on instance creation.
-CONFIG_CREATION_PARAMS = ['source']
+CONFIG_CREATION_PARAMS = ['source', 'type']
 
 
 class LXDContainerManagement(object):
@@ -467,13 +489,6 @@ class LXDContainerManagement(object):
         self.wait_for_container = self.module.params['wait_for_container']
 
         self.type = self.module.params['type']
-
-        # LXD Rest API provides additional endpoints for creating containers and virtual-machines.
-        self.api_endpoint = None
-        if self.type == 'container':
-            self.api_endpoint = '/1.0/containers'
-        elif self.type == 'virtual-machine':
-            self.api_endpoint = '/1.0/virtual-machines'
 
         self.key_file = self.module.params.get('client_key')
         if self.key_file is None:
@@ -500,6 +515,18 @@ class LXDContainerManagement(object):
             )
         except LXDClientException as e:
             self.module.fail_json(msg=e.msg)
+
+        # LXD (3.19) Rest API provides instances endpoint, failback to containers and virtual-machines
+        # https://documentation.ubuntu.com/lxd/en/latest/rest-api/#instances-containers-and-virtual-machines
+        self.api_endpoint = '/1.0/instances'
+        check_api_endpoint = self.client.do('GET', '{0}?project='.format(self.api_endpoint), ok_error_codes=[404])
+
+        if check_api_endpoint['error_code'] == 404:
+            if self.type == 'container':
+                self.api_endpoint = '/1.0/containers'
+            elif self.type == 'virtual-machine':
+                self.api_endpoint = '/1.0/virtual-machines'
+
         self.trust_password = self.module.params.get('trust_password', None)
         self.actions = []
         self.diff = {'before': {}, 'after': {}}
@@ -552,6 +579,8 @@ class LXDContainerManagement(object):
             url = '{0}?{1}'.format(url, urlencode(url_params))
         config = self.config.copy()
         config['name'] = self.name
+        if self.type not in self.api_endpoint:
+            config['type'] = self.type
         if not self.module.check_mode:
             self.client.do('POST', url, config, wait_for_container=self.wait_for_container)
         self.actions.append('create')
@@ -587,8 +616,15 @@ class LXDContainerManagement(object):
     def _instance_ipv4_addresses(self, ignore_devices=None):
         ignore_devices = ['lo'] if ignore_devices is None else ignore_devices
         data = (self._get_instance_state_json() or {}).get('metadata', None) or {}
-        network = dict((k, v) for k, v in (data.get('network', None) or {}).items() if k not in ignore_devices)
-        addresses = dict((k, [a['address'] for a in v['addresses'] if a['family'] == 'inet']) for k, v in network.items())
+        network = {
+            k: v
+            for k, v in (data.get('network') or {}).items()
+            if k not in ignore_devices
+        }
+        addresses = {
+            k: [a['address'] for a in v['addresses'] if a['family'] == 'inet']
+            for k, v in network.items()
+        }
         return addresses
 
     @staticmethod
@@ -719,19 +755,22 @@ class LXDContainerManagement(object):
     def run(self):
         """Run the main method."""
 
+        def adjust_content(content):
+            return content if not isinstance(content, dict) else {
+                k: v for k, v in content.items() if not (self.ignore_volatile_options and k.startswith('volatile.'))
+            }
+
         try:
             if self.trust_password is not None:
                 self.client.authenticate(self.trust_password)
             self.ignore_volatile_options = self.module.params.get('ignore_volatile_options')
 
             self.old_instance_json = self._get_instance_json()
-            self.old_sections = dict(
-                (section, content) if not isinstance(content, dict)
-                else (section, dict((k, v) for k, v in content.items()
-                                    if not (self.ignore_volatile_options and k.startswith('volatile.'))))
-                for section, content in (self.old_instance_json.get('metadata', None) or {}).items()
+            self.old_sections = {
+                section: adjust_content(content)
+                for section, content in (self.old_instance_json.get('metadata') or {}).items()
                 if section in set(CONFIG_PARAMS) - set(CONFIG_CREATION_PARAMS)
-            )
+            }
 
             self.diff['before']['instance'] = self.old_sections
             # preliminary, will be overwritten in _apply_instance_configs() if called

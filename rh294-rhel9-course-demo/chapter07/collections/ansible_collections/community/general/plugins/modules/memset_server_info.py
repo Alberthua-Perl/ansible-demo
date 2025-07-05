@@ -15,10 +15,9 @@ author: "Simon Weald (@glitchcrab)"
 short_description: Retrieve server information
 notes:
     - An API key generated via the Memset customer control panel is needed with the
-      following minimum scope - I(server.info).
+      following minimum scope - C(server.info).
 description:
     - Retrieve server information.
-    - This module was called C(memset_server_facts) before Ansible 2.9. The usage did not change.
 extends_documentation_fragment:
     - community.general.attributes
     - community.general.attributes.info_module
@@ -36,7 +35,7 @@ options:
         required: true
         type: str
         description:
-            - The server product name (i.e. C(testyaa1)).
+            - The server product name (that is, C(testyaa1)).
 '''
 
 EXAMPLES = '''
@@ -289,9 +288,7 @@ def main():
     )
 
     # populate the dict with the user-provided vars.
-    args = dict()
-    for key, arg in module.params.items():
-        args[key] = arg
+    args = dict(module.params)
 
     retvals = get_facts(args)
 

@@ -44,7 +44,7 @@ class ActionModule(ActionBase):
 
     def _async_result(self, async_status_args, task_vars, timeout):
         '''
-        Retrieve results of the asynchonous task, and display them in place of
+        Retrieve results of the asynchronous task, and display them in place of
         the async wrapper results (those with the ansible_job_id key).
         '''
         async_status = self._task.copy()
@@ -87,6 +87,10 @@ class ActionModule(ActionBase):
             check_mode = self._play_context.check_mode
             max_timeout = self._connection._play_context.timeout
             module_args = self._task.args
+
+            async_status_args = {}
+            starter_cmd = None
+            confirm_cmd = None
 
             if module_args.get('state', None) == 'restored':
                 if not wrap_async:

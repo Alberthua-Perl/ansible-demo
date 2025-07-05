@@ -36,8 +36,8 @@ options:
     state:
         description:
             - State of the identity provider.
-            - On C(present), the identity provider will be created if it does not yet exist, or updated with the parameters you provide.
-            - On C(absent), the identity provider will be removed if it exists.
+            - On V(present), the identity provider will be created if it does not yet exist, or updated with the parameters you provide.
+            - On V(absent), the identity provider will be removed if it exists.
         default: 'present'
         type: str
         choices:
@@ -120,16 +120,16 @@ options:
 
     provider_id:
         description:
-            - Protocol used by this provider (supported values are C(oidc) or C(saml)).
+            - Protocol used by this provider (supported values are V(oidc) or V(saml)).
         aliases:
             - providerId
         type: str
 
     config:
         description:
-            - Dict specifying the configuration options for the provider; the contents differ depending on the value of I(providerId).
-              Examples are given below for C(oidc) and C(saml). It is easiest to obtain valid config values by dumping an already-existing
-              identity provider configuration through check-mode in the I(existing) field.
+            - Dict specifying the configuration options for the provider; the contents differ depending on the value of O(provider_id).
+              Examples are given below for V(oidc) and V(saml). It is easiest to obtain valid config values by dumping an already-existing
+              identity provider configuration through check-mode in the RV(existing) field.
         type: dict
         suboptions:
             hide_on_login_page:
@@ -271,7 +271,8 @@ options:
 
             config:
                 description:
-                    - Dict specifying the configuration options for the mapper; the contents differ depending on the value of I(identityProviderMapper).
+                    - Dict specifying the configuration options for the mapper; the contents differ depending on the value of
+                      O(mappers[].identityProviderMapper).
                 type: dict
 
 extends_documentation_fragment:
@@ -436,7 +437,7 @@ def sanitize(idp):
     idpcopy = deepcopy(idp)
     if 'config' in idpcopy:
         if 'clientSecret' in idpcopy['config']:
-            idpcopy['clientSecret'] = '**********'
+            idpcopy['config']['clientSecret'] = '**********'
     return idpcopy
 
 
@@ -444,6 +445,15 @@ def get_identity_provider_with_mappers(kc, alias, realm):
     idp = kc.get_identity_provider(alias, realm)
     if idp is not None:
         idp['mappers'] = sorted(kc.get_identity_provider_mappers(alias, realm), key=lambda x: x.get('name'))
+        # clientSecret returned by API when using `get_identity_provider(alias, realm)` is always **********
+        # to detect changes to the secret, we get the actual cleartext secret from the full realm info
+        if 'config' in idp:
+            if 'clientSecret' in idp['config']:
+                for idp_from_realm in kc.get_realm_by_id(realm).get('identityProviders', []):
+                    if idp_from_realm['internalId'] == idp['internalId']:
+                        cleartext_secret = idp_from_realm.get('config', {}).get('clientSecret')
+                        if cleartext_secret:
+                            idp['config']['clientSecret'] = cleartext_secret
     if idp is None:
         idp = {}
     return idp
@@ -524,7 +534,7 @@ def main():
     # special handling of mappers list to allow change detection
     if module.params.get('mappers') is not None:
         for change in module.params['mappers']:
-            change = dict((k, v) for k, v in change.items() if change[k] is not None)
+            change = {k: v for k, v in change.items() if v is not None}
             if change.get('id') is None and change.get('name') is None:
                 module.fail_json(msg='Either `name` or `id` has to be specified on each mapper.')
             if before_idp == dict():
@@ -541,10 +551,14 @@ def main():
                     old_mapper = dict()
             new_mapper = old_mapper.copy()
             new_mapper.update(change)
-            if new_mapper != old_mapper:
-                if changeset.get('mappers') is None:
-                    changeset['mappers'] = list()
-                changeset['mappers'].append(new_mapper)
+
+            if changeset.get('mappers') is None:
+                changeset['mappers'] = list()
+            # eventually this holds all desired mappers, unchanged, modified and newly added
+            changeset['mappers'].append(new_mapper)
+
+        # ensure idempotency in case module.params.mappers is not sorted by name
+        changeset['mappers'] = sorted(changeset['mappers'], key=lambda x: x.get('id') if x.get('name') is None else x['name'])
 
     # Prepare the desired values using the existing values (non-existence results in a dict that is save to use as a basis)
     desired_idp = before_idp.copy()
@@ -611,10 +625,17 @@ def main():
             # do the update
             desired_idp = desired_idp.copy()
             updated_mappers = desired_idp.pop('mappers', [])
+            original_mappers = list(before_idp.get('mappers', []))
+
             kc.update_identity_provider(desired_idp, realm)
             for mapper in updated_mappers:
                 if mapper.get('id') is not None:
-                    kc.update_identity_provider_mapper(mapper, alias, realm)
+                    # only update existing if there is a change
+                    for i, orig in enumerate(original_mappers):
+                        if mapper['id'] == orig['id']:
+                            del original_mappers[i]
+                            if mapper != orig:
+                                kc.update_identity_provider_mapper(mapper, alias, realm)
                 else:
                     if mapper.get('identityProviderAlias') is None:
                         mapper['identityProviderAlias'] = alias

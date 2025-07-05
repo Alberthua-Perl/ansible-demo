@@ -8,8 +8,7 @@
 from __future__ import absolute_import, division, print_function
 __metaclass__ = type
 
-DOCUMENTATION = r'''
----
+DOCUMENTATION = r"""
 module: gitlab_project_badge
 short_description: Manage project badges on GitLab Server
 version_added: 6.1.0
@@ -39,8 +38,8 @@ options:
   state:
     description:
       - State of the badge in the project.
-      - On C(present), it adds a badge to a GitLab project.
-      - On C(absent), it removes a badge from a GitLab project.
+      - On V(present), it adds a badge to a GitLab project.
+      - On V(absent), it removes a badge from a GitLab project.
     choices: ['present', 'absent']
     default: 'present'
     type: str
@@ -57,9 +56,9 @@ options:
       - A badge is identified by this URL.
     required: true
     type: str
-'''
+"""
 
-EXAMPLES = r'''
+EXAMPLES = r"""
 - name: Add a badge to a GitLab Project
   community.general.gitlab_project_badge:
     api_url: 'https://example.gitlab.com'
@@ -77,12 +76,12 @@ EXAMPLES = r'''
     state: absent
     link_url: 'https://example.gitlab.com/%{project_path}'
     image_url: 'https://example.gitlab.com/%{project_path}/badges/%{default_branch}/pipeline.svg'
-'''
+"""
 
-RETURN = '''
+RETURN = r"""
 badge:
   description: The badge information.
-  returned: when I(state=present)
+  returned: when O(state=present)
   type: dict
   sample:
     id: 1
@@ -91,13 +90,13 @@ badge:
     rendered_link_url: 'http://example.com/ci_status.svg?project=example-org/example-project&ref=master'
     rendered_image_url: 'https://shields.io/my/badge'
     kind: project
-'''
+"""
 
 from ansible.module_utils.api import basic_auth_argument_spec
 from ansible.module_utils.basic import AnsibleModule
 
 from ansible_collections.community.general.plugins.module_utils.gitlab import (
-    auth_argument_spec, gitlab_authentication, find_project, ensure_gitlab_package
+    auth_argument_spec, gitlab_authentication, find_project, list_all_kwargs
 )
 
 
@@ -105,7 +104,7 @@ def present_strategy(module, gl, project, wished_badge):
     changed = False
 
     existing_badge = None
-    for badge in project.badges.list(iterator=True):
+    for badge in project.badges.list(**list_all_kwargs):
         if badge.image_url == wished_badge["image_url"]:
             existing_badge = badge
             break
@@ -135,7 +134,7 @@ def absent_strategy(module, gl, project, wished_badge):
     changed = False
 
     existing_badge = None
-    for badge in project.badges.list(iterator=True):
+    for badge in project.badges.list(**list_all_kwargs):
         if badge.image_url == wished_badge["image_url"]:
             existing_badge = badge
             break
@@ -159,12 +158,11 @@ state_strategy = {
 
 
 def core(module):
-    ensure_gitlab_package(module)
+    # check prerequisites and connect to gitlab server
+    gl = gitlab_authentication(module)
 
     gitlab_project = module.params['project']
     state = module.params['state']
-
-    gl = gitlab_authentication(module)
 
     project = find_project(gl, gitlab_project)
     # project doesn't exist

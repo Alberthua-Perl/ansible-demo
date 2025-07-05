@@ -7,35 +7,35 @@
 from __future__ import (absolute_import, division, print_function)
 __metaclass__ = type
 
-DOCUMENTATION = '''
-    author: Unknown (!UNKNOWN)
-    name: selective
-    type: stdout
-    requirements:
-      - set as main display callback
-    short_description: only print certain tasks
-    description:
-      - This callback only prints tasks that have been tagged with C(print_action) or that have failed.
-        This allows operators to focus on the tasks that provide value only.
-      - Tasks that are not printed are placed with a C(.).
-      - If you increase verbosity all tasks are printed.
-    options:
-      nocolor:
-        default: false
-        description: This setting allows suppressing colorizing output.
-        env:
-          - name: ANSIBLE_NOCOLOR
-          - name: ANSIBLE_SELECTIVE_DONT_COLORIZE
-        ini:
-          - section: defaults
-            key: nocolor
-        type: boolean
-'''
+DOCUMENTATION = r"""
+author: Unknown (!UNKNOWN)
+name: selective
+type: stdout
+requirements:
+  - set as main display callback
+short_description: only print certain tasks
+description:
+  - This callback only prints tasks that have been tagged with C(print_action) or that have failed. This allows operators
+    to focus on the tasks that provide value only.
+  - Tasks that are not printed are placed with a C(.).
+  - If you increase verbosity all tasks are printed.
+options:
+  nocolor:
+    default: false
+    description: This setting allows suppressing colorizing output.
+    env:
+      - name: ANSIBLE_NOCOLOR
+      - name: ANSIBLE_SELECTIVE_DONT_COLORIZE
+    ini:
+      - section: defaults
+        key: nocolor
+    type: boolean
+"""
 
-EXAMPLES = """
-  - ansible.builtin.debug: msg="This will not be printed"
-  - ansible.builtin.debug: msg="But this will"
-    tags: [print_action]
+EXAMPLES = r"""
+- ansible.builtin.debug: msg="This will not be printed"
+- ansible.builtin.debug: msg="But this will"
+  tags: [print_action]
 """
 
 import difflib
@@ -44,26 +44,17 @@ from ansible import constants as C
 from ansible.plugins.callback import CallbackBase
 from ansible.module_utils.common.text.converters import to_text
 
-try:
-    codeCodes = C.COLOR_CODES
-except AttributeError:
-    # This constant was moved to ansible.constants in
-    # https://github.com/ansible/ansible/commit/1202dd000f10b0e8959019484f1c3b3f9628fc67
-    # (will be included in ansible-core 2.11.0). For older Ansible/ansible-base versions,
-    # we include from the original location.
-    from ansible.utils.color import codeCodes
-
 
 DONT_COLORIZE = False
 COLORS = {
     'normal': '\033[0m',
-    'ok': '\033[{0}m'.format(codeCodes[C.COLOR_OK]),
+    'ok': '\033[{0}m'.format(C.COLOR_CODES[C.COLOR_OK]),
     'bold': '\033[1m',
     'not_so_bold': '\033[1m\033[34m',
-    'changed': '\033[{0}m'.format(codeCodes[C.COLOR_CHANGED]),
-    'failed': '\033[{0}m'.format(codeCodes[C.COLOR_ERROR]),
+    'changed': '\033[{0}m'.format(C.COLOR_CODES[C.COLOR_CHANGED]),
+    'failed': '\033[{0}m'.format(C.COLOR_CODES[C.COLOR_ERROR]),
     'endc': '\033[0m',
-    'skipped': '\033[{0}m'.format(codeCodes[C.COLOR_SKIP]),
+    'skipped': '\033[{0}m'.format(C.COLOR_CODES[C.COLOR_SKIP]),
 }
 
 
@@ -115,8 +106,8 @@ class CallbackModule(CallbackBase):
             line_length = 120
             if self.last_skipped:
                 print()
-            msg = colorize("# {0} {1}".format(task_name,
-                                              '*' * (line_length - len(task_name))), 'bold')
+            line = "# {0} ".format(task_name)
+            msg = colorize("{0}{1}".format(line, '*' * (line_length - len(line))), 'bold')
             print(msg)
 
     def _indent_text(self, text, indent_level):

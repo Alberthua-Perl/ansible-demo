@@ -5,69 +5,69 @@
 from __future__ import (absolute_import, division, print_function)
 __metaclass__ = type
 
-DOCUMENTATION = '''
-    author: Victor Martinez (@v1v)  <VictorMartinezRubio@gmail.com>
-    name: elastic
-    type: notification
-    short_description: Create distributed traces for each Ansible task in Elastic APM
-    version_added: 3.8.0
+DOCUMENTATION = r"""
+author: Victor Martinez (@v1v)  <VictorMartinezRubio@gmail.com>
+name: elastic
+type: notification
+short_description: Create distributed traces for each Ansible task in Elastic APM
+version_added: 3.8.0
+description:
+  - This callback creates distributed traces for each Ansible task in Elastic APM.
+  - You can configure the plugin with environment variables.
+  - See U(https://www.elastic.co/guide/en/apm/agent/python/current/configuration.html).
+options:
+  hide_task_arguments:
+    default: false
+    type: bool
     description:
-      - This callback creates distributed traces for each Ansible task in Elastic APM.
-      - You can configure the plugin with environment variables.
-      - See U(https://www.elastic.co/guide/en/apm/agent/python/current/configuration.html).
-    options:
-      hide_task_arguments:
-        default: false
-        type: bool
-        description:
-          - Hide the arguments for a task.
-        env:
-          - name: ANSIBLE_OPENTELEMETRY_HIDE_TASK_ARGUMENTS
-      apm_service_name:
-        default: ansible
-        type: str
-        description:
-          - The service name resource attribute.
-        env:
-          - name: ELASTIC_APM_SERVICE_NAME
-      apm_server_url:
-        type: str
-        description:
-          - Use the APM server and its environment variables.
-        env:
-          - name: ELASTIC_APM_SERVER_URL
-      apm_secret_token:
-        type: str
-        description:
-          - Use the APM server token
-        env:
-          - name: ELASTIC_APM_SECRET_TOKEN
-      apm_api_key:
-        type: str
-        description:
-          - Use the APM API key
-        env:
-          - name: ELASTIC_APM_API_KEY
-      apm_verify_server_cert:
-        default: true
-        type: bool
-        description:
-          - Verifies the SSL certificate if an HTTPS connection.
-        env:
-          - name: ELASTIC_APM_VERIFY_SERVER_CERT
-      traceparent:
-        type: str
-        description:
-          - The L(W3C Trace Context header traceparent,https://www.w3.org/TR/trace-context-1/#traceparent-header).
-        env:
-          - name: TRACEPARENT
-    requirements:
-      - elastic-apm (Python library)
-'''
+      - Hide the arguments for a task.
+    env:
+      - name: ANSIBLE_OPENTELEMETRY_HIDE_TASK_ARGUMENTS
+  apm_service_name:
+    default: ansible
+    type: str
+    description:
+      - The service name resource attribute.
+    env:
+      - name: ELASTIC_APM_SERVICE_NAME
+  apm_server_url:
+    type: str
+    description:
+      - Use the APM server and its environment variables.
+    env:
+      - name: ELASTIC_APM_SERVER_URL
+  apm_secret_token:
+    type: str
+    description:
+      - Use the APM server token.
+    env:
+      - name: ELASTIC_APM_SECRET_TOKEN
+  apm_api_key:
+    type: str
+    description:
+      - Use the APM API key.
+    env:
+      - name: ELASTIC_APM_API_KEY
+  apm_verify_server_cert:
+    default: true
+    type: bool
+    description:
+      - Verifies the SSL certificate if an HTTPS connection.
+    env:
+      - name: ELASTIC_APM_VERIFY_SERVER_CERT
+  traceparent:
+    type: str
+    description:
+      - The L(W3C Trace Context header traceparent,https://www.w3.org/TR/trace-context-1/#traceparent-header).
+    env:
+      - name: TRACEPARENT
+requirements:
+  - elastic-apm (Python library)
+"""
 
 
-EXAMPLES = '''
-examples: |
+EXAMPLES = r"""
+examples: |-
   Enable the plugin in ansible.cfg:
     [defaults]
     callbacks_enabled = community.general.elastic
@@ -76,7 +76,7 @@ examples: |
     export ELASTIC_APM_SERVER_URL=<your APM server URL)>
     export ELASTIC_APM_SERVICE_NAME=your_service_name
     export ELASTIC_APM_API_KEY=your_APM_API_KEY
-'''
+"""
 
 import getpass
 import socket
@@ -84,6 +84,7 @@ import time
 import uuid
 
 from collections import OrderedDict
+from contextlib import closing
 from os.path import basename
 
 from ansible.errors import AnsibleError, AnsibleRuntimeError
@@ -201,24 +202,25 @@ class ElasticSource(object):
 
         apm_cli = self.init_apm_client(apm_server_url, apm_service_name, apm_verify_server_cert, apm_secret_token, apm_api_key)
         if apm_cli:
-            instrument()  # Only call this once, as early as possible.
-            if traceparent:
-                parent = trace_parent_from_string(traceparent)
-                apm_cli.begin_transaction("Session", trace_parent=parent, start=parent_start_time)
-            else:
-                apm_cli.begin_transaction("Session", start=parent_start_time)
-            # Populate trace metadata attributes
-            if self.ansible_version is not None:
-                label(ansible_version=self.ansible_version)
-            label(ansible_session=self.session, ansible_host_name=self.host, ansible_host_user=self.user)
-            if self.ip_address is not None:
-                label(ansible_host_ip=self.ip_address)
+            with closing(apm_cli):
+                instrument()  # Only call this once, as early as possible.
+                if traceparent:
+                    parent = trace_parent_from_string(traceparent)
+                    apm_cli.begin_transaction("Session", trace_parent=parent, start=parent_start_time)
+                else:
+                    apm_cli.begin_transaction("Session", start=parent_start_time)
+                # Populate trace metadata attributes
+                if self.ansible_version is not None:
+                    label(ansible_version=self.ansible_version)
+                label(ansible_session=self.session, ansible_host_name=self.host, ansible_host_user=self.user)
+                if self.ip_address is not None:
+                    label(ansible_host_ip=self.ip_address)
 
-            for task_data in tasks:
-                for host_uuid, host_data in task_data.host_data.items():
-                    self.create_span_data(apm_cli, task_data, host_data)
+                for task_data in tasks:
+                    for host_uuid, host_data in task_data.host_data.items():
+                        self.create_span_data(apm_cli, task_data, host_data)
 
-            apm_cli.end_transaction(name=__name__, result=status, duration=end_time - parent_start_time)
+                apm_cli.end_transaction(name=__name__, result=status, duration=end_time - parent_start_time)
 
     def create_span_data(self, apm_cli, task_data, host_data):
         """ create the span with the given TaskData and HostData """

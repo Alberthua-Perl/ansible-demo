@@ -52,7 +52,7 @@
 - name: ensure session was created
   assert:
     that:
-      - test_session_found|default(False)
+      - test_session_found|default(false)
 
 - name: fetch info about a session
   consul_session:
@@ -74,61 +74,6 @@
 - assert:
     that:
       - result is failed
-
-- name: ensure unknown scheme fails
-  consul_session:
-    state: info
-    id: '{{ session_id }}'
-    scheme: non_existent
-  register: result
-  ignore_errors: true
-
-- assert:
-    that:
-      - result is failed
-
-- name: ensure SSL certificate is checked
-  consul_session:
-    state: info
-    id: '{{ session_id }}'
-    port: 8501
-    scheme: https
-  register: result
-  ignore_errors: true
-
-- name: previous task should fail since certificate is not known
-  assert:
-    that:
-      - result is failed
-      - "'certificate verify failed' in result.msg"
-
-- name: ensure SSL certificate isn't checked when validate_certs is disabled
-  consul_session:
-    state: info
-    id: '{{ session_id }}'
-    port: 8501
-    scheme: https
-    validate_certs: false
-  register: result
-
-- name: previous task should succeed since certificate isn't checked
-  assert:
-    that:
-      - result is changed
-
-- name: ensure a secure connection is possible
-  consul_session:
-    state: info
-    id: '{{ session_id }}'
-    port: 8501
-    scheme: https
-  environment:
-    REQUESTS_CA_BUNDLE: '{{ remote_dir }}/cert.pem'
-  register: result
-
-- assert:
-    that:
-      - result is changed
 
 - name: delete a session
   consul_session:

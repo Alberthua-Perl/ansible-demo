@@ -20,6 +20,8 @@ attributes:
     support: none
   diff_mode:
     support: none
+  action_group:
+    version_added: 9.0.0
 options:
   node:
     description:
@@ -28,18 +30,18 @@ options:
   src:
     description:
       - Path to uploaded file.
-      - Required only for I(state=present).
+      - Required only for O(state=present).
     type: path
   template:
     description:
       - The template name.
-      - Required for I(state=absent) to delete a template.
-      - Required for I(state=present) to download an appliance container template (pveam).
+      - Required for O(state=absent) to delete a template.
+      - Required for O(state=present) to download an appliance container template (pveam).
     type: str
   content_type:
     description:
       - Content type.
-      - Required only for I(state=present).
+      - Required only for O(state=present).
     type: str
     default: 'vztmpl'
     choices: ['vztmpl', 'iso']
@@ -55,7 +57,7 @@ options:
     default: 30
   force:
     description:
-      - It can only be used with I(state=present), existing template will be overwritten.
+      - It can only be used with O(state=present), existing template will be overwritten.
     type: bool
     default: false
   state:
@@ -65,9 +67,11 @@ options:
     choices: ['present', 'absent']
     default: present
 notes:
-  - Requires C(proxmoxer) and C(requests) modules on host. This modules can be installed with M(ansible.builtin.pip).
+  - Requires C(proxmoxer) and C(requests) modules on host. Those modules can be installed with M(ansible.builtin.pip).
+  - C(proxmoxer) >= 1.2.0 requires C(requests_toolbelt) to upload files larger than 256 MB.
 author: Sergei Antipov (@UnderGreen)
 extends_documentation_fragment:
+  - community.general.proxmox.actiongroup_proxmox
   - community.general.proxmox.documentation
   - community.general.attributes
 '''
@@ -123,15 +127,29 @@ EXAMPLES = '''
 
 import os
 import time
+import traceback
 
-from ansible.module_utils.basic import AnsibleModule
+from ansible.module_utils.basic import AnsibleModule, missing_required_lib
 from ansible_collections.community.general.plugins.module_utils.proxmox import (proxmox_auth_argument_spec, ProxmoxAnsible)
+from ansible_collections.community.general.plugins.module_utils.version import LooseVersion
+
+REQUESTS_TOOLBELT_ERR = None
+try:
+    # requests_toolbelt is used internally by proxmoxer module
+    import requests_toolbelt  # noqa: F401, pylint: disable=unused-import
+    HAS_REQUESTS_TOOLBELT = True
+except ImportError:
+    HAS_REQUESTS_TOOLBELT = False
+    REQUESTS_TOOLBELT_ERR = traceback.format_exc()
 
 
 class ProxmoxTemplateAnsible(ProxmoxAnsible):
-    def get_template(self, node, storage, content_type, template):
-        return [True for tmpl in self.proxmox_api.nodes(node).storage(storage).content.get()
-                if tmpl['volid'] == '%s:%s/%s' % (storage, content_type, template)]
+    def has_template(self, node, storage, content_type, template):
+        volid = '%s:%s/%s' % (storage, content_type, template)
+        try:
+            return any(tmpl['volid'] == volid for tmpl in self.proxmox_api.nodes(node).storage(storage).content.get())
+        except Exception as e:
+            self.module.fail_json(msg="Failed to retrieve template '%s': %s" % (volid, e))
 
     def task_status(self, node, taskid, timeout):
         """
@@ -143,24 +161,36 @@ class ProxmoxTemplateAnsible(ProxmoxAnsible):
             timeout = timeout - 1
             if timeout == 0:
                 self.module.fail_json(msg='Reached timeout while waiting for uploading/downloading template. Last line in task before timeout: %s' %
-                                      self.proxmox_api.node(node).tasks(taskid).log.get()[:1])
+                                      self.proxmox_api.nodes(node).tasks(taskid).log.get()[:1])
 
             time.sleep(1)
         return False
 
     def upload_template(self, node, storage, content_type, realpath, timeout):
-        taskid = self.proxmox_api.nodes(node).storage(storage).upload.post(content=content_type, filename=open(realpath, 'rb'))
-        return self.task_status(node, taskid, timeout)
+        stats = os.stat(realpath)
+        if (LooseVersion(self.proxmoxer_version) >= LooseVersion('1.2.0') and
+                stats.st_size > 268435456 and not HAS_REQUESTS_TOOLBELT):
+            self.module.fail_json(msg="'requests_toolbelt' module is required to upload files larger than 256MB",
+                                  exception=missing_required_lib('requests_toolbelt'))
+
+        try:
+            taskid = self.proxmox_api.nodes(node).storage(storage).upload.post(content=content_type, filename=open(realpath, 'rb'))
+            return self.task_status(node, taskid, timeout)
+        except Exception as e:
+            self.module.fail_json(msg="Uploading template %s failed with error: %s" % (realpath, e))
 
     def download_template(self, node, storage, template, timeout):
-        taskid = self.proxmox_api.nodes(node).aplinfo.post(storage=storage, template=template)
-        return self.task_status(node, taskid, timeout)
+        try:
+            taskid = self.proxmox_api.nodes(node).aplinfo.post(storage=storage, template=template)
+            return self.task_status(node, taskid, timeout)
+        except Exception as e:
+            self.module.fail_json(msg="Downloading template %s failed with error: %s" % (template, e))
 
     def delete_template(self, node, storage, content_type, template, timeout):
         volid = '%s:%s/%s' % (storage, content_type, template)
         self.proxmox_api.nodes(node).storage(storage).content.delete(volid)
         while timeout:
-            if not self.get_template(node, storage, content_type, template):
+            if not self.has_template(node, storage, content_type, template):
                 return True
             timeout = timeout - 1
             if timeout == 0:
@@ -199,42 +229,39 @@ def main():
     timeout = module.params['timeout']
 
     if state == 'present':
-        try:
-            content_type = module.params['content_type']
-            src = module.params['src']
+        content_type = module.params['content_type']
+        src = module.params['src']
 
-            # download appliance template
-            if content_type == 'vztmpl' and not src:
-                template = module.params['template']
+        # download appliance template
+        if content_type == 'vztmpl' and not src:
+            template = module.params['template']
 
-                if not template:
-                    module.fail_json(msg='template param for downloading appliance template is mandatory')
+            if not template:
+                module.fail_json(msg='template param for downloading appliance template is mandatory')
 
-                if proxmox.get_template(node, storage, content_type, template) and not module.params['force']:
-                    module.exit_json(changed=False, msg='template with volid=%s:%s/%s already exists' % (storage, content_type, template))
+            if proxmox.has_template(node, storage, content_type, template) and not module.params['force']:
+                module.exit_json(changed=False, msg='template with volid=%s:%s/%s already exists' % (storage, content_type, template))
 
-                if proxmox.download_template(node, storage, template, timeout):
-                    module.exit_json(changed=True, msg='template with volid=%s:%s/%s downloaded' % (storage, content_type, template))
+            if proxmox.download_template(node, storage, template, timeout):
+                module.exit_json(changed=True, msg='template with volid=%s:%s/%s downloaded' % (storage, content_type, template))
 
-            template = os.path.basename(src)
-            if proxmox.get_template(node, storage, content_type, template) and not module.params['force']:
-                module.exit_json(changed=False, msg='template with volid=%s:%s/%s is already exists' % (storage, content_type, template))
-            elif not src:
-                module.fail_json(msg='src param to uploading template file is mandatory')
-            elif not (os.path.exists(src) and os.path.isfile(src)):
-                module.fail_json(msg='template file on path %s not exists' % src)
+        template = os.path.basename(src)
+        if proxmox.has_template(node, storage, content_type, template) and not module.params['force']:
+            module.exit_json(changed=False, msg='template with volid=%s:%s/%s is already exists' % (storage, content_type, template))
+        elif not src:
+            module.fail_json(msg='src param to uploading template file is mandatory')
+        elif not (os.path.exists(src) and os.path.isfile(src)):
+            module.fail_json(msg='template file on path %s not exists' % src)
 
-            if proxmox.upload_template(node, storage, content_type, src, timeout):
-                module.exit_json(changed=True, msg='template with volid=%s:%s/%s uploaded' % (storage, content_type, template))
-        except Exception as e:
-            module.fail_json(msg="uploading/downloading of template %s failed with exception: %s" % (template, e))
+        if proxmox.upload_template(node, storage, content_type, src, timeout):
+            module.exit_json(changed=True, msg='template with volid=%s:%s/%s uploaded' % (storage, content_type, template))
 
     elif state == 'absent':
         try:
             content_type = module.params['content_type']
             template = module.params['template']
 
-            if not proxmox.get_template(node, storage, content_type, template):
+            if not proxmox.has_template(node, storage, content_type, template):
                 module.exit_json(changed=False, msg='template with volid=%s:%s/%s is already deleted' % (storage, content_type, template))
 
             if proxmox.delete_template(node, storage, content_type, template, timeout):

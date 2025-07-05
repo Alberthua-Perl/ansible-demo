@@ -17,7 +17,7 @@ DOCUMENTATION = '''
 module: apk
 short_description: Manages apk packages
 description:
-  - Manages I(apk) packages for Alpine Linux.
+  - Manages C(apk) packages for Alpine Linux.
 author: "Kevin Brebanov (@kbrebanov)"
 extends_documentation_fragment:
   - community.general.attributes
@@ -35,7 +35,9 @@ options:
     default: false
   name:
     description:
-      - A package name, like C(foo), or multiple packages, like C(foo, bar).
+      - A package name, like V(foo), or multiple packages, like V(foo,bar).
+      - Do not include additional whitespace when specifying multiple packages as a string.
+        Prefer YAML lists over comma-separating multiple package names.
     type: list
     elements: str
   no_cache:
@@ -53,15 +55,15 @@ options:
   state:
     description:
       - Indicates the desired package(s) state.
-      - C(present) ensures the package(s) is/are present. C(installed) can be used as an alias.
-      - C(absent) ensures the package(s) is/are absent. C(removed) can be used as an alias.
-      - C(latest) ensures the package(s) is/are present and the latest version(s).
+      - V(present) ensures the package(s) is/are present. V(installed) can be used as an alias.
+      - V(absent) ensures the package(s) is/are absent. V(removed) can be used as an alias.
+      - V(latest) ensures the package(s) is/are present and the latest version(s).
     default: present
     choices: [ "present", "absent", "latest", "installed", "removed" ]
     type: str
   update_cache:
     description:
-      - Update repository indexes. Can be run with other steps or on it's own.
+      - Update repository indexes. Can be run with other steps or on its own.
     type: bool
     default: false
   upgrade:
@@ -72,12 +74,13 @@ options:
   world:
     description:
       - Use a custom world file when checking for explicitly installed packages.
+        The file is used only when a value is provided for O(name), and O(state) is set to V(present) or V(latest).
     type: str
     default: /etc/apk/world
     version_added: 5.4.0
 notes:
-  - 'I(name) and I(upgrade) are mutually exclusive.'
-  - When used with a C(loop:) each package will be processed individually, it is much more efficient to pass the list directly to the I(name) option.
+  - 'O(name) and O(upgrade) are mutually exclusive.'
+  - When used with a C(loop:) each package will be processed individually, it is much more efficient to pass the list directly to the O(name) option.
 '''
 
 EXAMPLES = '''

@@ -7,17 +7,13 @@
 from __future__ import absolute_import, division, print_function
 __metaclass__ = type
 
-# (TODO: remove next line!)
-import atexit  # noqa: F401, pylint: disable=unused-import
-# (TODO: remove next line!)
-import time  # noqa: F401, pylint: disable=unused-import
-# (TODO: remove next line!)
-import re  # noqa: F401, pylint: disable=unused-import
 import traceback
+from time import sleep
 
 PROXMOXER_IMP_ERR = None
 try:
     from proxmoxer import ProxmoxAPI
+    from proxmoxer import __version__ as proxmoxer_version
     HAS_PROXMOXER = True
 except ImportError:
     HAS_PROXMOXER = False
@@ -25,8 +21,6 @@ except ImportError:
 
 
 from ansible.module_utils.basic import env_fallback, missing_required_lib
-# (TODO: remove next line!)
-from ansible.module_utils.common.text.converters import to_native  # noqa: F401, pylint: disable=unused-import
 from ansible_collections.community.general.plugins.module_utils.version import LooseVersion
 
 
@@ -35,6 +29,9 @@ def proxmox_auth_argument_spec():
         api_host=dict(type='str',
                       required=True,
                       fallback=(env_fallback, ['PROXMOX_HOST'])
+                      ),
+        api_port=dict(type='int',
+                      fallback=(env_fallback, ['PROXMOX_PORT'])
                       ),
         api_user=dict(type='str',
                       required=True,
@@ -74,11 +71,14 @@ def ansible_to_proxmox_bool(value):
 
 class ProxmoxAnsible(object):
     """Base class for Proxmox modules"""
+    TASK_TIMED_OUT = 'timeout expired'
+
     def __init__(self, module):
         if not HAS_PROXMOXER:
             module.fail_json(msg=missing_required_lib('proxmoxer'), exception=PROXMOXER_IMP_ERR)
 
         self.module = module
+        self.proxmoxer_version = proxmoxer_version
         self.proxmox_api = self._connect()
         # Test token validity
         try:
@@ -88,6 +88,7 @@ class ProxmoxAnsible(object):
 
     def _connect(self):
         api_host = self.module.params['api_host']
+        api_port = self.module.params['api_port']
         api_user = self.module.params['api_user']
         api_password = self.module.params['api_password']
         api_token_id = self.module.params['api_token_id']
@@ -95,9 +96,15 @@ class ProxmoxAnsible(object):
         validate_certs = self.module.params['validate_certs']
 
         auth_args = {'user': api_user}
+
+        if api_port:
+            auth_args['port'] = api_port
+
         if api_password:
             auth_args['password'] = api_password
         else:
+            if self.proxmoxer_version < LooseVersion('1.1.0'):
+                self.module.fail_json('Using "token_name" and "token_value" require proxmoxer>=1.1.0')
             auth_args['token_name'] = api_token_id
             auth_args['token_value'] = api_token_secret
 
@@ -107,19 +114,30 @@ class ProxmoxAnsible(object):
             self.module.fail_json(msg='%s' % e, exception=traceback.format_exc())
 
     def version(self):
-        apireturn = self.proxmox_api.version.get()
-        return LooseVersion(apireturn['version'])
+        try:
+            apiversion = self.proxmox_api.version.get()
+            return LooseVersion(apiversion['version'])
+        except Exception as e:
+            self.module.fail_json(msg='Unable to retrieve Proxmox VE version: %s' % e)
 
     def get_node(self, node):
-        nodes = [n for n in self.proxmox_api.nodes.get() if n['node'] == node]
+        try:
+            nodes = [n for n in self.proxmox_api.nodes.get() if n['node'] == node]
+        except Exception as e:
+            self.module.fail_json(msg='Unable to retrieve Proxmox VE node: %s' % e)
         return nodes[0] if nodes else None
 
     def get_nextvmid(self):
-        vmid = self.proxmox_api.cluster.nextid.get()
-        return vmid
+        try:
+            return self.proxmox_api.cluster.nextid.get()
+        except Exception as e:
+            self.module.fail_json(msg='Unable to retrieve next free vmid: %s' % e)
 
     def get_vmid(self, name, ignore_missing=False, choose_first_if_multiple=False):
-        vms = [vm['vmid'] for vm in self.proxmox_api.cluster.resources.get(type='vm') if vm.get('name') == name]
+        try:
+            vms = [vm['vmid'] for vm in self.proxmox_api.cluster.resources.get(type='vm') if vm.get('name') == name]
+        except Exception as e:
+            self.module.fail_json(msg='Unable to retrieve list of VMs filtered by name %s: %s' % (name, e))
 
         if not vms:
             if ignore_missing:
@@ -132,7 +150,10 @@ class ProxmoxAnsible(object):
         return vms[0]
 
     def get_vm(self, vmid, ignore_missing=False):
-        vms = [vm for vm in self.proxmox_api.cluster.resources.get(type='vm') if vm['vmid'] == int(vmid)]
+        try:
+            vms = [vm for vm in self.proxmox_api.cluster.resources.get(type='vm') if vm['vmid'] == int(vmid)]
+        except Exception as e:
+            self.module.fail_json(msg='Unable to retrieve list of VMs filtered by vmid %s: %s' % (vmid, e))
 
         if vms:
             return vms[0]
@@ -143,5 +164,70 @@ class ProxmoxAnsible(object):
             self.module.fail_json(msg='VM with vmid %s does not exist in cluster' % vmid)
 
     def api_task_ok(self, node, taskid):
-        status = self.proxmox_api.nodes(node).tasks(taskid).status.get()
-        return status['status'] == 'stopped' and status['exitstatus'] == 'OK'
+        try:
+            status = self.proxmox_api.nodes(node).tasks(taskid).status.get()
+            return status['status'] == 'stopped' and status['exitstatus'] == 'OK'
+        except Exception as e:
+            self.module.fail_json(msg='Unable to retrieve API task ID from node %s: %s' % (node, e))
+
+    def api_task_complete(self, node_name, task_id, timeout):
+        """Wait until the task stops or times out.
+
+        :param node_name: Proxmox node name where the task is running.
+        :param task_id: ID of the running task.
+        :param timeout: Timeout in seconds to wait for the task to complete.
+        :return: Task completion status (True/False) and ``exitstatus`` message when status=False.
+        """
+        status = {}
+        while timeout:
+            try:
+                status = self.proxmox_api.nodes(node_name).tasks(task_id).status.get()
+            except Exception as e:
+                self.module.fail_json(msg='Unable to retrieve API task ID from node %s: %s' % (node_name, e))
+
+            if status['status'] == 'stopped':
+                if status['exitstatus'] == 'OK':
+                    return True, None
+                else:
+                    return False, status['exitstatus']
+            else:
+                timeout -= 1
+                if timeout <= 0:
+                    return False, ProxmoxAnsible.TASK_TIMED_OUT
+                sleep(1)
+
+    def get_pool(self, poolid):
+        """Retrieve pool information
+
+        :param poolid: str - name of the pool
+        :return: dict - pool information
+        """
+        try:
+            return self.proxmox_api.pools(poolid).get()
+        except Exception as e:
+            self.module.fail_json(msg="Unable to retrieve pool %s information: %s" % (poolid, e))
+
+    def get_storages(self, type):
+        """Retrieve storages information
+
+        :param type: str, optional - type of storages
+        :return: list of dicts - array of storages
+        """
+        try:
+            return self.proxmox_api.storage.get(type=type)
+        except Exception as e:
+            self.module.fail_json(msg="Unable to retrieve storages information with type %s: %s" % (type, e))
+
+    def get_storage_content(self, node, storage, content=None, vmid=None):
+        try:
+            return (
+                self.proxmox_api.nodes(node)
+                .storage(storage)
+                .content()
+                .get(content=content, vmid=vmid)
+            )
+        except Exception as e:
+            self.module.fail_json(
+                msg="Unable to list content on %s, %s for %s and %s: %s"
+                % (node, storage, content, vmid, e)
+            )

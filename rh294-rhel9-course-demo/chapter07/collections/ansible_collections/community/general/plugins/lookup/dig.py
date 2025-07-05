@@ -21,7 +21,7 @@ DOCUMENTATION = '''
       - In addition to (default) A record, it is also possible to specify a different record type that should be queried.
         This can be done by either passing-in additional parameter of format qtype=TYPE to the dig lookup, or by appending /TYPE to the FQDN being queried.
       - If multiple values are associated with the requested record, the results will be returned as a comma-separated list.
-        In such cases you may want to pass option I(wantlist=true) to the lookup call, or alternatively use C(query) instead of C(lookup),
+        In such cases you may want to pass option C(wantlist=true) to the lookup call, or alternatively use C(query) instead of C(lookup),
         which will result in the record values being returned as a list over which you can iterate later on.
       - By default, the lookup will rely on system-wide configured DNS servers for performing the query.
         It is also possible to explicitly specify DNS servers to query using the @DNS_SERVER_1,DNS_SERVER_2,...,DNS_SERVER_N notation.
@@ -34,8 +34,8 @@ DOCUMENTATION = '''
       qtype:
         description:
             - Record type to query.
-            - C(DLV) has been removed in community.general 6.0.0.
-            - C(CAA) has been added in community.general 6.3.0.
+            - V(DLV) has been removed in community.general 6.0.0.
+            - V(CAA) has been added in community.general 6.3.0.
         type: str
         default: 'A'
         choices: [A, ALL, AAAA, CAA, CNAME, DNAME, DNSKEY, DS, HINFO, LOC, MX, NAPTR, NS, NSEC3PARAM, PTR, RP, RRSIG, SOA, SPF, SRV, SSHFP, TLSA, TXT]
@@ -51,17 +51,17 @@ DOCUMENTATION = '''
       fail_on_error:
         description:
           - Abort execution on lookup errors.
-          - The default for this option will likely change to C(true) in the future.
-            The current default, C(false), is used for backwards compatibility, and will result in empty strings
-            or the string C(NXDOMAIN) in the result in case of errors.
+          - The default for this option will likely change to V(true) in the future.
+            The current default, V(false), is used for backwards compatibility, and will result in empty strings
+            or the string V(NXDOMAIN) in the result in case of errors.
         default: false
         type: bool
         version_added: 5.4.0
       real_empty:
         description:
-          - Return empty result without empty strings, and return empty list instead of C(NXDOMAIN).
-          - The default for this option will likely change to C(true) in the future.
-          - This option will be forced to C(true) if multiple domains to be queried are specified.
+          - Return empty result without empty strings, and return empty list instead of V(NXDOMAIN).
+          - The default for this option will likely change to V(true) in the future.
+          - This option will be forced to V(true) if multiple domains to be queried are specified.
         default: false
         type: bool
         version_added: 6.0.0
@@ -70,6 +70,16 @@ DOCUMENTATION = '''
           - "Class."
         type: str
         default: 'IN'
+      tcp:
+        description: Use TCP to lookup DNS records.
+        default: false
+        type: bool
+        version_added: 7.5.0
+      port:
+        description: Use port as target port when looking up DNS records.
+        default: 53
+        type: int
+        version_added: 9.5.0
     notes:
       - ALL is not a record per-se, merely the listed fields are available for any record results you retrieve in the form of a dictionary.
       - While the 'dig' lookup plugin supports anything which dnspython supports out of the box, only a subset can be converted into a dictionary.
@@ -325,10 +335,13 @@ class LookupModule(LookupBase):
         myres.use_edns(0, ednsflags=dns.flags.DO, payload=edns_size)
 
         domains = []
+        nameservers = []
         qtype = self.get_option('qtype')
         flat = self.get_option('flat')
         fail_on_error = self.get_option('fail_on_error')
         real_empty = self.get_option('real_empty')
+        tcp = self.get_option('tcp')
+        port = self.get_option('port')
         try:
             rdclass = dns.rdataclass.from_text(self.get_option('class'))
         except Exception as e:
@@ -339,7 +352,6 @@ class LookupModule(LookupBase):
             if t.startswith('@'):       # e.g. "@10.0.1.2,192.0.2.1" is ok.
                 nsset = t[1:].split(',')
                 for ns in nsset:
-                    nameservers = []
                     # Check if we have a valid IP address. If so, use that, otherwise
                     # try to resolve name to address using system's resolver. If that
                     # fails we bail out.
@@ -352,7 +364,6 @@ class LookupModule(LookupBase):
                             nameservers.append(nsaddr)
                         except Exception as e:
                             raise AnsibleError("dns lookup NS: %s" % to_native(e))
-                    myres.nameservers = nameservers
                 continue
             if '=' in t:
                 try:
@@ -375,6 +386,8 @@ class LookupModule(LookupBase):
                     fail_on_error = boolean(arg)
                 elif opt == 'real_empty':
                     real_empty = boolean(arg)
+                elif opt == 'tcp':
+                    tcp = boolean(arg)
 
                 continue
 
@@ -388,6 +401,11 @@ class LookupModule(LookupBase):
                 domains.append(t)
 
         # print "--- domain = {0} qtype={1} rdclass={2}".format(domain, qtype, rdclass)
+
+        if port:
+            myres.port = port
+        if len(nameservers) > 0:
+            myres.nameservers = nameservers
 
         if qtype.upper() == 'PTR':
             reversed_domains = []
@@ -408,7 +426,7 @@ class LookupModule(LookupBase):
 
         for domain in domains:
             try:
-                answers = myres.query(domain, qtype, rdclass=rdclass)
+                answers = myres.query(domain, qtype, rdclass=rdclass, tcp=tcp)
                 for rdata in answers:
                     s = rdata.to_text()
                     if qtype.upper() == 'TXT':
@@ -435,12 +453,7 @@ class LookupModule(LookupBase):
                     raise AnsibleError("Lookup failed: %s" % str(err))
                 if not real_empty:
                     ret.append('NXDOMAIN')
-            except dns.resolver.NoAnswer as err:
-                if fail_on_error:
-                    raise AnsibleError("Lookup failed: %s" % str(err))
-                if not real_empty:
-                    ret.append("")
-            except dns.resolver.Timeout as err:
+            except (dns.resolver.NoAnswer, dns.resolver.Timeout, dns.resolver.NoNameservers) as err:
                 if fail_on_error:
                     raise AnsibleError("Lookup failed: %s" % str(err))
                 if not real_empty:

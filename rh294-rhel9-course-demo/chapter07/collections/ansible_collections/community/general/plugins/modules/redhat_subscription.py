@@ -26,21 +26,21 @@ notes:
       C(subscription-manager) itself gets credentials only as arguments of command line
       parameters, which is I(not) secure, as they can be easily stolen by checking the
       process listing on the system. Due to limitations of the D-Bus interface of C(rhsm),
-      the module will I(not) use D-Bus for registation when trying either to register
-      using I(token), or when specifying I(environment), or when the system is old
-      (typically RHEL 6 and older).
+      the module will I(not) use D-Bus for registration when trying either to register
+      using O(token), or when specifying O(environment), or when the system is old
+      (typically RHEL 7 older than 7.4, RHEL 6, and older).
     - In order to register a system, subscription-manager requires either a username and password, or an activationkey and an Organization ID.
-    - Since 2.5 values for I(server_hostname), I(server_insecure), I(rhsm_baseurl),
-      I(server_proxy_hostname), I(server_proxy_port), I(server_proxy_user) and
-      I(server_proxy_password) are no longer taken from the C(/etc/rhsm/rhsm.conf)
-      config file and default to None.
+    - Since 2.5 values for O(server_hostname), O(server_insecure), O(rhsm_baseurl),
+      O(server_proxy_hostname), O(server_proxy_port), O(server_proxy_user) and
+      O(server_proxy_password) are no longer taken from the C(/etc/rhsm/rhsm.conf)
+      config file and default to V(null).
     - It is possible to interact with C(subscription-manager) only as root,
       so root permissions are required to successfully run this module.
-    - Since community.general 6.5.0, credentials (that is, I(username) and I(password),
-      I(activationkey), or I(token)) are needed only in case the the system is not registered,
-      or I(force_register) is specified; this makes it possible to use the module to tweak an
-      already registered system, for example attaching pools to it (using I(pool), or I(pool_ids)),
-      and modifying the C(syspurpose) attributes (using I(syspurpose)).
+    - Since community.general 6.5.0, credentials (that is, O(username) and O(password),
+      O(activationkey), or O(token)) are needed only in case the the system is not registered,
+      or O(force_register) is specified; this makes it possible to use the module to tweak an
+      already registered system, for example attaching pools to it (using O(pool), or O(pool_ids)),
+      and modifying the C(syspurpose) attributes (using O(syspurpose)).
 requirements:
     - subscription-manager
     - Optionally the C(dbus) Python library; this is usually included in the OS
@@ -55,7 +55,7 @@ attributes:
 options:
     state:
         description:
-          - whether to register and subscribe (C(present)), or unregister (C(absent)) a system
+          - whether to register and subscribe (V(present)), or unregister (V(absent)) a system
         choices: [ "present", "absent" ]
         default: "present"
         type: str
@@ -74,11 +74,11 @@ options:
         version_added: 6.3.0
     server_hostname:
         description:
-            - Specify an alternative Red Hat Subscription Management or Red Hat Satellite or Katello server
+            - Specify an alternative Red Hat Subscription Management or Red Hat Satellite or Katello server.
         type: str
     server_insecure:
         description:
-            - Enable or disable https server certificate verification when connecting to C(server_hostname)
+            - Enable or disable https server certificate verification when connecting to O(server_hostname).
         type: str
     server_prefix:
         description:
@@ -104,7 +104,7 @@ options:
         type: str
     server_proxy_scheme:
         description:
-            - Specify an HTTP proxy scheme, for example C(http) or C(https).
+            - Specify an HTTP proxy scheme, for example V(http) or V(https).
         type: str
         version_added: 6.2.0
     server_proxy_port:
@@ -122,9 +122,10 @@ options:
     auto_attach:
         description:
             - Upon successful registration, auto-consume available subscriptions
-            - Added in favor of deprecated autosubscribe in 2.5.
+            - |
+              Please note that the alias O(ignore:autosubscribe) was removed in
+              community.general 9.0.0.
         type: bool
-        aliases: [autosubscribe]
     activationkey:
         description:
             - supply an activation key for use with registration
@@ -140,18 +141,26 @@ options:
     pool:
         description:
             - |
-              Specify a subscription pool name to consume.  Regular expressions accepted. Use I(pool_ids) instead if
-              possible, as it is much faster. Mutually exclusive with I(pool_ids).
+              Specify a subscription pool name to consume.  Regular expressions accepted.
+              Mutually exclusive with O(pool_ids).
+            - |
+              Please use O(pool_ids) instead: specifying pool IDs is much faster,
+              and it avoids to match new pools that become available for the
+              system and are not explicitly wanted.  Also, this option does not
+              support quantities.
+            - |
+              This option is deprecated for the reasons mentioned above,
+              and it will be removed in community.general 10.0.0.
         default: '^$'
         type: str
     pool_ids:
         description:
             - |
-              Specify subscription pool IDs to consume. Prefer over I(pool) when possible as it is much faster.
-              A pool ID may be specified as a C(string) - just the pool ID (ex. C(0123456789abcdef0123456789abcdef)),
-              or as a C(dict) with the pool ID as the key, and a quantity as the value (ex.
-              C(0123456789abcdef0123456789abcdef: 2). If the quantity is provided, it is used to consume multiple
-              entitlements from a pool (the pool must support this). Mutually exclusive with I(pool).
+              Specify subscription pool IDs to consume. Prefer over O(pool) when possible as it is much faster.
+              A pool ID may be specified as a C(string) - just the pool ID (for example V(0123456789abcdef0123456789abcdef)),
+              or as a C(dict) with the pool ID as the key, and a quantity as the value (for example
+              V(0123456789abcdef0123456789abcdef: 2). If the quantity is provided, it is used to consume multiple
+              entitlements from a pool (the pool must support this). Mutually exclusive with O(pool).
         default: []
         type: list
         elements: raw
@@ -205,8 +214,8 @@ options:
                 elements: str
             sync:
                 description:
-                    - When this option is true, then syspurpose attributes are synchronized with
-                      RHSM server immediately. When this option is false, then syspurpose attributes
+                    - When this option is V(true), then syspurpose attributes are synchronized with
+                      RHSM server immediately. When this option is V(false), then syspurpose attributes
                       will be synchronized with RHSM server by rhsmcertd daemon.
                 type: bool
                 default: false
@@ -323,32 +332,12 @@ from ansible.module_utils import distro
 SUBMAN_CMD = None
 
 
-class RegistrationBase(object):
+class Rhsm(object):
 
     REDHAT_REPO = "/etc/yum.repos.d/redhat.repo"
 
-    def __init__(self, module, username=None, password=None, token=None):
+    def __init__(self, module):
         self.module = module
-        self.username = username
-        self.password = password
-        self.token = token
-
-    def configure(self):
-        raise NotImplementedError("Must be implemented by a sub-class")
-
-    def enable(self):
-        # Remove any existing redhat.repo
-        if isfile(self.REDHAT_REPO):
-            unlink(self.REDHAT_REPO)
-
-    def register(self):
-        raise NotImplementedError("Must be implemented by a sub-class")
-
-    def unregister(self):
-        raise NotImplementedError("Must be implemented by a sub-class")
-
-    def unsubscribe(self):
-        raise NotImplementedError("Must be implemented by a sub-class")
 
     def update_plugin_conf(self, plugin, enabled=True):
         plugin_conf = '/etc/yum/pluginconf.d/%s.conf' % plugin
@@ -369,22 +358,15 @@ class RegistrationBase(object):
             fd.close()
             self.module.atomic_move(tmpfile, plugin_conf)
 
-    def subscribe(self, **kwargs):
-        raise NotImplementedError("Must be implemented by a sub-class")
-
-
-class Rhsm(RegistrationBase):
-    def __init__(self, module, username=None, password=None, token=None):
-        RegistrationBase.__init__(self, module, username, password, token)
-        self.module = module
-
     def enable(self):
         '''
             Enable the system to receive updates from subscription-manager.
             This involves updating affected yum plugins and removing any
             conflicting yum repositories.
         '''
-        RegistrationBase.enable(self)
+        # Remove any existing redhat.repo
+        if isfile(self.REDHAT_REPO):
+            unlink(self.REDHAT_REPO)
         self.update_plugin_conf('rhnplugin', False)
         self.update_plugin_conf('subscription-manager', True)
 
@@ -431,6 +413,30 @@ class Rhsm(RegistrationBase):
         else:
             return False
 
+    def _has_dbus_interface(self):
+        """
+        Checks whether subscription-manager has a D-Bus interface.
+
+        :returns: bool -- whether subscription-manager has a D-Bus interface.
+        """
+
+        def str2int(s, default=0):
+            try:
+                return int(s)
+            except ValueError:
+                return default
+
+        distro_id = distro.id()
+        distro_version = tuple(str2int(p) for p in distro.version_parts())
+
+        # subscription-manager in any supported Fedora version has the interface.
+        if distro_id == 'fedora':
+            return True
+        # Any other distro: assume it is EL;
+        # the D-Bus interface was added to subscription-manager in RHEL 7.4.
+        return (distro_version[0] == 7 and distro_version[1] >= 4) or \
+            distro_version[0] >= 8
+
     def _can_connect_to_dbus(self):
         """
         Checks whether it is possible to connect to the system D-Bus bus.
@@ -474,7 +480,8 @@ class Rhsm(RegistrationBase):
         # of rhsm, so always use the CLI in that case;
         # also, since the specified environments are names, and the D-Bus APIs
         # require IDs for the environments, use the CLI also in that case
-        if not token and not environment and self._can_connect_to_dbus():
+        if (not token and not environment and self._has_dbus_interface() and
+           self._can_connect_to_dbus()):
             self._register_using_dbus(was_registered, username, password, auto_attach,
                                       activationkey, org_id, consumer_type,
                                       consumer_name, consumer_id,
@@ -582,13 +589,79 @@ class Rhsm(RegistrationBase):
              (distro_version[0] == 9 and distro_version[1] >= 2) or
              distro_version[0] > 9)):
             dbus_force_option_works = True
+        # We need to use the 'enable_content' D-Bus option to ensure that
+        # content is enabled; sadly the option is available depending on the
+        # version of the distro, and also depending on which API/method is used
+        # for registration.
+        dbus_has_enable_content_option = False
+        if activationkey:
+            def supports_enable_content_for_activation_keys():
+                # subscription-manager in Fedora >= 41 has the new option.
+                if distro_id == 'fedora' and distro_version[0] >= 41:
+                    return True
+                # Assume EL distros here.
+                if distro_version[0] >= 10:
+                    return True
+                return False
+            dbus_has_enable_content_option = supports_enable_content_for_activation_keys()
+        else:
+            def supports_enable_content_for_credentials():
+                # subscription-manager in any supported Fedora version
+                # has the new option.
+                if distro_id == 'fedora':
+                    return True
+                # Check for RHEL 8 >= 8.6, or RHEL >= 9.
+                if distro_id == 'rhel' and \
+                   ((distro_version[0] == 8 and distro_version[1] >= 6) or
+                       distro_version[0] >= 9):
+                    return True
+                # CentOS: similar checks as for RHEL, with one extra bit:
+                # if the 2nd part of the version is empty, it means it is
+                # CentOS Stream, and thus we can assume it has the latest
+                # version of subscription-manager.
+                if distro_id == 'centos' and \
+                   ((distro_version[0] == 8 and
+                       (distro_version[1] >= 6 or distro_version_parts[1] == '')) or
+                       distro_version[0] >= 9):
+                    return True
+                # Unknown or old distro: assume it does not support
+                # the new option.
+                return False
+            dbus_has_enable_content_option = supports_enable_content_for_credentials()
 
         if force_register and not dbus_force_option_works and was_registered:
             self.unregister()
 
         register_opts = {}
         if consumer_type:
-            register_opts['consumer_type'] = consumer_type
+            # The option for the consumer type used to be 'type' in versions
+            # of RHEL before 9 & in RHEL 9 before 9.2, and then it changed to
+            # 'consumer_type'; since the Register*() D-Bus functions reject
+            # unknown options, we have to pass the right option depending on
+            # the version -- funky.
+            def supports_option_consumer_type():
+                # subscription-manager in any supported Fedora version
+                # has the new option.
+                if distro_id == 'fedora':
+                    return True
+                # Check for RHEL 9 >= 9.2, or RHEL >= 10.
+                if distro_id == 'rhel' and \
+                   ((distro_version[0] == 9 and distro_version[1] >= 2) or
+                       distro_version[0] >= 10):
+                    return True
+                # CentOS: since the change was only done in EL 9, then there is
+                # only CentOS Stream for 9, and thus we can assume it has the
+                # latest version of subscription-manager.
+                if distro_id == 'centos' and distro_version[0] >= 9:
+                    return True
+                # Unknown or old distro: assume it does not support
+                # the new option.
+                return False
+
+            consumer_type_key = 'type'
+            if supports_option_consumer_type():
+                consumer_type_key = 'consumer_type'
+            register_opts[consumer_type_key] = consumer_type
         if consumer_name:
             register_opts['name'] = consumer_name
         if consumer_id:
@@ -627,6 +700,8 @@ class Rhsm(RegistrationBase):
             register_opts[environment_key] = environment
         if force_register and dbus_force_option_works and was_registered:
             register_opts['force'] = True
+        if dbus_has_enable_content_option:
+            register_opts['enable_content'] = "1"
         # Wrap it as proper D-Bus dict
         register_opts = dbus.Dictionary(register_opts, signature='sv', variant_level=1)
 
@@ -1056,9 +1131,6 @@ class SysPurpose(object):
 
 def main():
 
-    # Load RHSM configuration from file
-    rhsm = Rhsm(None)
-
     # Note: the default values for parameters are:
     # 'type': 'str', 'default': None, 'required': False
     # So there is no need to repeat these values for each parameter.
@@ -1074,11 +1146,15 @@ def main():
             'server_port': {},
             'rhsm_baseurl': {},
             'rhsm_repo_ca_cert': {},
-            'auto_attach': {'aliases': ['autosubscribe'], 'type': 'bool'},
+            'auto_attach': {'type': 'bool'},
             'activationkey': {'no_log': True},
             'org_id': {},
             'environment': {},
-            'pool': {'default': '^$'},
+            'pool': {
+                'default': '^$',
+                'removed_in_version': '10.0.0',
+                'removed_from_collection': 'community.general',
+            },
             'pool_ids': {'default': [], 'type': 'list', 'elements': 'raw'},
             'consumer_type': {},
             'consumer_name': {},
@@ -1119,7 +1195,9 @@ def main():
             msg="Interacting with subscription-manager requires root permissions ('become: true')"
         )
 
-    rhsm.module = module
+    # Load RHSM configuration from file
+    rhsm = Rhsm(module)
+
     state = module.params['state']
     username = module.params['username']
     password = module.params['password']
@@ -1225,7 +1303,6 @@ def main():
             module.exit_json(changed=False, msg="System already unregistered.")
         else:
             try:
-                rhsm.unsubscribe()
                 rhsm.unregister()
             except Exception as e:
                 module.fail_json(msg="Failed to unregister: %s" % to_native(e))

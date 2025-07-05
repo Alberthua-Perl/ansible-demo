@@ -26,9 +26,9 @@ options:
     command:
         description:
             - The selected redis command
-            - C(config) ensures a configuration setting on an instance.
-            - C(flush) flushes all the instance or a specified db.
-            - C(replica) sets a redis instance in replica or master mode. (C(slave) is an alias for C(replica).)
+            - V(config) ensures a configuration setting on an instance.
+            - V(flush) flushes all the instance or a specified db.
+            - V(replica) sets a redis instance in replica or master mode. (V(slave) is an alias for V(replica).)
         choices: [ config, flush, replica, slave ]
         type: str
     tls:
@@ -51,7 +51,7 @@ options:
     replica_mode:
         description:
             - The mode of the redis instance [replica command]
-            - C(slave) is an alias for C(replica).
+            - V(slave) is an alias for V(replica).
         default: replica
         choices: [ master, replica, slave ]
         type: str
@@ -75,7 +75,7 @@ options:
     value:
         description:
             - A redis config value. When memory size is needed, it is possible
-              to specify it in the usal form of 1KB, 2M, 400MB where the base is 1024.
+              to specify it in the usual form of 1KB, 2M, 400MB where the base is 1024.
               Units are case insensitive i.e. 1m = 1mb = 1M = 1MB.
         type: str
 
@@ -132,6 +132,16 @@ EXAMPLES = '''
     command: config
     name: lua-time-limit
     value: 100
+
+- name: Connect using TLS and certificate authentication
+  community.general.redis:
+    command: config
+    name: lua-time-limit
+    value: 100
+    tls: true
+    ca_certs: /etc/redis/certs/ca.crt
+    client_cert_file: /etc/redis/certs/redis.crt
+    client_key_file: /etc/redis/certs/redis.key
 '''
 
 import traceback

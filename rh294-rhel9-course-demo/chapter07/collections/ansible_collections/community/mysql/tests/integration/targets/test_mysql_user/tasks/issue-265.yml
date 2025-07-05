@@ -1,0 +1,181 @@
+---
+- vars:
+    mysql_parameters: &mysql_params
+      login_user: '{{ mysql_user }}'
+      login_password: '{{ mysql_password }}'
+      login_host: '{{ mysql_host }}'
+      login_port: '{{ mysql_primary_port }}'
+
+  block:
+    - name: Issue-265 | Drop mysql user if exists
+      mysql_user:
+        <<: *mysql_params
+        name: '{{ user_name_1 }}'
+        host_all: true
+        state: absent
+      ignore_errors: yes
+
+    # Tests with force_context: yes
+    # Test user creation
+    - name: Issue-265 | Create mysql user {{ user_name_1 }}
+      mysql_user:
+        <<: *mysql_params
+        name: "{{ user_name_1 }}"
+        password: "{{ user_password_1 }}"
+        state: present
+        force_context: yes
+      register: result
+
+    - name: Issue-265 | Assert user was created
+      assert:
+        that:
+          - result is changed
+
+    - include_tasks: utils/assert_user.yml
+      vars:
+        user_name: "{{ user_name_1 }}"
+        user_host: localhost
+
+    # Test user removal
+    - name: Issue-265 | remove mysql user {{ user_name_1 }}
+      mysql_user:
+        <<: *mysql_params
+        name: "{{ user_name_1 }}"
+        host_all: true
+        password: "{{ user_password_1 }}"
+        state: absent
+        force_context: yes
+      register: result
+
+    - name: Issue-265 | Assert user was removed
+      assert:
+        that:
+          - result is changed
+
+    # Test blank user removal
+    - name: Issue-265 | Create blank mysql user to be removed later
+      mysql_user:
+        <<: *mysql_params
+        name: ""
+        state: present
+        force_context: yes
+        password: 'KJFDY&D*Sfuydsgf'
+
+    - name: Issue-265 | Remove blank mysql user with hosts=all (expect changed)
+      mysql_user:
+        <<: *mysql_params
+        name: ""
+        host_all: true
+        state: absent
+        force_context: yes
+      register: result
+
+    - name: Issue-265 | Assert changed is true for removing all blank users
+      assert:
+        that:
+          - result is changed
+
+    - name: Issue-265 | Remove blank mysql user with hosts=all (expect ok)
+      mysql_user:
+        <<: *mysql_params
+        name: ""
+        host_all: true
+        force_context: yes
+        state: absent
+      register: result
+
+    - name: Issue-265 | Assert changed is true for removing all blank users
+      assert:
+        that:
+          - result is not changed
+
+    - include_tasks: utils/assert_no_user.yml
+      vars:
+        user_name: "{{user_name_1}}"
+
+    # Tests with force_context: no
+    # Test user creation
+    - name: Issue-265 | Drop mysql user if exists
+      mysql_user:
+        <<: *mysql_params
+        name: "{{ user_name_1 }}"
+        host_all: true
+        state: absent
+      ignore_errors: yes
+
+    # Tests with force_context: yes
+    # Test user creation
+    - name: Issue-265 | Create mysql user {{user_name_1}}
+      mysql_user:
+        <<: *mysql_params
+        name: "{{ user_name_1 }}"
+        password: "{{ user_password_1 }}"
+        state: present
+        force_context: yes
+      register: result
+
+    - name: Issue-265 | Assert output message mysql user was created
+      assert:
+        that:
+          - result is changed
+
+    - include_tasks: utils/assert_user.yml
+      vars:
+        user_name: "{{ user_name_1 }}"
+        user_host: localhost
+
+    # Test user removal
+    - name: Issue-265 | Remove mysql user {{ user_name_1 }}
+      mysql_user:
+        <<: *mysql_params
+        name: "{{ user_name_1 }}"
+        password: "{{ user_password_1 }}"
+        state: absent
+        force_context: no
+      register: result
+
+    - name: Issue-265 | Assert output message mysql user was removed
+      assert:
+        that:
+          - result is changed
+
+    # Test blank user removal
+    - name: Issue-265 | Create blank mysql user to be removed later
+      mysql_user:
+        <<: *mysql_params
+        name: ""
+        state: present
+        force_context: no
+        password: 'KJFDY&D*Sfuydsgf'
+
+    - name: Issue-265 | Remove blank mysql user with hosts=all (expect changed)
+      mysql_user:
+        <<: *mysql_params
+        name: ""
+        host_all: true
+        state: absent
+        force_context: no
+      register: result
+
+    - name: Issue-265 | Assert changed is true for removing all blank users
+      assert:
+        that:
+          - result is changed
+
+    - name: Issue-265 | Remove blank mysql user with hosts=all (expect ok)
+      mysql_user:
+        <<: *mysql_params
+        name: ""
+        host_all: true
+        force_context: no
+        state: absent
+      register: result
+
+    - name: Issue-265 | Assert changed is true for removing all blank users
+      assert:
+        that:
+          - result is not changed
+
+    - include_tasks: utils/assert_no_user.yml
+      vars:
+        user_name: "{{ user_name_1 }}"

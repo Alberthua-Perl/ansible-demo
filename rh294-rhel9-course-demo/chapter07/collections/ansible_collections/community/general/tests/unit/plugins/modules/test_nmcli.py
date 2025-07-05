@@ -118,6 +118,12 @@ TESTCASE_CONNECTION = [
         'state': 'absent',
         '_ansible_check_mode': True,
     },
+    {
+        'type': 'loopback',
+        'conn_name': 'non_existent_nw_device',
+        'state': 'absent',
+        '_ansible_check_mode': True,
+    },
 ]
 
 TESTCASE_GENERIC = [
@@ -261,6 +267,25 @@ ipv4.addresses:                         192.168.1.10
 ipv4.routes:                            { ip = 192.168.200.0/24, nh = 192.168.1.1 }
 ipv4.route-metric:                      10
 """
+
+TESTCASE_ETHERNET_MOD_IPV4_INT_WITH_ROUTE_AND_METRIC_CLEAR = [
+    {
+        'type': 'ethernet',
+        'conn_name': 'non_existent_nw_device',
+        'routes4': [],
+        'state': 'present',
+        '_ansible_check_mode': False,
+        '_ansible_diff': True,
+    },
+    {
+        'type': 'ethernet',
+        'conn_name': 'non_existent_nw_device',
+        'routes4_extended': [],
+        'state': 'present',
+        '_ansible_check_mode': False,
+        '_ansible_diff': True,
+    },
+]
 
 TESTCASE_ETHERNET_MOD_IPV6_INT_WITH_ROUTE_AND_METRIC = [
     {
@@ -453,6 +478,38 @@ ipv6.ignore-auto-dns:                   no
 ipv6.ignore-auto-routes:                no
 """
 
+TESTCASE_GENERIC_DNS4_OPTIONS = [
+    {
+        'type': 'generic',
+        'conn_name': 'non_existent_nw_device',
+        'ifname': 'generic_non_existant',
+        'ip4': '10.10.10.10/24',
+        'gw4': '10.10.10.1',
+        'state': 'present',
+        'dns4_options': [],
+        'dns6_options': [],
+        '_ansible_check_mode': False,
+    }
+]
+
+TESTCASE_GENERIC_DNS4_OPTIONS_SHOW_OUTPUT = """\
+connection.id:                          non_existent_nw_device
+connection.interface-name:              generic_non_existant
+connection.autoconnect:                 yes
+ipv4.method:                            manual
+ipv4.addresses:                         10.10.10.10/24
+ipv4.gateway:                           10.10.10.1
+ipv4.ignore-auto-dns:                   no
+ipv4.ignore-auto-routes:                no
+ipv4.never-default:                     no
+ipv4.dns-options:                       --
+ipv4.may-fail:                          yes
+ipv6.dns-options:                       --
+ipv6.method:                            auto
+ipv6.ignore-auto-dns:                   no
+ipv6.ignore-auto-routes:                no
+"""
+
 TESTCASE_GENERIC_ZONE = [
     {
         'type': 'generic',
@@ -500,6 +557,7 @@ TESTCASE_BOND = [
         'conn_name': 'non_existent_nw_device',
         'ifname': 'bond_non_existant',
         'mode': 'active-backup',
+        'xmit_hash_policy': 'layer3+4',
         'ip4': '10.10.10.10/24',
         'gw4': '10.10.10.1',
         'state': 'present',
@@ -522,7 +580,7 @@ ipv4.may-fail:                          yes
 ipv6.method:                            auto
 ipv6.ignore-auto-dns:                   no
 ipv6.ignore-auto-routes:                no
-bond.options:                           mode=active-backup,primary=non_existent_primary
+bond.options:                           mode=active-backup,primary=non_existent_primary,xmit_hash_policy=layer3+4
 """
 
 TESTCASE_BRIDGE = [
@@ -892,6 +950,28 @@ TESTCASE_ETHERNET_STATIC = [
     }
 ]
 
+TESTCASE_LOOPBACK = [
+    {
+        'type': 'loopback',
+        'conn_name': 'lo',
+        'ifname': 'lo',
+        'ip4': '127.0.0.1/8',
+        'state': 'present',
+        '_ansible_check_mode': False,
+    }
+]
+
+TESTCASE_LOOPBACK_MODIFY = [
+    {
+        'type': 'loopback',
+        'conn_name': 'lo',
+        'ifname': 'lo',
+        'ip4': ['127.0.0.1/8', '127.0.0.2/8'],
+        'state': 'present',
+        '_ansible_check_mode': False,
+    }
+]
+
 TESTCASE_ETHERNET_STATIC_SHOW_OUTPUT = """\
 connection.id:                          non_existent_nw_device
 connection.interface-name:              ethernet_non_existant
@@ -906,6 +986,21 @@ ipv4.never-default:                     no
 ipv4.may-fail:                          yes
 ipv4.dns:                               1.1.1.1,8.8.8.8
 ipv6.method:                            auto
+ipv6.ignore-auto-dns:                   no
+ipv6.ignore-auto-routes:                no
+"""
+
+TESTCASE_LOOPBACK_SHOW_OUTPUT = """\
+connection.id:                          lo
+connection.interface-name:              lo
+connection.autoconnect:                 yes
+ipv4.method:                            manual
+ipv4.addresses:                         127.0.0.1/8
+ipv4.ignore-auto-dns:                   no
+ipv4.ignore-auto-routes:                no
+ipv4.never-default:                     no
+ipv4.may-fail:                          yes
+ipv6.method:                            manual
 ipv6.ignore-auto-dns:                   no
 ipv6.ignore-auto-routes:                no
 """
@@ -1393,7 +1488,8 @@ ipv4.may-fail:                          yes
 ipv6.method:                            auto
 ipv6.ignore-auto-dns:                   no
 ipv6.ignore-auto-routes:                no
-infiniband.transport-mode               datagram
+infiniband.mtu:                         auto
+infiniband.transport-mode:              datagram
 """
 
 TESTCASE_INFINIBAND_STATIC_MODIFY_TRANSPORT_MODE = [
@@ -1511,6 +1607,13 @@ def mocked_generic_connection_dns_search_unchanged(mocker):
     mocker_set(mocker,
                connection_exists=True,
                execute_return=(0, TESTCASE_GENERIC_DNS4_SEARCH_SHOW_OUTPUT, ""))
+
+
+@pytest.fixture
+def mocked_generic_connection_dns_options_unchanged(mocker):
+    mocker_set(mocker,
+               connection_exists=True,
+               execute_return=(0, TESTCASE_GENERIC_DNS4_OPTIONS_SHOW_OUTPUT, ""))
 
 
 @pytest.fixture
@@ -1662,6 +1765,17 @@ def mocked_ethernet_connection_with_ipv6_static_address_static_route_create(mock
 
 @pytest.fixture
 def mocked_ethernet_connection_with_ipv4_static_address_static_route_metric_modify(mocker):
+    mocker_set(mocker,
+               connection_exists=True,
+               execute_return=None,
+               execute_side_effect=(
+                   (0, TESTCASE_ETHERNET_MOD_IPV4_INT_WITH_ROUTE_AND_METRIC_SHOW_OUTPUT, ""),
+                   (0, "", ""),
+               ))
+
+
+@pytest.fixture
+def mocked_ethernet_connection_with_ipv4_static_address_static_route_metric_clear(mocker):
     mocker_set(mocker,
                connection_exists=True,
                execute_return=None,
@@ -1875,6 +1989,24 @@ def mocked_generic_connection_diff_check(mocker):
                execute_return=(0, TESTCASE_GENERIC_SHOW_OUTPUT, ""))
 
 
+@pytest.fixture
+def mocked_loopback_connection_unchanged(mocker):
+    mocker_set(mocker,
+               connection_exists=True,
+               execute_return=(0, TESTCASE_LOOPBACK_SHOW_OUTPUT, ""))
+
+
+@pytest.fixture
+def mocked_loopback_connection_modify(mocker):
+    mocker_set(mocker,
+               connection_exists=True,
+               execute_return=None,
+               execute_side_effect=(
+                   (0, TESTCASE_LOOPBACK_SHOW_OUTPUT, ""),
+                   (0, "", ""),
+               ))
+
+
 @pytest.mark.parametrize('patch_ansible_module', TESTCASE_BOND, indirect=['patch_ansible_module'])
 def test_bond_connection_create(mocked_generic_connection_create, capfd):
     """
@@ -1897,7 +2029,8 @@ def test_bond_connection_create(mocked_generic_connection_create, capfd):
 
     for param in ['ipv4.gateway', 'primary', 'connection.autoconnect',
                   'connection.interface-name', 'bond_non_existant',
-                  'mode', 'active-backup', 'ipv4.addresses']:
+                  'mode', 'active-backup', 'ipv4.addresses',
+                  '+bond.options', 'xmit_hash_policy=layer3+4']:
         assert param in args[0]
 
     out, err = capfd.readouterr()
@@ -2055,6 +2188,62 @@ def test_generic_connection_modify_dns_search(mocked_generic_connection_create, 
 def test_generic_connection_dns_search_unchanged(mocked_generic_connection_dns_search_unchanged, capfd):
     """
     Test : Generic connection with dns search unchanged
+    """
+    with pytest.raises(SystemExit):
+        nmcli.main()
+
+    out, err = capfd.readouterr()
+    results = json.loads(out)
+    assert not results.get('failed')
+    assert not results['changed']
+
+
+@pytest.mark.parametrize('patch_ansible_module', TESTCASE_GENERIC_DNS4_OPTIONS, indirect=['patch_ansible_module'])
+def test_generic_connection_create_dns_options(mocked_generic_connection_create, capfd):
+    """
+    Test : Generic connection created with dns options
+    """
+    with pytest.raises(SystemExit):
+        nmcli.main()
+
+    assert nmcli.Nmcli.execute_command.call_count == 1
+    arg_list = nmcli.Nmcli.execute_command.call_args_list
+    args, kwargs = arg_list[0]
+
+    assert 'ipv4.dns-options' in args[0]
+    assert 'ipv6.dns-options' in args[0]
+
+    out, err = capfd.readouterr()
+    results = json.loads(out)
+    assert not results.get('failed')
+    assert results['changed']
+
+
+@pytest.mark.parametrize('patch_ansible_module', TESTCASE_GENERIC_DNS4_OPTIONS, indirect=['patch_ansible_module'])
+def test_generic_connection_modify_dns_options(mocked_generic_connection_create, capfd):
+    """
+    Test : Generic connection modified with dns options
+    """
+    with pytest.raises(SystemExit):
+        nmcli.main()
+
+    assert nmcli.Nmcli.execute_command.call_count == 1
+    arg_list = nmcli.Nmcli.execute_command.call_args_list
+    args, kwargs = arg_list[0]
+
+    assert 'ipv4.dns-options' in args[0]
+    assert 'ipv6.dns-options' in args[0]
+
+    out, err = capfd.readouterr()
+    results = json.loads(out)
+    assert not results.get('failed')
+    assert results['changed']
+
+
+@pytest.mark.parametrize('patch_ansible_module', TESTCASE_GENERIC_DNS4_OPTIONS, indirect=['patch_ansible_module'])
+def test_generic_connection_dns_options_unchanged(mocked_generic_connection_dns_options_unchanged, capfd):
+    """
+    Test : Generic connection with dns options unchanged
     """
     with pytest.raises(SystemExit):
         nmcli.main()
@@ -2985,6 +3174,38 @@ def test_ethernet_connection_static_ipv4_address_static_route_with_metric_modify
 
     out, err = capfd.readouterr()
     results = json.loads(out)
+
+    assert results.get('changed') is True
+    assert not results.get('failed')
+
+
+@pytest.mark.parametrize('patch_ansible_module', TESTCASE_ETHERNET_MOD_IPV4_INT_WITH_ROUTE_AND_METRIC_CLEAR, indirect=['patch_ansible_module'])
+def test_ethernet_connection_static_ipv4_address_static_route_with_metric_clear(
+        mocked_ethernet_connection_with_ipv4_static_address_static_route_metric_clear, capfd):
+    """
+    Test : Modify ethernet connection with static IPv4 address and static route
+    """
+    with pytest.raises(SystemExit):
+        nmcli.main()
+
+    arg_list = nmcli.Nmcli.execute_command.call_args_list
+    add_args, add_kw = arg_list[1]
+
+    assert add_args[0][0] == '/usr/bin/nmcli'
+    assert add_args[0][1] == 'con'
+    assert add_args[0][2] == 'modify'
+    assert add_args[0][3] == 'non_existent_nw_device'
+
+    add_args_text = list(map(to_text, add_args[0]))
+
+    for param in ['ipv4.routes', '']:
+        assert param in add_args_text
+
+    out, err = capfd.readouterr()
+    results = json.loads(out)
+
+    assert 'ipv4.routes' in results['diff']['before']
+    assert 'ipv4.routes' in results['diff']['after']
 
     assert results.get('changed') is True
     assert not results.get('failed')
@@ -4030,6 +4251,7 @@ def test_bond_connection_unchanged(mocked_generic_connection_diff_check, capfd):
             autoconnect=dict(type='bool', default=True),
             state=dict(type='str', required=True, choices=['absent', 'present']),
             conn_name=dict(type='str', required=True),
+            conn_reload=dict(type='bool', required=False, default=False),
             master=dict(type='str'),
             slave_type=dict(type=str, choices=['bond', 'bridge', 'team']),
             ifname=dict(type='str'),
@@ -4077,6 +4299,7 @@ def test_bond_connection_unchanged(mocked_generic_connection_diff_check, capfd):
             never_default4=dict(type='bool', default=False),
             dns4=dict(type='list', elements='str'),
             dns4_search=dict(type='list', elements='str'),
+            dns4_options=dict(type='list', elements='str'),
             dns4_ignore_auto=dict(type='bool', default=False),
             method4=dict(type='str', choices=['auto', 'link-local', 'manual', 'shared', 'disabled']),
             may_fail4=dict(type='bool', default=True),
@@ -4086,6 +4309,7 @@ def test_bond_connection_unchanged(mocked_generic_connection_diff_check, capfd):
             gw6_ignore_auto=dict(type='bool', default=False),
             dns6=dict(type='list', elements='str'),
             dns6_search=dict(type='list', elements='str'),
+            dns6_options=dict(type='list', elements='str'),
             dns6_ignore_auto=dict(type='bool', default=False),
             routes6=dict(type='list', elements='str'),
             routes6_extended=dict(type='list',
@@ -4550,3 +4774,75 @@ def test_slave_type_team_unchanged(mocked_create_slave_type_team_unchanged, capf
     results = json.loads(out)
     assert not results.get('failed')
     assert not results['changed']
+
+
+@pytest.mark.parametrize('patch_ansible_module', TESTCASE_LOOPBACK, indirect=['patch_ansible_module'])
+def test_create_loopback(mocked_generic_connection_create, capfd):
+    """
+    Test : Create loopback connection
+    """
+
+    with pytest.raises(SystemExit):
+        nmcli.main()
+
+    assert nmcli.Nmcli.execute_command.call_count == 1
+    arg_list = nmcli.Nmcli.execute_command.call_args_list
+    add_args, add_kw = arg_list[0]
+
+    assert add_args[0][0] == '/usr/bin/nmcli'
+    assert add_args[0][1] == 'con'
+    assert add_args[0][2] == 'add'
+    assert add_args[0][3] == 'type'
+    assert add_args[0][4] == 'loopback'
+    assert add_args[0][5] == 'con-name'
+    assert add_args[0][6] == 'lo'
+
+    add_args_text = list(map(to_text, add_args[0]))
+    for param in ['connection.interface-name', 'lo',
+                  'ipv4.addresses', '127.0.0.1/8']:
+        assert param in add_args_text
+
+    out, err = capfd.readouterr()
+    results = json.loads(out)
+    assert not results.get('failed')
+    assert results['changed']
+
+
+@pytest.mark.parametrize('patch_ansible_module', TESTCASE_LOOPBACK, indirect=['patch_ansible_module'])
+def test_unchanged_loopback(mocked_loopback_connection_unchanged, capfd):
+    """
+    Test : loopback connection unchanged
+    """
+    with pytest.raises(SystemExit):
+        nmcli.main()
+
+    out, err = capfd.readouterr()
+    results = json.loads(out)
+    assert not results.get('failed')
+    assert not results['changed']
+
+
+@pytest.mark.parametrize('patch_ansible_module', TESTCASE_LOOPBACK_MODIFY, indirect=['patch_ansible_module'])
+def test_add_second_ip4_address_to_loopback_connection(mocked_loopback_connection_modify, capfd):
+    """
+    Test : Modify loopback connection
+    """
+    with pytest.raises(SystemExit):
+        nmcli.main()
+
+    assert nmcli.Nmcli.execute_command.call_count == 2
+    arg_list = nmcli.Nmcli.execute_command.call_args_list
+    args, kwargs = arg_list[1]
+
+    assert args[0][0] == '/usr/bin/nmcli'
+    assert args[0][1] == 'con'
+    assert args[0][2] == 'modify'
+    assert args[0][3] == 'lo'
+
+    for param in ['ipv4.addresses', '127.0.0.1/8,127.0.0.2/8']:
+        assert param in args[0]
+
+    out, err = capfd.readouterr()
+    results = json.loads(out)
+    assert not results.get('failed')
+    assert results['changed']

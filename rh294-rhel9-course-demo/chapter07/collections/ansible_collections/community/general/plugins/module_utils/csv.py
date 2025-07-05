@@ -43,7 +43,7 @@ def initialize_dialect(dialect, **kwargs):
         raise DialectNotAvailableError("Dialect '%s' is not supported by your version of python." % dialect)
 
     # Create a dictionary from only set options
-    dialect_params = dict((k, v) for k, v in kwargs.items() if v is not None)
+    dialect_params = {k: v for k, v in kwargs.items() if v is not None}
     if dialect_params:
         try:
             csv.register_dialect('custom', dialect, **dialect_params)
@@ -55,8 +55,10 @@ def initialize_dialect(dialect, **kwargs):
 
 
 def read_csv(data, dialect, fieldnames=None):
-
+    BOM = to_native(u'\ufeff')
     data = to_native(data, errors='surrogate_or_strict')
+    if data.startswith(BOM):
+        data = data[len(BOM):]
 
     if PY3:
         fake_fh = StringIO(data)

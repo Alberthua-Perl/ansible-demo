@@ -31,7 +31,6 @@ short_description: Gather information on instances of Alibaba Cloud ECS
 description:
      - This module fetches data from the Open API in Alicloud.
        The module must be called from within the ECS instance itself.
-     - This module was called C(ali_instance_facts) before Ansible 2.9. The usage did not change.
 
 attributes:
     check_mode:
@@ -53,15 +52,15 @@ options:
       description:
         - A dict of filters to apply. Each dict item consists of a filter key and a filter value. The filter keys can be
           all of request parameters. See U(https://www.alibabacloud.com/help/doc-detail/25506.htm) for parameter details.
-          Filter keys can be same as request parameter name or be lower case and use underscore ("_") or dash ("-") to
-          connect different words in one parameter. 'InstanceIds' should be a list.
-          'Tag.n.Key' and 'Tag.n.Value' should be a dict and using I(tags) instead.
+          Filter keys can be same as request parameter name or be lower case and use underscore (V("_")) or dash (V("-")) to
+          connect different words in one parameter. C(InstanceIds) should be a list.
+          C(Tag.n.Key) and C(Tag.n.Value) should be a dict and using O(tags) instead.
       type: dict
       version_added: '0.2.0'
 author:
     - "He Guimin (@xiaozhu36)"
 requirements:
-    - "python >= 3.6"
+    - "Python >= 3.6"
     - "footmark >= 1.13.0"
 extends_documentation_fragment:
     - community.general.alicloud

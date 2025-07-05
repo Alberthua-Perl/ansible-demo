@@ -32,7 +32,7 @@ options:
     type: str
   hostname:
     description:
-      - "If the hostname parameter is set to C(true), the API response will contain the hostname of the IP."
+      - "If the O(hostname) parameter is set to V(true), the API response will contain the hostname of the IP."
     required: false
     type: bool
     default: false
@@ -69,7 +69,7 @@ EXAMPLES = '''
 
 RETURN = '''
 data:
-  description: "JSON parsed response from ipbase.com. Please refer to U(https://ipbase.com/docs/info) for the detailled structure of the response."
+  description: "JSON parsed response from ipbase.com. Please refer to U(https://ipbase.com/docs/info) for the detailed structure of the response."
   returned: success
   type: dict
   sample: {

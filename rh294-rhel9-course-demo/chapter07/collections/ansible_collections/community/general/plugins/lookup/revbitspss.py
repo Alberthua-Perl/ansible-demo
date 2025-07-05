@@ -25,7 +25,7 @@ options:
         elements: string
     base_url:
         description:
-            - This will be the base URL of the server, for example C(https://server-url-here).
+            - This will be the base URL of the server, for example V(https://server-url-here).
         required: true
         type: string
     api_key:
@@ -100,7 +100,7 @@ class LookupModule(LookupBase):
         result = []
         for term in terms:
             try:
-                display.vvv(u"Secret Server lookup of Secret with ID %s" % term)
+                display.vvv("Secret Server lookup of Secret with ID %s" % term)
                 result.append({term: secret_server.get_pam_secret(term)})
             except Exception as error:
                 raise AnsibleError("Secret Server lookup failure: %s" % error.message)

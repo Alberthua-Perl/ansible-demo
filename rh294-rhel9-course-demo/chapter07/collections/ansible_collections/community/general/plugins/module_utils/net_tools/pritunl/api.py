@@ -79,7 +79,7 @@ def _post_pritunl_organization(
         api_secret=api_secret,
         base_url=base_url,
         method="POST",
-        path="/organization/%s",
+        path="/organization",
         headers={"Content-Type": "application/json"},
         data=json.dumps(organization_data),
         validate_certs=validate_certs,
@@ -220,7 +220,7 @@ def post_pritunl_organization(
         api_secret=api_secret,
         base_url=base_url,
         organization_data={"name": organization_name},
-        validate_certs=True,
+        validate_certs=validate_certs,
     )
 
     if response.getcode() != 200:
@@ -248,7 +248,7 @@ def post_pritunl_user(
             base_url=base_url,
             organization_id=organization_id,
             user_data=user_data,
-            validate_certs=True,
+            validate_certs=validate_certs,
         )
 
         if response.getcode() != 200:
@@ -267,7 +267,7 @@ def post_pritunl_user(
             organization_id=organization_id,
             user_data=user_data,
             user_id=user_id,
-            validate_certs=True,
+            validate_certs=validate_certs,
         )
 
         if response.getcode() != 200:
@@ -287,7 +287,7 @@ def delete_pritunl_organization(
         api_secret=api_secret,
         base_url=base_url,
         organization_id=organization_id,
-        validate_certs=True,
+        validate_certs=validate_certs,
     )
 
     if response.getcode() != 200:
@@ -307,7 +307,7 @@ def delete_pritunl_user(
         base_url=base_url,
         organization_id=organization_id,
         user_id=user_id,
-        validate_certs=True,
+        validate_certs=validate_certs,
     )
 
     if response.getcode() != 200:
@@ -331,7 +331,7 @@ def pritunl_auth_request(
 ):
     """
     Send an API call to a Pritunl server.
-    Taken from https://pritunl.com/api and adaped work with Ansible open_url
+    Taken from https://pritunl.com/api and adapted to work with Ansible open_url
     """
     auth_timestamp = str(int(time.time()))
     auth_nonce = uuid.uuid4().hex

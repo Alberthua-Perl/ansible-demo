@@ -11,6 +11,13 @@ import copy
 
 
 class VarMeta(object):
+    """
+    DEPRECATION WARNING
+
+    This class is deprecated and will be removed in community.general 11.0.0
+    Modules should use the VarDict from plugins/module_utils/vardict.py instead.
+    """
+
     NOTHING = object()
 
     def __init__(self, diff=False, output=True, change=None, fact=False):
@@ -60,6 +67,12 @@ class VarMeta(object):
 
 
 class VarDict(object):
+    """
+    DEPRECATION WARNING
+
+    This class is deprecated and will be removed in community.general 11.0.0
+    Modules should use the VarDict from plugins/module_utils/vardict.py instead.
+    """
     def __init__(self):
         self._data = dict()
         self._meta = dict()
@@ -100,7 +113,7 @@ class VarDict(object):
         self._meta[name] = meta
 
     def output(self):
-        return dict((k, v) for k, v in self._data.items() if self.meta(k).output)
+        return {k: v for k, v in self._data.items() if self.meta(k).output}
 
     def diff(self):
         diff_results = [(k, self.meta(k).diff_result) for k in self._data]
@@ -112,7 +125,7 @@ class VarDict(object):
         return None
 
     def facts(self):
-        facts_result = dict((k, v) for k, v in self._data.items() if self._meta[k].fact)
+        facts_result = {k: v for k, v in self._data.items() if self._meta[k].fact}
         return facts_result if facts_result else None
 
     def change_vars(self):
@@ -123,7 +136,12 @@ class VarDict(object):
 
 
 class VarsMixin(object):
+    """
+    DEPRECATION WARNING
 
+    This class is deprecated and will be removed in community.general 11.0.0
+    Modules should use the VarDict from plugins/module_utils/vardict.py instead.
+    """
     def __init__(self, module=None):
         self.vars = VarDict()
         super(VarsMixin, self).__init__(module)

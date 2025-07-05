@@ -81,5 +81,215 @@ MOCK_ENTRIES = {
             "expected": ["first value"],
             "output": load_file("v2_out_03.json")
         },
+        {
+            # Request data from an omitted value (label lookup, no section)
+            "vault_name": "Test Vault",
+            "queries": ["Omitted values"],
+            "kwargs": {
+                "field": "label-without-value",
+            },
+            "expected": [""],
+            "output": load_file("v2_out_04.json")
+        },
+        {
+            # Request data from an omitted value (id lookup, no section)
+            "vault_name": "Test Vault",
+            "queries": ["Omitted values"],
+            "kwargs": {
+                "field": "67890q7mspf4x6zrlw3qejn7m",
+            },
+            "expected": [""],
+            "output": load_file("v2_out_04.json")
+        },
+        {
+            # Request data from an omitted value (label lookup, with section)
+            "vault_name": "Test Vault",
+            "queries": ["Omitted values"],
+            "kwargs": {
+                "field": "section-label-without-value",
+                "section": "Section-Without-Values"
+            },
+            "expected": [""],
+            "output": load_file("v2_out_04.json")
+        },
+        {
+            # Request data from an omitted value (id lookup, with section)
+            "vault_name": "Test Vault",
+            "queries": ["Omitted values"],
+            "kwargs": {
+                "field": "123345q7mspf4x6zrlw3qejn7m",
+                "section": "section-without-values",
+            },
+            "expected": [""],
+            "output": load_file("v2_out_04.json")
+        },
+        {
+            # Query item without section by lowercase id (case matching)
+            "vault_name": "Test Vault",
+            "queries": ["LabelCasing"],
+            "kwargs": {
+                "field": "lowercaseid",
+            },
+            "expected": ["lowercaseid"],
+            "output": load_file("v2_out_05.json")
+        },
+        {
+            # Query item without section by lowercase id (case not matching)
+            "vault_name": "Test Vault",
+            "queries": ["LabelCasing"],
+            "kwargs": {
+                "field": "LOWERCASEID",
+            },
+            "expected": ["lowercaseid"],
+            "output": load_file("v2_out_05.json")
+        },
+        {
+            # Query item without section by lowercase label (case matching)
+            "vault_name": "Test Vault",
+            "queries": ["LabelCasing"],
+            "kwargs": {
+                "field": "lowercaselabel",
+            },
+            "expected": ["lowercaselabel"],
+            "output": load_file("v2_out_05.json")
+        },
+        {
+            # Query item without section by lowercase label (case not matching)
+            "vault_name": "Test Vault",
+            "queries": ["LabelCasing"],
+            "kwargs": {
+                "field": "LOWERCASELABEL",
+            },
+            "expected": ["lowercaselabel"],
+            "output": load_file("v2_out_05.json")
+        },
+        {
+            # Query item without section by mixed case id (case matching)
+            "vault_name": "Test Vault",
+            "queries": ["LabelCasing"],
+            "kwargs": {
+                "field": "MiXeDcAsEiD",
+            },
+            "expected": ["mixedcaseid"],
+            "output": load_file("v2_out_05.json")
+        },
+        {
+            # Query item without section by mixed case id (case not matching)
+            "vault_name": "Test Vault",
+            "queries": ["LabelCasing"],
+            "kwargs": {
+                "field": "mixedcaseid",
+            },
+            "expected": ["mixedcaseid"],
+            "output": load_file("v2_out_05.json")
+        },
+        {
+            # Query item without section by mixed case label (case matching)
+            "vault_name": "Test Vault",
+            "queries": ["LabelCasing"],
+            "kwargs": {
+                "field": "MiXeDcAsElAbEl",
+            },
+            "expected": ["mixedcaselabel"],
+            "output": load_file("v2_out_05.json")
+        },
+        {
+            # Query item without section by mixed case label (case not matching)
+            "vault_name": "Test Vault",
+            "queries": ["LabelCasing"],
+            "kwargs": {
+                "field": "mixedcaselabel",
+            },
+            "expected": ["mixedcaselabel"],
+            "output": load_file("v2_out_05.json")
+        },
+        {
+            # Query item with section by lowercase id (case matching)
+            "vault_name": "Test Vault",
+            "queries": ["LabelCasing"],
+            "kwargs": {
+                "field": "sectionlowercaseid",
+                "section": "section-with-values",
+            },
+            "expected": ["sectionlowercaseid"],
+            "output": load_file("v2_out_05.json")
+        },
+        {
+            # Query item with section by lowercase id (case not matching)
+            "vault_name": "Test Vault",
+            "queries": ["LabelCasing"],
+            "kwargs": {
+                "field": "SECTIONLOWERCASEID",
+                "section": "section-with-values",
+            },
+            "expected": ["sectionlowercaseid"],
+            "output": load_file("v2_out_05.json")
+        },
+        {
+            # Query item with section by lowercase label (case matching)
+            "vault_name": "Test Vault",
+            "queries": ["LabelCasing"],
+            "kwargs": {
+                "field": "sectionlowercaselabel",
+                "section": "section-with-values",
+            },
+            "expected": ["sectionlowercaselabel"],
+            "output": load_file("v2_out_05.json")
+        },
+        {
+            # Query item with section by lowercase label (case not matching)
+            "vault_name": "Test Vault",
+            "queries": ["LabelCasing"],
+            "kwargs": {
+                "field": "SECTIONLOWERCASELABEL",
+                "section": "section-with-values",
+            },
+            "expected": ["sectionlowercaselabel"],
+            "output": load_file("v2_out_05.json")
+        },
+        {
+            # Query item with section by lowercase id (case matching)
+            "vault_name": "Test Vault",
+            "queries": ["LabelCasing"],
+            "kwargs": {
+                "field": "SeCtIoNmIxEdCaSeId",
+                "section": "section-with-values",
+            },
+            "expected": ["sectionmixedcaseid"],
+            "output": load_file("v2_out_05.json")
+        },
+        {
+            # Query item with section by lowercase id (case not matching)
+            "vault_name": "Test Vault",
+            "queries": ["LabelCasing"],
+            "kwargs": {
+                "field": "sectionmixedcaseid",
+                "section": "section-with-values",
+            },
+            "expected": ["sectionmixedcaseid"],
+            "output": load_file("v2_out_05.json")
+        },
+        {
+            # Query item with section by lowercase label (case matching)
+            "vault_name": "Test Vault",
+            "queries": ["LabelCasing"],
+            "kwargs": {
+                "field": "SeCtIoNmIxEdCaSeLaBeL",
+                "section": "section-with-values",
+            },
+            "expected": ["sectionmixedcaselabel"],
+            "output": load_file("v2_out_05.json")
+        },
+        {
+            # Query item with section by lowercase label (case not matching)
+            "vault_name": "Test Vault",
+            "queries": ["LabelCasing"],
+            "kwargs": {
+                "field": "sectionmixedcaselabel",
+                "section": "section-with-values",
+            },
+            "expected": ["sectionmixedcaselabel"],
+            "output": load_file("v2_out_05.json")
+        },
     ],
 }

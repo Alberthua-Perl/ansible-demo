@@ -42,9 +42,15 @@ def gen_specs(**specs):
         'validate_certs': dict(default=True, type='bool'),
         'sasl_class': dict(choices=['external', 'gssapi'], default='external', type='str'),
         'xorder_discovery': dict(choices=['enable', 'auto', 'disable'], default='auto', type='str'),
+        'client_cert': dict(default=None, type='path'),
+        'client_key': dict(default=None, type='path'),
     })
 
     return specs
+
+
+def ldap_required_together():
+    return [['client_cert', 'client_key']]
 
 
 class LdapGeneric(object):
@@ -60,6 +66,8 @@ class LdapGeneric(object):
         self.verify_cert = self.module.params['validate_certs']
         self.sasl_class = self.module.params['sasl_class']
         self.xorder_discovery = self.module.params['xorder_discovery']
+        self.client_cert = self.module.params['client_cert']
+        self.client_key = self.module.params['client_key']
 
         # Establish connection
         self.connection = self._connect_to_ldap()
@@ -102,6 +110,10 @@ class LdapGeneric(object):
         if self.ca_path:
             ldap.set_option(ldap.OPT_X_TLS_CACERTFILE, self.ca_path)
 
+        if self.client_cert and self.client_key:
+            ldap.set_option(ldap.OPT_X_TLS_CERTFILE, self.client_cert)
+            ldap.set_option(ldap.OPT_X_TLS_KEYFILE, self.client_key)
+
         connection = ldap.initialize(self.server_uri)
 
         if self.referrals_chasing == 'disabled':
@@ -127,5 +139,7 @@ class LdapGeneric(object):
 
     def _xorder_dn(self):
         # match X_ORDERed DNs
-        regex = r"\w+=\{\d+\}.+"
-        return re.match(regex, self.module.params['dn']) is not None
+        regex = r".+\{\d+\}.+"
+        explode_dn = ldap.dn.explode_dn(self.module.params['dn'])
+
+        return re.match(regex, explode_dn[0]) is not None

@@ -33,7 +33,7 @@ attributes:
 options:
   package:
     description:
-      - Package atom or set, e.g. C(sys-apps/foo) or C(>foo-2.13) or C(@world)
+      - Package atom or set, for example V(sys-apps/foo) or V(>foo-2.13) or V(@world)
     aliases: [name]
     type: list
     elements: str
@@ -121,11 +121,19 @@ options:
     type: bool
     default: false
 
+  select:
+    description:
+      - If set to V(true), explicitely add the package to the world file.
+      - Please note that this option is not used for idempotency, it is only used
+        when actually installing a package.
+    type: bool
+    version_added: 8.6.0
+
   sync:
     description:
       - Sync package repositories first
-      - If C(yes), perform "emerge --sync"
-      - If C(web), perform "emerge-webrsync"
+      - If V(yes), perform "emerge --sync"
+      - If V(web), perform "emerge-webrsync"
     choices: [ "web", "yes", "no" ]
     type: str
 
@@ -333,9 +341,9 @@ def emerge_packages(module, packages):
     """Run emerge command against given list of atoms."""
     p = module.params
 
-    if p['noreplace'] and not (p['update'] or p['state'] == 'latest'):
+    if p['noreplace'] and not p['changed_use'] and not p['newuse'] and not (p['update'] or p['state'] == 'latest'):
         for package in packages:
-            if p['noreplace'] and not query_package(module, package, 'emerge'):
+            if p['noreplace'] and not p['changed_use'] and not p['newuse'] and not query_package(module, package, 'emerge'):
                 break
         else:
             module.exit_json(changed=False, msg='Packages already present.')
@@ -374,6 +382,7 @@ def emerge_packages(module, packages):
         'loadavg': '--load-average',
         'backtrack': '--backtrack',
         'withbdeps': '--with-bdeps',
+        'select': '--select',
     }
 
     for flag, arg in emerge_flags.items():
@@ -523,6 +532,7 @@ def main():
             nodeps=dict(default=False, type='bool'),
             onlydeps=dict(default=False, type='bool'),
             depclean=dict(default=False, type='bool'),
+            select=dict(default=None, type='bool'),
             quiet=dict(default=False, type='bool'),
             verbose=dict(default=False, type='bool'),
             sync=dict(default=None, choices=['yes', 'web', 'no']),
@@ -543,6 +553,7 @@ def main():
             ['quiet', 'verbose'],
             ['quietbuild', 'verbose'],
             ['quietfail', 'verbose'],
+            ['oneshot', 'select'],
         ],
         supports_check_mode=True,
     )

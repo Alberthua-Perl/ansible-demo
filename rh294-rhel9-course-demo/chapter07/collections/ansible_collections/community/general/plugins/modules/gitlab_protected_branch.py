@@ -7,7 +7,7 @@
 from __future__ import absolute_import, division, print_function
 __metaclass__ = type
 
-DOCUMENTATION = '''
+DOCUMENTATION = r"""
 module: gitlab_protected_branch
 short_description: Manage protection of existing branches
 version_added: 3.4.0
@@ -16,7 +16,6 @@ description:
 author:
   - "Werner Dijkerman (@dj-wasabi)"
 requirements:
-  - python >= 2.7
   - python-gitlab >= 2.3.0
 extends_documentation_fragment:
   - community.general.auth_basic
@@ -44,7 +43,7 @@ options:
   name:
     description:
       - The name of the branch that needs to be protected.
-      - Can make use a wildcard character for like C(production/*) or just have C(main) or C(develop) as value.
+      - Can make use a wildcard character for like V(production/*) or just have V(main) or V(develop) as value.
     required: true
     type: str
   merge_access_levels:
@@ -59,10 +58,10 @@ options:
     default: maintainer
     type: str
     choices: ["maintainer", "developer", "nobody"]
-'''
+"""
 
 
-EXAMPLES = '''
+EXAMPLES = r"""
 - name: Create protected branch on main
   community.general.gitlab_protected_branch:
     api_url: https://gitlab.com
@@ -71,11 +70,10 @@ EXAMPLES = '''
     name: main
     merge_access_levels: maintainer
     push_access_level: nobody
+"""
 
-'''
-
-RETURN = '''
-'''
+RETURN = r"""
+"""
 
 from ansible.module_utils.basic import AnsibleModule
 from ansible.module_utils.api import basic_auth_argument_spec
@@ -83,7 +81,7 @@ from ansible.module_utils.api import basic_auth_argument_spec
 from ansible_collections.community.general.plugins.module_utils.version import LooseVersion
 
 from ansible_collections.community.general.plugins.module_utils.gitlab import (
-    auth_argument_spec, gitlab_authentication, gitlab, ensure_gitlab_package
+    auth_argument_spec, gitlab_authentication, gitlab
 )
 
 
@@ -94,9 +92,9 @@ class GitlabProtectedBranch(object):
         self._module = module
         self.project = self.get_project(project)
         self.ACCESS_LEVEL = {
-            'nobody': gitlab.NO_ACCESS,
-            'developer': gitlab.DEVELOPER_ACCESS,
-            'maintainer': gitlab.MAINTAINER_ACCESS
+            'nobody': gitlab.const.NO_ACCESS,
+            'developer': gitlab.const.DEVELOPER_ACCESS,
+            'maintainer': gitlab.const.MAINTAINER_ACCESS
         }
 
     def get_project(self, project_name):
@@ -164,7 +162,9 @@ def main():
         ],
         supports_check_mode=True
     )
-    ensure_gitlab_package(module)
+
+    # check prerequisites and connect to gitlab server
+    gitlab_instance = gitlab_authentication(module)
 
     project = module.params['project']
     name = module.params['name']
@@ -177,7 +177,6 @@ def main():
         module.fail_json(msg="community.general.gitlab_proteched_branch requires python-gitlab Python module >= 2.3.0 (installed version: [%s])."
                              " Please upgrade python-gitlab to version 2.3.0 or above." % gitlab_version)
 
-    gitlab_instance = gitlab_authentication(module)
     this_gitlab = GitlabProtectedBranch(module=module, project=project, gitlab_instance=gitlab_instance)
 
     p_branch = this_gitlab.protected_branch_exist(name=name)

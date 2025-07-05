@@ -8,19 +8,24 @@
 #     as ansible-playbook   
 - name: Test multiple vault variables file
   hosts: all
-  vars_files:
-    - vars/packages.yml
-    - vars/state.yml
+  gather_facts: false
+#  vars_files:
+#    - vars/packages.yml
+#    - vars/state.yml
 
   tasks:
+    - name: Gather facts manualy
+      ansible.builtin.setup:
+
     - name: Prints various Ansible facts
       ansible.builtin.debug:
-        msg: >
+        msg: |
           The default IPv4 address of {{ ansible_facts.fqdn }}
           is {{ ansible_facts.default_ipv4.address }}
+      # | 与 > 的区别：| 在返回的结果中不带有 \n，而 > 在返回的结果中带有 \n。
 
-    - name: Verify Apache httpd installed
-      ansible.builtin.yum:
-        name: "{{ package }}"
-        state: "{{ status }}"
+#    - name: Verify Apache httpd installed
+#      ansible.builtin.yum:
+#        name: "{{ package }}"
+#        state: "{{ status }}"
 ...

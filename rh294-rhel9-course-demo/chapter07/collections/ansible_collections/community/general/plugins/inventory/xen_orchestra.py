@@ -23,21 +23,21 @@ DOCUMENTATION = '''
         - inventory_cache
     options:
         plugin:
-            description: The name of this plugin, it should always be set to C(community.general.xen_orchestra) for this plugin to recognize it as its own.
+            description: The name of this plugin, it should always be set to V(community.general.xen_orchestra) for this plugin to recognize it as its own.
             required: true
             choices: ['community.general.xen_orchestra']
             type: str
         api_host:
             description:
                 - API host to XOA API.
-                - If the value is not specified in the inventory configuration, the value of environment variable C(ANSIBLE_XO_HOST) will be used instead.
+                - If the value is not specified in the inventory configuration, the value of environment variable E(ANSIBLE_XO_HOST) will be used instead.
             type: str
             env:
                 - name: ANSIBLE_XO_HOST
         user:
             description:
                 - Xen Orchestra user.
-                - If the value is not specified in the inventory configuration, the value of environment variable C(ANSIBLE_XO_USER) will be used instead.
+                - If the value is not specified in the inventory configuration, the value of environment variable E(ANSIBLE_XO_USER) will be used instead.
             required: true
             type: str
             env:
@@ -45,7 +45,7 @@ DOCUMENTATION = '''
         password:
             description:
                 - Xen Orchestra password.
-                - If the value is not specified in the inventory configuration, the value of environment variable C(ANSIBLE_XO_PASSWORD) will be used instead.
+                - If the value is not specified in the inventory configuration, the value of environment variable E(ANSIBLE_XO_PASSWORD) will be used instead.
             required: true
             type: str
             env:
@@ -84,6 +84,7 @@ from ansible.errors import AnsibleError
 from ansible.plugins.inventory import BaseInventoryPlugin, Constructable, Cacheable
 
 from ansible_collections.community.general.plugins.module_utils.version import LooseVersion
+from ansible_collections.community.general.plugins.plugin_utils.unsafe import make_unsafe
 
 # 3rd party imports
 try:
@@ -347,4 +348,4 @@ class InventoryModule(BaseInventoryPlugin, Constructable, Cacheable):
             self.protocol = 'ws'
 
         objects = self._get_objects()
-        self._populate(objects)
+        self._populate(make_unsafe(objects))

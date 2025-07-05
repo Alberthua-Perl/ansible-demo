@@ -17,5 +17,5 @@
       ansible.builtin.service:
         name: httpd
         state: restarted
-      when: result.rc == 0
+      when: result.rc == 0  #rc status JUST from command, shell, raw module
 ...

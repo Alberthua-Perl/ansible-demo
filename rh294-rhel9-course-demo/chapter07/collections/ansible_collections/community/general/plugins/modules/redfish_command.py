@@ -85,6 +85,22 @@ options:
     description:
       - Role of account to add/modify.
     type: str
+  account_types:
+    required: false
+    aliases: [ account_accounttypes ]
+    description:
+      - Array of account types to apply to a user account.
+    type: list
+    elements: str
+    version_added: '7.2.0'
+  oem_account_types:
+    required: false
+    aliases: [ account_oemaccounttypes ]
+    description:
+      - Array of OEM account types to apply to a user account.
+    type: list
+    elements: str
+    version_added: '7.2.0'
   bootdevice:
     required: false
     description:
@@ -93,8 +109,10 @@ options:
   timeout:
     description:
       - Timeout in seconds for HTTP requests to OOB controller.
-    default: 10
+      - The default value for this parameter changed from V(10) to V(60)
+        in community.general 9.0.0.
     type: int
+    default: 60
   boot_override_mode:
     description:
       - Boot mode when using an override.
@@ -137,6 +155,12 @@ options:
       - URI of the image for the update.
     type: str
     version_added: '0.2.0'
+  update_image_file:
+    required: false
+    description:
+      - Filename, with optional path, of the image for the update.
+    type: path
+    version_added: '7.1.0'
   update_protocol:
     required: false
     description:
@@ -180,6 +204,12 @@ options:
       - InMaintenanceWindowOnReset
       - OnStartUpdateRequest
     version_added: '6.1.0'
+  update_oem_params:
+    required: false
+    description:
+      - Properties for HTTP Multipart Push Updates.
+    type: dict
+    version_added: '7.5.0'
   update_handle:
     required: false
     description:
@@ -252,6 +282,37 @@ options:
       - BIOS attributes that needs to be verified in the given server.
     type: dict
     version_added: 6.4.0
+  reset_to_defaults_mode:
+    description:
+      - Mode to apply when reseting to default.
+    type: str
+    choices: [ ResetAll, PreserveNetworkAndUsers, PreserveNetwork ]
+    version_added: 8.6.0
+  wait:
+    required: false
+    description:
+      - Block until the service is ready again.
+    type: bool
+    default: false
+    version_added: 9.1.0
+  wait_timeout:
+    required: false
+    description:
+      - How long to block until the service is ready again before giving up.
+    type: int
+    default: 120
+    version_added: 9.1.0
+  ciphers:
+    required: false
+    description:
+      - SSL/TLS Ciphers to use for the request.
+      - 'When a list is provided, all ciphers are joined in order with V(:).'
+      - See the L(OpenSSL Cipher List Format,https://www.openssl.org/docs/manmaster/man1/openssl-ciphers.html#CIPHER-LIST-FORMAT)
+        for more details.
+      - The available ciphers is dependent on the Python and OpenSSL/LibreSSL versions.
+    type: list
+    elements: str
+    version_added: 9.2.0
 
 author:
   - "Jose Delarosa (@jose-delarosa)"
@@ -373,6 +434,20 @@ EXAMPLES = '''
       new_username: "{{ new_username }}"
       new_password: "{{ new_password }}"
       roleid: "{{ roleid }}"
+
+  - name: Add user with specified account types
+    community.general.redfish_command:
+      category: Accounts
+      command: AddUser
+      baseuri: "{{ baseuri }}"
+      username: "{{ username }}"
+      password: "{{ password }}"
+      new_username: "{{ new_username }}"
+      new_password: "{{ new_password }}"
+      roleid: "{{ roleid }}"
+      account_types:
+      - Redfish
+      - WebUI
 
   - name: Add user using new option aliases
     community.general.redfish_command:
@@ -541,6 +616,32 @@ EXAMPLES = '''
         username: operator
         password: supersecretpwd
 
+  - name: Multipart HTTP push update; timeout is 600 seconds to allow for a
+      large image transfer
+    community.general.redfish_command:
+      category: Update
+      command: MultipartHTTPPushUpdate
+      baseuri: "{{ baseuri }}"
+      username: "{{ username }}"
+      password: "{{ password }}"
+      timeout: 600
+      update_image_file: ~/images/myupdate.img
+
+  - name: Multipart HTTP push with additional options; timeout is 600 seconds
+      to allow for a large image transfer
+    community.general.redfish_command:
+      category: Update
+      command: MultipartHTTPPushUpdate
+      baseuri: "{{ baseuri }}"
+      username: "{{ username }}"
+      password: "{{ password }}"
+      timeout: 600
+      update_image_file: ~/images/myupdate.img
+      update_targets:
+        - /redfish/v1/UpdateService/FirmwareInventory/BMC
+      update_oem_params:
+        PreserveConfiguration: false
+
   - name: Perform requested operations to continue the update
     community.general.redfish_command:
       category: Update
@@ -609,6 +710,16 @@ EXAMPLES = '''
       username: "{{ username }}"
       password: "{{ password }}"
 
+  - name: Restart manager power gracefully and wait for it to be available
+    community.general.redfish_command:
+      category: Manager
+      command: GracefulRestart
+      resource_id: BMC
+      baseuri: "{{ baseuri }}"
+      username: "{{ username }}"
+      password: "{{ password }}"
+      wait: True
+
   - name: Restart manager power gracefully
     community.general.redfish_command:
       category: Manager
@@ -644,6 +755,13 @@ EXAMPLES = '''
       category: Manager
       command: PowerReboot
       resource_id: BMC
+
+  - name: Factory reset manager to defaults
+    community.general.redfish_command:
+      category: Manager
+      command: ResetToDefaults
+      resource_id: BMC
+      reset_to_defaults_mode: ResetAll
 
   - name: Verify BIOS attributes
     community.general.redfish_command:
@@ -687,7 +805,7 @@ from ansible.module_utils.common.text.converters import to_native
 # More will be added as module features are expanded
 CATEGORY_COMMANDS_ALL = {
     "Systems": ["PowerOn", "PowerForceOff", "PowerForceRestart", "PowerGracefulRestart",
-                "PowerGracefulShutdown", "PowerReboot", "SetOneTimeBoot", "EnableContinuousBootOverride", "DisableBootOverride",
+                "PowerGracefulShutdown", "PowerReboot", "PowerCycle", "SetOneTimeBoot", "EnableContinuousBootOverride", "DisableBootOverride",
                 "IndicatorLedOn", "IndicatorLedOff", "IndicatorLedBlink", "VirtualMediaInsert", "VirtualMediaEject", "VerifyBiosAttributes"],
     "Chassis": ["IndicatorLedOn", "IndicatorLedOff", "IndicatorLedBlink"],
     "Accounts": ["AddUser", "EnableUser", "DeleteUser", "DisableUser",
@@ -695,9 +813,10 @@ CATEGORY_COMMANDS_ALL = {
                  "UpdateAccountServiceProperties"],
     "Sessions": ["ClearSessions", "CreateSession", "DeleteSession"],
     "Manager": ["GracefulRestart", "ClearLogs", "VirtualMediaInsert",
+                "ResetToDefaults",
                 "VirtualMediaEject", "PowerOn", "PowerForceOff", "PowerForceRestart",
                 "PowerGracefulRestart", "PowerGracefulShutdown", "PowerReboot"],
-    "Update": ["SimpleUpdate", "PerformRequestedOperations"],
+    "Update": ["SimpleUpdate", "MultipartHTTPPushUpdate", "PerformRequestedOperations"],
 }
 
 
@@ -717,17 +836,21 @@ def main():
             new_username=dict(aliases=["account_username"]),
             new_password=dict(aliases=["account_password"], no_log=True),
             roleid=dict(aliases=["account_roleid"]),
+            account_types=dict(type='list', elements='str', aliases=["account_accounttypes"]),
+            oem_account_types=dict(type='list', elements='str', aliases=["account_oemaccounttypes"]),
             update_username=dict(type='str', aliases=["account_updatename"]),
             account_properties=dict(type='dict', default={}),
             bootdevice=dict(),
-            timeout=dict(type='int', default=10),
+            timeout=dict(type='int', default=60),
             uefi_target=dict(),
             boot_next=dict(),
             boot_override_mode=dict(choices=['Legacy', 'UEFI']),
             resource_id=dict(),
             update_image_uri=dict(),
+            update_image_file=dict(type='path'),
             update_protocol=dict(),
             update_targets=dict(type='list', elements='str', default=[]),
+            update_oem_params=dict(type='dict'),
             update_creds=dict(
                 type='dict',
                 options=dict(
@@ -752,7 +875,11 @@ def main():
                 )
             ),
             strip_etag_quotes=dict(type='bool', default=False),
-            bios_attributes=dict(type="dict")
+            reset_to_defaults_mode=dict(choices=['ResetAll', 'PreserveNetworkAndUsers', 'PreserveNetwork']),
+            bios_attributes=dict(type="dict"),
+            wait=dict(type='bool', default=False),
+            wait_timeout=dict(type='int', default=120),
+            ciphers=dict(type='list', elements='str'),
         ),
         required_together=[
             ('username', 'password'),
@@ -775,12 +902,17 @@ def main():
              'token': module.params['auth_token']}
 
     # user to add/modify/delete
-    user = {'account_id': module.params['id'],
-            'account_username': module.params['new_username'],
-            'account_password': module.params['new_password'],
-            'account_roleid': module.params['roleid'],
-            'account_updatename': module.params['update_username'],
-            'account_properties': module.params['account_properties']}
+    user = {
+        'account_id': module.params['id'],
+        'account_username': module.params['new_username'],
+        'account_password': module.params['new_password'],
+        'account_roleid': module.params['roleid'],
+        'account_accounttypes': module.params['account_types'],
+        'account_oemaccounttypes': module.params['oem_account_types'],
+        'account_updatename': module.params['update_username'],
+        'account_properties': module.params['account_properties'],
+        'account_passwordchangerequired': None,
+    }
 
     # timeout
     timeout = module.params['timeout']
@@ -791,10 +923,12 @@ def main():
     # update options
     update_opts = {
         'update_image_uri': module.params['update_image_uri'],
+        'update_image_file': module.params['update_image_file'],
         'update_protocol': module.params['update_protocol'],
         'update_targets': module.params['update_targets'],
         'update_creds': module.params['update_creds'],
         'update_apply_time': module.params['update_apply_time'],
+        'update_oem_params': module.params['update_oem_params'],
         'update_handle': module.params['update_handle'],
     }
 
@@ -815,10 +949,14 @@ def main():
     # BIOS Attributes options
     bios_attributes = module.params['bios_attributes']
 
+    # ciphers
+    ciphers = module.params['ciphers']
+
     # Build root URI
     root_uri = "https://" + module.params['baseuri']
     rf_utils = RedfishUtils(creds, root_uri, timeout, module,
-                            resource_id=resource_id, data_modification=True, strip_etag_quotes=strip_etag_quotes)
+                            resource_id=resource_id, data_modification=True, strip_etag_quotes=strip_etag_quotes,
+                            ciphers=ciphers)
 
     # Check that Category is valid
     if category not in CATEGORY_COMMANDS_ALL:
@@ -846,10 +984,16 @@ def main():
         # execute only if we find an Account service resource
         result = rf_utils._find_accountservice_resource()
         if result['ret'] is False:
-            module.fail_json(msg=to_native(result['msg']))
-
-        for command in command_list:
-            result = ACCOUNTS_COMMANDS[command](user)
+            # If a password change is required and the user is attempting to
+            # modify their password, try to proceed.
+            user['account_passwordchangerequired'] = rf_utils.check_password_change_required(result)
+            if len(command_list) == 1 and command_list[0] == "UpdateUserPassword" and user['account_passwordchangerequired']:
+                result = rf_utils.update_user_password(user)
+            else:
+                module.fail_json(msg=to_native(result['msg']))
+        else:
+            for command in command_list:
+                result = ACCOUNTS_COMMANDS[command](user)
 
     elif category == "Systems":
         # execute only if we find a System resource
@@ -921,13 +1065,15 @@ def main():
                 command = 'PowerGracefulRestart'
 
             if command.startswith('Power'):
-                result = rf_utils.manage_manager_power(command)
+                result = rf_utils.manage_manager_power(command, module.params['wait'], module.params['wait_timeout'])
             elif command == 'ClearLogs':
                 result = rf_utils.clear_logs()
             elif command == 'VirtualMediaInsert':
                 result = rf_utils.virtual_media_insert(virtual_media, category)
             elif command == 'VirtualMediaEject':
                 result = rf_utils.virtual_media_eject(virtual_media, category)
+            elif command == 'ResetToDefaults':
+                result = rf_utils.manager_reset_to_defaults(module.params['reset_to_defaults_mode'])
 
     elif category == "Update":
         # execute only if we find UpdateService resources
@@ -938,6 +1084,10 @@ def main():
         for command in command_list:
             if command == "SimpleUpdate":
                 result = rf_utils.simple_update(update_opts)
+                if 'update_status' in result:
+                    return_values['update_status'] = result['update_status']
+            elif command == "MultipartHTTPPushUpdate":
+                result = rf_utils.multipath_http_push_update(update_opts)
                 if 'update_status' in result:
                     return_values['update_status'] = result['update_status']
             elif command == "PerformRequestedOperations":

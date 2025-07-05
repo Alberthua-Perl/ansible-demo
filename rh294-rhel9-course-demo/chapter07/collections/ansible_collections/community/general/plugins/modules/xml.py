@@ -29,18 +29,18 @@ options:
     description:
     - Path to the file to operate on.
     - This file must exist ahead of time.
-    - This parameter is required, unless I(xmlstring) is given.
+    - This parameter is required, unless O(xmlstring) is given.
     type: path
     aliases: [ dest, file ]
   xmlstring:
     description:
     - A string containing XML on which to operate.
-    - This parameter is required, unless I(path) is given.
+    - This parameter is required, unless O(path) is given.
     type: str
   xpath:
     description:
     - A valid XPath expression describing the item(s) you want to manipulate.
-    - Operates on the document root, C(/), by default.
+    - Operates on the document root, V(/), by default.
     type: str
   namespaces:
     description:
@@ -57,43 +57,43 @@ options:
     aliases: [ ensure ]
   attribute:
     description:
-    - The attribute to select when using parameter I(value).
-    - This is a string, not prepended with C(@).
+    - The attribute to select when using parameter O(value).
+    - This is a string, not prepended with V(@).
     type: raw
   value:
     description:
     - Desired state of the selected attribute.
-    - Either a string, or to unset a value, the Python C(None) keyword (YAML Equivalent, C(null)).
+    - Either a string, or to unset a value, the Python V(None) keyword (YAML Equivalent, V(null)).
     - Elements default to no value (but present).
     - Attributes default to an empty string.
     type: raw
   add_children:
     description:
-    - Add additional child-element(s) to a selected element for a given I(xpath).
+    - Add additional child-element(s) to a selected element for a given O(xpath).
     - Child elements must be given in a list and each item may be either a string
-      (eg. C(children=ansible) to add an empty C(<ansible/>) child element),
+      (for example C(children=ansible) to add an empty C(<ansible/>) child element),
       or a hash where the key is an element name and the value is the element value.
-    - This parameter requires I(xpath) to be set.
+    - This parameter requires O(xpath) to be set.
     type: list
     elements: raw
   set_children:
     description:
-    - Set the child-element(s) of a selected element for a given I(xpath).
+    - Set the child-element(s) of a selected element for a given O(xpath).
     - Removes any existing children.
-    - Child elements must be specified as in I(add_children).
-    - This parameter requires I(xpath) to be set.
+    - Child elements must be specified as in O(add_children).
+    - This parameter requires O(xpath) to be set.
     type: list
     elements: raw
   count:
     description:
-    - Search for a given I(xpath) and provide the count of any matches.
-    - This parameter requires I(xpath) to be set.
+    - Search for a given O(xpath) and provide the count of any matches.
+    - This parameter requires O(xpath) to be set.
     type: bool
     default: false
   print_match:
     description:
-    - Search for a given I(xpath) and print out any matches.
-    - This parameter requires I(xpath) to be set.
+    - Search for a given O(xpath) and print out any matches.
+    - This parameter requires O(xpath) to be set.
     type: bool
     default: false
   pretty_print:
@@ -103,13 +103,13 @@ options:
     default: false
   content:
     description:
-    - Search for a given I(xpath) and get content.
-    - This parameter requires I(xpath) to be set.
+    - Search for a given O(xpath) and get content.
+    - This parameter requires O(xpath) to be set.
     type: str
     choices: [ attribute, text ]
   input_type:
     description:
-    - Type of input for I(add_children) and I(set_children).
+    - Type of input for O(add_children) and O(set_children).
     type: str
     choices: [ xml, yaml ]
     default: yaml
@@ -127,20 +127,20 @@ options:
     default: false
   insertbefore:
     description:
-      - Add additional child-element(s) before the first selected element for a given I(xpath).
+      - Add additional child-element(s) before the first selected element for a given O(xpath).
       - Child elements must be given in a list and each item may be either a string
-        (eg. C(children=ansible) to add an empty C(<ansible/>) child element),
+        (for example C(children=ansible) to add an empty C(<ansible/>) child element),
         or a hash where the key is an element name and the value is the element value.
-      - This parameter requires I(xpath) to be set.
+      - This parameter requires O(xpath) to be set.
     type: bool
     default: false
   insertafter:
     description:
-      - Add additional child-element(s) after the last selected element for a given I(xpath).
+      - Add additional child-element(s) after the last selected element for a given O(xpath).
       - Child elements must be given in a list and each item may be either a string
-        (eg. C(children=ansible) to add an empty C(<ansible/>) child element),
+        (for example C(children=ansible) to add an empty C(<ansible/>) child element),
         or a hash where the key is an element name and the value is the element value.
-      - This parameter requires I(xpath) to be set.
+      - This parameter requires O(xpath) to be set.
     type: bool
     default: false
 requirements:
@@ -149,7 +149,7 @@ notes:
 - Use the C(--check) and C(--diff) options when testing your expressions.
 - The diff output is automatically pretty-printed, so may not reflect the actual file content, only the file structure.
 - This module does not handle complicated xpath expressions, so limit xpath selectors to simple expressions.
-- Beware that in case your XML elements are namespaced, you need to use the I(namespaces) parameter, see the examples.
+- Beware that in case your XML elements are namespaced, you need to use the O(namespaces) parameter, see the examples.
 - Namespaces prefix should be used for all children of an element where namespace is defined, unless another namespace is defined for them.
 seealso:
 - name: Xml module development community wiki
@@ -338,7 +338,7 @@ actions:
 backup_file:
     description: The name of the backup file that was created
     type: str
-    returned: when I(backup=true)
+    returned: when O(backup=true)
     sample: /path/to/file.xml.1942.2017-08-24@14:16:01~
 count:
     description: The count of xpath matches.
@@ -436,11 +436,16 @@ def is_attribute(tree, xpath, namespaces):
     """ Test if a given xpath matches and that match is an attribute
 
     An xpath attribute search will only match one item"""
+
+    # lxml 5.1.1 removed etree._ElementStringResult, so we can no longer simply assume it's there
+    # (https://github.com/lxml/lxml/commit/eba79343d0e7ad1ce40169f60460cdd4caa29eb3)
+    ElementStringResult = getattr(etree, '_ElementStringResult', None)
+
     if xpath_matches(tree, xpath, namespaces):
         match = tree.xpath(xpath, namespaces=namespaces)
-        if isinstance(match[0], etree._ElementStringResult):
+        if isinstance(match[0], etree._ElementUnicodeResult):
             return True
-        elif isinstance(match[0], etree._ElementUnicodeResult):
+        elif ElementStringResult is not None and isinstance(match[0], ElementStringResult):
             return True
     return False
 
@@ -918,29 +923,34 @@ def main():
     elif LooseVersion('.'.join(to_native(f) for f in etree.LXML_VERSION)) < LooseVersion('3.0.0'):
         module.warn('Using lxml version lower than 3.0.0 does not guarantee predictable element attribute order.')
 
-    # Check if the file exists
-    if xml_string:
-        infile = BytesIO(to_bytes(xml_string, errors='surrogate_or_strict'))
-    elif os.path.isfile(xml_file):
-        infile = open(xml_file, 'rb')
-    else:
-        module.fail_json(msg="The target XML source '%s' does not exist." % xml_file)
-
-    # Parse and evaluate xpath expression
-    if xpath is not None:
-        try:
-            etree.XPath(xpath)
-        except etree.XPathSyntaxError as e:
-            module.fail_json(msg="Syntax error in xpath expression: %s (%s)" % (xpath, e))
-        except etree.XPathEvalError as e:
-            module.fail_json(msg="Evaluation error in xpath expression: %s (%s)" % (xpath, e))
-
-    # Try to parse in the target XML file
+    infile = None
     try:
-        parser = etree.XMLParser(remove_blank_text=pretty_print, strip_cdata=strip_cdata_tags)
-        doc = etree.parse(infile, parser)
-    except etree.XMLSyntaxError as e:
-        module.fail_json(msg="Error while parsing document: %s (%s)" % (xml_file or 'xml_string', e))
+        # Check if the file exists
+        if xml_string:
+            infile = BytesIO(to_bytes(xml_string, errors='surrogate_or_strict'))
+        elif os.path.isfile(xml_file):
+            infile = open(xml_file, 'rb')
+        else:
+            module.fail_json(msg="The target XML source '%s' does not exist." % xml_file)
+
+        # Parse and evaluate xpath expression
+        if xpath is not None:
+            try:
+                etree.XPath(xpath)
+            except etree.XPathSyntaxError as e:
+                module.fail_json(msg="Syntax error in xpath expression: %s (%s)" % (xpath, e))
+            except etree.XPathEvalError as e:
+                module.fail_json(msg="Evaluation error in xpath expression: %s (%s)" % (xpath, e))
+
+        # Try to parse in the target XML file
+        try:
+            parser = etree.XMLParser(remove_blank_text=pretty_print, strip_cdata=strip_cdata_tags)
+            doc = etree.parse(infile, parser)
+        except etree.XMLSyntaxError as e:
+            module.fail_json(msg="Error while parsing document: %s (%s)" % (xml_file or 'xml_string', e))
+    finally:
+        if infile:
+            infile.close()
 
     # Ensure we have the original copy to compare
     global orig_doc

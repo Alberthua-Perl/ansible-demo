@@ -53,7 +53,6 @@ EXAMPLES = '''
 
 import os
 import re
-import tempfile
 
 from ansible_collections.community.general.plugins.module_utils.module_helper import StateModuleHelper
 
@@ -68,6 +67,7 @@ class Blacklist(StateModuleHelper):
         ),
         supports_check_mode=True,
     )
+    use_old_vardict = False
 
     def __init_module__(self):
         self.pattern = re.compile(r'^blacklist\s+{0}$'.format(re.escape(self.vars.name)))
@@ -106,16 +106,10 @@ class Blacklist(StateModuleHelper):
 
     def __quit_module__(self):
         if self.has_changed() and not self.module.check_mode:
-            dummy, tmpfile = tempfile.mkstemp()
-            try:
-                os.remove(tmpfile)
-                self.module.preserved_copy(self.vars.filename, tmpfile)  # ensure right perms/ownership
-                with open(tmpfile, 'w') as fd:
-                    fd.writelines(["{0}\n".format(x) for x in self.vars.lines])
-                self.module.atomic_move(tmpfile, self.vars.filename)
-            finally:
-                if os.path.exists(tmpfile):
-                    os.remove(tmpfile)
+            bkp = self.module.backup_local(self.vars.filename)
+            with open(self.vars.filename, "w") as fd:
+                fd.writelines(["{0}\n".format(x) for x in self.vars.lines])
+            self.module.add_cleanup_file(bkp)
 
 
 def main():

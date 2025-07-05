@@ -49,12 +49,22 @@ options:
   params:
     description:
       - Any extra parameters to pass to make.
+      - If the value is empty, only the key will be used. For example, V(FOO:) will produce V(FOO), not V(FOO=).
     type: dict
   target:
     description:
       - The target to run.
-      - Typically this would be something like C(install), C(test), or C(all).
+      - Typically this would be something like V(install), V(test), or V(all).
+      - O(target) and O(targets) are mutually exclusive.
     type: str
+  targets:
+    description:
+      - The list of targets to run.
+      - Typically this would be something like V(install), V(test), or V(all).
+      - O(target) and O(targets) are mutually exclusive.
+    type: list
+    elements: str
+    version_added: 7.2.0
 '''
 
 EXAMPLES = r'''
@@ -81,12 +91,24 @@ EXAMPLES = r'''
     chdir: /home/ubuntu/cool-project
     target: all
     file: /some-project/Makefile
+
+- name: build arm64 kernel on FreeBSD, with 16 parallel jobs
+  community.general.make:
+    chdir: /usr/src
+    jobs: 16
+    target: buildkernel
+    params:
+      # This adds -DWITH_FDT to the command line:
+      -DWITH_FDT:
+      # The following adds TARGET=arm64 TARGET_ARCH=aarch64 to the command line:
+      TARGET: arm64
+      TARGET_ARCH: aarch64
 '''
 
 RETURN = r'''
 chdir:
   description:
-    - The value of the module parameter I(chdir).
+    - The value of the module parameter O(chdir).
   type: str
   returned: success
 command:
@@ -97,24 +119,30 @@ command:
   version_added: 6.5.0
 file:
   description:
-    - The value of the module parameter I(file).
+    - The value of the module parameter O(file).
   type: str
   returned: success
 jobs:
   description:
-    - The value of the module parameter I(jobs).
+    - The value of the module parameter O(jobs).
   type: int
   returned: success
 params:
   description:
-    - The value of the module parameter I(params).
+    - The value of the module parameter O(params).
   type: dict
   returned: success
 target:
   description:
-    - The value of the module parameter I(target).
+    - The value of the module parameter O(target).
   type: str
   returned: success
+targets:
+  description:
+    - The value of the module parameter O(targets).
+  type: str
+  returned: success
+  version_added: 7.2.0
 '''
 
 from ansible.module_utils.six import iteritems
@@ -155,12 +183,14 @@ def main():
     module = AnsibleModule(
         argument_spec=dict(
             target=dict(type='str'),
+            targets=dict(type='list', elements='str'),
             params=dict(type='dict'),
             chdir=dict(type='path', required=True),
             file=dict(type='path'),
             make=dict(type='path'),
             jobs=dict(type='int'),
         ),
+        mutually_exclusive=[('target', 'targets')],
         supports_check_mode=True,
     )
 
@@ -172,9 +202,8 @@ def main():
         if not make_path:
             # Fall back to system make
             make_path = module.get_bin_path('make', required=True)
-    make_target = module.params['target']
     if module.params['params'] is not None:
-        make_parameters = [k + '=' + str(v) for k, v in iteritems(module.params['params'])]
+        make_parameters = [k + (('=' + str(v)) if v is not None else '') for k, v in iteritems(module.params['params'])]
     else:
         make_parameters = []
 
@@ -188,7 +217,10 @@ def main():
         base_command.extend(["-f", module.params['file']])
 
     # add make target
-    base_command.append(make_target)
+    if module.params['target']:
+        base_command.append(module.params['target'])
+    elif module.params['targets']:
+        base_command.extend(module.params['targets'])
 
     # add makefile parameters
     base_command.extend(make_parameters)
@@ -206,8 +238,7 @@ def main():
             changed = False
         else:
             # The target isn't up to date, so we need to run it
-            rc, out, err = run_command(base_command, module,
-                                       check_rc=True)
+            rc, out, err = run_command(base_command, module, check_rc=True)
             changed = True
 
     # We don't report the return code, as if this module failed
@@ -221,6 +252,7 @@ def main():
         stdout=out,
         stderr=err,
         target=module.params['target'],
+        targets=module.params['targets'],
         params=module.params['params'],
         chdir=module.params['chdir'],
         file=module.params['file'],

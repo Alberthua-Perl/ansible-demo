@@ -24,6 +24,7 @@ DOCUMENTATION = '''
             description:
                 - A token that ensures this is a source file for the plugin.
             required: true
+            type: string
             choices: ['community.general.stackpath_compute']
         client_id:
             description:
@@ -72,6 +73,8 @@ from ansible.plugins.inventory import (
     Cacheable
 )
 from ansible.utils.display import Display
+
+from ansible_collections.community.general.plugins.plugin_utils.unsafe import make_unsafe
 
 
 display = Display()
@@ -271,7 +274,7 @@ class InventoryModule(BaseInventoryPlugin, Constructable, Cacheable):
         if not cache or cache_needs_update:
             results = self._query()
 
-        self._populate(results)
+        self._populate(make_unsafe(results))
 
         # If the cache has expired/doesn't exist or
         # if refresh_inventory/flush cache is used

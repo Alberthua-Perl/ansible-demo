@@ -12,5 +12,6 @@
       ansible.builtin.yum:
         name: httpd
         state: present
-      when: ansible_distribution in supported_distros
+      when: 
+        ansible_distribution in supported_distros and inventory_hostname == 'webserver1'
 ...

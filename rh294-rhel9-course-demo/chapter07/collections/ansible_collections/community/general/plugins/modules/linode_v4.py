@@ -14,7 +14,6 @@ module: linode_v4
 short_description: Manage instances on the Linode cloud
 description: Manage instances on the Linode cloud.
 requirements:
-  - python >= 2.7
   - linode_api4 >= 2.0.0
 author:
   - Luke Murphy (@decentral1se)
@@ -62,7 +61,7 @@ options:
     type: str
   private_ip:
     description:
-      - If C(true), the created Linode will have private networking enabled and
+      - If V(true), the created Linode will have private networking enabled and
         assigned a private IPv4 address.
     type: bool
     default: false
@@ -95,7 +94,7 @@ options:
   access_token:
     description:
       - The Linode API v4 access token. It may also be specified by exposing
-        the C(LINODE_ACCESS_TOKEN) environment variable. See
+        the E(LINODE_ACCESS_TOKEN) environment variable. See
         U(https://www.linode.com/docs/api#access-and-authentication).
     required: true
     type: str

@@ -27,16 +27,14 @@ notes:
    accessing XenServer host in trusted environment or use C(https://) scheme explicitly.'
 - 'To use C(https://) scheme for C(hostname) you have to either import host certificate to your OS certificate store or use C(validate_certs: no)
    which requires XenAPI library from XenServer 7.2 SDK or newer and Python 2.7.9 or newer.'
-- This module was called C(xenserver_guest_facts) before Ansible 2.9. The usage did not change.
 requirements:
-- python >= 2.6
 - XenAPI
 options:
   name:
     description:
     - Name of the VM to gather facts from.
     - VMs running on XenServer do not necessarily have unique names. The module will fail if multiple VMs with same name are found.
-    - In case of multiple VMs with same name, use C(uuid) to uniquely specify VM to manage.
+    - In case of multiple VMs with same name, use O(uuid) to uniquely specify VM to manage.
     - This parameter is case sensitive.
     type: str
     aliases: [ name_label ]
@@ -151,12 +149,6 @@ instance:
     }
 '''
 
-HAS_XENAPI = False
-try:
-    import XenAPI  # noqa: F401, pylint: disable=unused-import
-    HAS_XENAPI = True
-except ImportError:
-    pass
 
 from ansible.module_utils.basic import AnsibleModule
 from ansible_collections.community.general.plugins.module_utils.xenserver import (xenserver_common_argument_spec, XenServerObject, get_object_ref,

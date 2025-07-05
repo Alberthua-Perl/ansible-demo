@@ -21,8 +21,8 @@ description:
    notify the health of the entire node to the cluster.
    Service level checks do not require a check name or id as these are derived
    by Consul from the Service name and id respectively by appending 'service:'
-   Node level checks require a I(check_name) and optionally a I(check_id)."
- - Currently, there is no complete way to retrieve the script, interval or ttl
+   Node level checks require a O(check_name) and optionally a O(check_id)."
+ - Currently, there is no complete way to retrieve the script, interval or TTL
    metadata for a registered check. Without this metadata it is not possible to
    tell if the data supplied with ansible represents a change to a check. As a
    result this does not attempt to determine changes and will always report a
@@ -56,7 +56,7 @@ options:
     service_id:
         type: str
         description:
-          - The ID for the service, must be unique per node. If I(state=absent),
+          - The ID for the service, must be unique per node. If O(state=absent),
             defaults to the service name if supplied.
     host:
         type: str
@@ -86,12 +86,12 @@ options:
         type: int
         description:
           - The port on which the service is listening. Can optionally be supplied for
-            registration of a service, i.e. if I(service_name) or I(service_id) is set.
+            registration of a service, that is if O(service_name) or O(service_id) is set.
     service_address:
         type: str
         description:
           - The address to advertise that the service will be listening on.
-            This value will be passed as the I(address) parameter to Consul's
+            This value will be passed as the C(address) parameter to Consul's
             C(/v1/agent/service/register) API method, so refer to the Consul API
             documentation for further details.
     tags:
@@ -103,55 +103,69 @@ options:
         type: str
         description:
           - The script/command that will be run periodically to check the health of the service.
-          - Requires I(interval) to be provided.
+          - Requires O(interval) to be provided.
+          - Mutually exclusive with O(ttl), O(tcp) and O(http).
     interval:
         type: str
         description:
           - The interval at which the service check will be run.
-            This is a number with a C(s) or C(m) suffix to signify the units of seconds or minutes e.g C(15s) or C(1m).
-            If no suffix is supplied C(s) will be used by default, e.g. C(10) will be C(10s).
-          - Required if one of the parameters I(script), I(http), or I(tcp) is specified.
+            This is a number with a V(s) or V(m) suffix to signify the units of seconds or minutes, for example V(15s) or V(1m).
+            If no suffix is supplied V(s) will be used by default, for example V(10) will be V(10s).
+          - Required if one of the parameters O(script), O(http), or O(tcp) is specified.
     check_id:
         type: str
         description:
-          - An ID for the service check. If I(state=absent), defaults to
-            I(check_name). Ignored if part of a service definition.
+          - An ID for the service check. If O(state=absent), defaults to
+            O(check_name). Ignored if part of a service definition.
     check_name:
         type: str
         description:
           - Name for the service check. Required if standalone, ignored if
             part of service definition.
+    check_node:
+        description:
+          - Node name.
+          # TODO: properly document!
+        type: str
+    check_host:
+        description:
+          - Host name.
+          # TODO: properly document!
+        type: str
     ttl:
         type: str
         description:
-          - Checks can be registered with a ttl instead of a I(script) and I(interval)
+          - Checks can be registered with a TTL instead of a O(script) and O(interval)
             this means that the service will check in with the agent before the
-            ttl expires. If it doesn't the check will be considered failed.
+            TTL expires. If it doesn't the check will be considered failed.
             Required if registering a check and the script an interval are missing
-            Similar to the interval this is a number with a C(s) or C(m) suffix to
-            signify the units of seconds or minutes e.g C(15s) or C(1m).
-            If no suffix is supplied C(s) will be used by default, e.g. C(10) will be C(10s).
+            Similar to the interval this is a number with a V(s) or V(m) suffix to
+            signify the units of seconds or minutes, for example V(15s) or V(1m).
+            If no suffix is supplied V(s) will be used by default, for example V(10) will be V(10s).
+          - Mutually exclusive with O(script), O(tcp) and O(http).
     tcp:
         type: str
         description:
           - Checks can be registered with a TCP port. This means that consul
             will check if the connection attempt to that port is successful (that is, the port is currently accepting connections).
-            The format is C(host:port), for example C(localhost:80).
-          - Requires I(interval) to be provided.
+            The format is V(host:port), for example V(localhost:80).
+          - Requires O(interval) to be provided.
+          - Mutually exclusive with O(script), O(ttl) and O(http).
         version_added: '1.3.0'
     http:
         type: str
         description:
           - Checks can be registered with an HTTP endpoint. This means that consul
             will check that the http endpoint returns a successful HTTP status.
-          - Requires I(interval) to be provided.
+          - Requires O(interval) to be provided.
+          - Mutually exclusive with O(script), O(ttl) and O(tcp).
     timeout:
         type: str
         description:
           - A custom HTTP check timeout. The consul default is 10 seconds.
-            Similar to the interval this is a number with a C(s) or C(m) suffix to
-            signify the units of seconds or minutes, e.g. C(15s) or C(1m).
-            If no suffix is supplied C(s) will be used by default, e.g. C(10) will be C(10s).
+            Similar to the interval this is a number with a V(s) or V(m) suffix to
+            signify the units of seconds or minutes, for example V(15s) or V(1m).
+            If no suffix is supplied V(s) will be used by default, for example V(10) will be V(10s).
     token:
         type: str
         description:
@@ -159,7 +173,7 @@ options:
     ack_params_state_absent:
         type: bool
         description:
-          - Disable deprecation warning when using parameters incompatible with I(state=absent).
+          - This parameter has no more effect and is deprecated. It will be removed in community.general 10.0.0.
 '''
 
 EXAMPLES = '''
@@ -377,13 +391,7 @@ def get_service_by_id_or_name(consul_api, service_id_or_name):
 
 
 def parse_check(module):
-    _checks = [module.params[p] for p in ('script', 'ttl', 'tcp', 'http') if module.params[p]]
-
-    if len(_checks) > 1:
-        module.fail_json(
-            msg='checks are either script, tcp, http or ttl driven, supplying more than one does not make sense')
-
-    if module.params['check_id'] or _checks:
+    if module.params['check_id'] or any(module.params[p] is not None for p in ('script', 'ttl', 'tcp', 'http')):
         return ConsulCheck(
             module.params['check_id'],
             module.params['check_name'],
@@ -501,15 +509,9 @@ class ConsulCheck(object):
             self.check = consul.Check.ttl(self.ttl)
 
         if http:
-            if interval is None:
-                raise Exception('http check must specify interval')
-
             self.check = consul.Check.http(http, self.interval, self.timeout)
 
         if tcp:
-            if interval is None:
-                raise Exception('tcp check must specify interval')
-
             regex = r"(?P<host>.*):(?P<port>(?:[0-9]+))$"
             match = re.match(regex, tcp)
 
@@ -596,30 +598,33 @@ def main():
             timeout=dict(type='str'),
             tags=dict(type='list', elements='str'),
             token=dict(no_log=True),
-            ack_params_state_absent=dict(type='bool'),
+            ack_params_state_absent=dict(
+                type='bool',
+                removed_in_version='10.0.0',
+                removed_from_collection='community.general',
+            ),
         ),
+        mutually_exclusive=[
+            ('script', 'ttl', 'tcp', 'http'),
+        ],
         required_if=[
             ('state', 'present', ['service_name']),
             ('state', 'absent', ['service_id', 'service_name', 'check_id', 'check_name'], True),
         ],
+        required_by={
+            'script': 'interval',
+            'http': 'interval',
+            'tcp': 'interval',
+        },
         supports_check_mode=False,
     )
     p = module.params
 
     test_dependencies(module)
-    if p['state'] == 'absent' and any(p[x] for x in ['script', 'ttl', 'tcp', 'http', 'interval']) and not p['ack_params_state_absent']:
-        module.deprecate(
-            "The use of parameters 'script', 'ttl', 'tcp', 'http', 'interval' along with 'state=absent' is deprecated. "
-            "In community.general 8.0.0 their use will become an error. "
-            "To suppress this deprecation notice, set parameter ack_params_state_absent=true.",
-            version="8.0.0",
-            collection_name="community.general",
+    if p['state'] == 'absent' and any(p[x] for x in ['script', 'ttl', 'tcp', 'http', 'interval']):
+        module.fail_json(
+            msg="The use of parameters 'script', 'ttl', 'tcp', 'http', 'interval' along with 'state=absent' is no longer allowed."
         )
-        # When reaching c.g 8.0.0:
-        # - Replace the deprecation with a fail_json(), remove the "ack_params_state_absent" condition from the "if"
-        # - Add mutually_exclusive for ('script', 'ttl', 'tcp', 'http'), then remove that validation from parse_check()
-        # - Add required_by {'script': 'interval', 'http': 'interval', 'tcp': 'interval'}, then remove checks for 'interval' in ConsulCheck.__init__()
-        # - Deprecate the parameter ack_params_state_absent
 
     try:
         register_with_consul(module)

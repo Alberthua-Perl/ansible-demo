@@ -13,8 +13,6 @@ module: oneview_san_manager_info
 short_description: Retrieve information about one or more of the OneView SAN Managers
 description:
     - Retrieve information about one or more of the SAN Managers from OneView
-    - This module was called C(oneview_san_manager_facts) before Ansible 2.9, returning C(ansible_facts).
-      Note that the M(community.general.oneview_san_manager_info) module no longer returns C(ansible_facts)!
 requirements:
     - hpOneView >= 2.0.1
 author:
@@ -34,10 +32,10 @@ options:
       description:
         - List of params to delimit, filter and sort the list of resources.
         - "params allowed:
-           - C(start): The first item to return, using 0-based indexing.
-           - C(count): The number of resources to return.
-           - C(query): A general query string to narrow the list of resources returned.
-           - C(sort): The sort order of the returned data set."
+           - V(start): The first item to return, using 0-based indexing.
+           - V(count): The number of resources to return.
+           - V(query): A general query string to narrow the list of resources returned.
+           - V(sort): The sort order of the returned data set."
       type: dict
 extends_documentation_fragment:
   - community.general.oneview

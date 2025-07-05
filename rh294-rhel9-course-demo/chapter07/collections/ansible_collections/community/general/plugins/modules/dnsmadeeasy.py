@@ -87,14 +87,14 @@ options:
 
   validate_certs:
     description:
-      - If C(false), SSL certificates will not be validated. This should only be used
+      - If V(false), SSL certificates will not be validated. This should only be used
         on personally controlled sites using self-signed certificates.
     type: bool
     default: true
 
   monitor:
     description:
-      - If C(true), add or change the monitor.  This is applicable only for A records.
+      - If V(true), add or change the monitor.  This is applicable only for A records.
     type: bool
     default: false
 
@@ -133,7 +133,7 @@ options:
   contactList:
     description:
       - Name or id of the contact list that the monitor will notify.
-      - The default C('') means the Account Owner.
+      - The default V('') means the Account Owner.
     type: str
 
   httpFqdn:
@@ -153,7 +153,7 @@ options:
 
   failover:
     description:
-      - If C(true), add or change the failover.  This is applicable only for A records.
+      - If V(true), add or change the failover.  This is applicable only for A records.
     type: bool
     default: false
 
@@ -509,15 +509,15 @@ class DME2(object):
         return json.dumps(data, separators=(',', ':'))
 
     def createRecord(self, data):
-        # @TODO update the cache w/ resultant record + id when impleneted
+        # @TODO update the cache w/ resultant record + id when implemented
         return self.query(self.record_url, 'POST', data)
 
     def updateRecord(self, record_id, data):
-        # @TODO update the cache w/ resultant record + id when impleneted
+        # @TODO update the cache w/ resultant record + id when implemented
         return self.query(self.record_url + '/' + str(record_id), 'PUT', data)
 
     def deleteRecord(self, record_id):
-        # @TODO remove record from the cache when impleneted
+        # @TODO remove record from the cache when implemented
         return self.query(self.record_url + '/' + str(record_id), 'DELETE')
 
     def getMonitor(self, record_id):

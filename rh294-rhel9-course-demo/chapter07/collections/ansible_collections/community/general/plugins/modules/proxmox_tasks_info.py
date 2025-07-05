@@ -17,6 +17,9 @@ version_added: 3.8.0
 description:
   - Retrieve information about one or more Proxmox VE tasks.
 author: 'Andreas Botzner (@paginabianca) <andreas at botzner dot com>'
+attributes:
+  action_group:
+    version_added: 9.0.0
 options:
   node:
     description:
@@ -29,15 +32,16 @@ options:
     aliases: ['upid', 'name']
     type: str
 extends_documentation_fragment:
-    - community.general.proxmox.documentation
-    - community.general.attributes
-    - community.general.attributes.info_module
+  - community.general.proxmox.actiongroup_proxmox
+  - community.general.proxmox.documentation
+  - community.general.attributes
+  - community.general.attributes.info_module
 '''
 
 
 EXAMPLES = '''
 - name: List tasks on node01
-  community.general.proxmox_task_info:
+  community.general.proxmox_tasks_info:
     api_host: proxmoxhost
     api_user: root@pam
     api_password: '{{ password | default(omit) }}'
@@ -47,7 +51,7 @@ EXAMPLES = '''
   register: result
 
 - name: Retrieve information about specific tasks on node01
-  community.general.proxmox_task_info:
+  community.general.proxmox_tasks_info:
     api_host: proxmoxhost
     api_user: root@pam
     api_password: '{{ password | default(omit) }}'
@@ -160,8 +164,7 @@ def main():
 
     module = AnsibleModule(
         argument_spec=module_args,
-        required_together=[('api_token_id', 'api_token_secret'),
-                           ('api_user', 'api_password')],
+        required_together=[('api_token_id', 'api_token_secret')],
         required_one_of=[('api_password', 'api_token_id')],
         supports_check_mode=True)
     result = dict(changed=False)

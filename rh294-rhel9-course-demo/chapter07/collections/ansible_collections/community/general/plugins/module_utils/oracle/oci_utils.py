@@ -434,7 +434,7 @@ def check_and_update_attributes(
     target_instance, attr_name, input_value, existing_value, changed
 ):
     """
-    This function checks the difference between two resource attributes of literal types and sets the attrbute
+    This function checks the difference between two resource attributes of literal types and sets the attribute
     value in the target instance type holding the attribute.
     :param target_instance: The instance which contains the attribute whose values to be compared
     :param attr_name: Name of the attribute whose value required to be compared
@@ -561,7 +561,7 @@ def are_lists_equal(s, t):
     if s is None and t is None:
         return True
 
-    if (s is None and len(t) >= 0) or (t is None and len(s) >= 0) or (len(s) != len(t)):
+    if s is None or t is None or (len(s) != len(t)):
         return False
 
     if len(s) == 0:
@@ -570,7 +570,7 @@ def are_lists_equal(s, t):
     s = to_dict(s)
     t = to_dict(t)
 
-    if type(s[0]) == dict:
+    if isinstance(s[0], dict):
         # Handle list of dicts. Dictionary returned by the API may have additional keys. For example, a get call on
         # service gateway has an attribute `services` which is a list of `ServiceIdResponseDetails`. This has a key
         # `service_name` which is not provided in the list of `services` by a user while making an update call; only
@@ -604,9 +604,9 @@ def get_attr_to_update(get_fn, kwargs_get, module, update_attributes):
         user_provided_attr_value = module.params.get(attr, None)
 
         unequal_list_attr = (
-            type(resources_attr_value) == list or type(user_provided_attr_value) == list
+            isinstance(resources_attr_value, list) or isinstance(user_provided_attr_value, list)
         ) and not are_lists_equal(user_provided_attr_value, resources_attr_value)
-        unequal_attr = type(resources_attr_value) != list and to_dict(
+        unequal_attr = not isinstance(resources_attr_value, list) and to_dict(
             resources_attr_value
         ) != to_dict(user_provided_attr_value)
         if unequal_list_attr or unequal_attr:
@@ -785,7 +785,7 @@ def _get_attributes_to_consider(exclude_attributes, model, module):
         attributes_to_consider = list(model.attribute_map)
         if "freeform_tags" in attributes_to_consider:
             attributes_to_consider.remove("freeform_tags")
-        # Temporarily removing node_count as the exisiting resource does not reflect it
+        # Temporarily removing node_count as the existing resource does not reflect it
         if "node_count" in attributes_to_consider:
             attributes_to_consider.remove("node_count")
     _debug("attributes to consider: {0}".format(attributes_to_consider))
@@ -936,9 +936,9 @@ def tuplize(d):
     list_of_tuples = []
     key_list = sorted(list(d.keys()))
     for key in key_list:
-        if type(d[key]) == list:
+        if isinstance(d[key], list):
             # Convert a value which is itself a list of dict to a list of tuples.
-            if d[key] and type(d[key][0]) == dict:
+            if d[key] and isinstance(d[key][0], dict):
                 sub_tuples = []
                 for sub_dict in d[key]:
                     sub_tuples.append(tuplize(sub_dict))
@@ -948,7 +948,7 @@ def tuplize(d):
                 list_of_tuples.append((sub_tuples is None, key, sub_tuples))
             else:
                 list_of_tuples.append((d[key] is None, key, d[key]))
-        elif type(d[key]) == dict:
+        elif isinstance(d[key], dict):
             tupled_value = tuplize(d[key])
             list_of_tuples.append((tupled_value is None, key, tupled_value))
         else:
@@ -969,13 +969,13 @@ def sort_dictionary(d):
     """
     sorted_d = {}
     for key in d:
-        if type(d[key]) == list:
-            if d[key] and type(d[key][0]) == dict:
+        if isinstance(d[key], list):
+            if d[key] and isinstance(d[key][0], dict):
                 sorted_value = sort_list_of_dictionary(d[key])
                 sorted_d[key] = sorted_value
             else:
                 sorted_d[key] = sorted(d[key])
-        elif type(d[key]) == dict:
+        elif isinstance(d[key], dict):
             sorted_d[key] = sort_dictionary(d[key])
         else:
             sorted_d[key] = d[key]
@@ -1026,10 +1026,7 @@ def check_if_user_value_matches_resources_attr(
             return
 
         if (
-            resources_value_for_attr is None
-            and len(user_provided_value_for_attr) >= 0
-            or user_provided_value_for_attr is None
-            and len(resources_value_for_attr) >= 0
+            resources_value_for_attr is None or user_provided_value_for_attr is None
         ):
             res[0] = False
             return
@@ -1044,7 +1041,7 @@ def check_if_user_value_matches_resources_attr(
 
         if (
             user_provided_value_for_attr
-            and type(user_provided_value_for_attr[0]) == dict
+            and isinstance(user_provided_value_for_attr[0], dict)
         ):
             # Process a list of dict
             sorted_user_provided_value_for_attr = sort_list_of_dictionary(
@@ -1532,7 +1529,7 @@ def delete_and_wait(
                                 result[resource_type] = resource
                                 return result
                         # oci.wait_until() returns an instance of oci.util.Sentinel in case the resource is not found.
-                        if type(wait_response) is not Sentinel:
+                        if not isinstance(wait_response, Sentinel):
                             resource = to_dict(wait_response.data)
                         else:
                             resource["lifecycle_state"] = "DELETED"
@@ -1547,7 +1544,7 @@ def delete_and_wait(
     except ServiceError as ex:
         # DNS API throws a 400 InvalidParameter when a zone id is provided for zone_name_or_id and if the zone
         # resource is not available, instead of the expected 404. So working around this for now.
-        if type(client) == oci.dns.DnsClient:
+        if isinstance(client, oci.dns.DnsClient):
             if ex.status == 400 and ex.code == "InvalidParameter":
                 _debug(
                     "Resource {0} with {1} already deleted. So returning changed=False".format(
@@ -1774,7 +1771,7 @@ def update_class_type_attr_difference(
 ):
     """
     Checks the difference and updates an attribute which is represented by a class
-    instance. Not aplicable if the attribute type is a primitive value.
+    instance. Not applicable if the attribute type is a primitive value.
     For example, if a class name is A with an attribute x, then if A.x = X(), then only
     this method works.
     :param update_class_details The instance which should be updated if there is change in
@@ -1936,7 +1933,7 @@ def get_target_resource_from_list(
     module, list_resource_fn, target_resource_id=None, **kwargs
 ):
     """
-    Returns a resource filtered by identifer from a list of resources. This method should be
+    Returns a resource filtered by identifier from a list of resources. This method should be
     used as an alternative of 'get resource' method when 'get resource' is nor provided by
     resource api. This method returns a wrapper of response object but that should not be
     used as an input to 'wait_until' utility as this is only a partial wrapper of response object.

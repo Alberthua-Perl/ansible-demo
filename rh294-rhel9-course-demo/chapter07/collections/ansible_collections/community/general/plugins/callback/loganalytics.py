@@ -6,39 +6,41 @@
 from __future__ import (absolute_import, division, print_function)
 __metaclass__ = type
 
-DOCUMENTATION = '''
-    name: loganalytics
-    type: notification
-    short_description: Posts task results to Azure Log Analytics
-    author: "Cyrus Li (@zhcli) <cyrus1006@gmail.com>"
-    description:
-      - This callback plugin will post task results in JSON formatted to an Azure Log Analytics workspace.
-      - Credits to authors of splunk callback plugin.
-    version_added: "2.4.0"
-    requirements:
-      - Whitelisting this callback plugin.
-      - An Azure log analytics work space has been established.
-    options:
-      workspace_id:
-        description: Workspace ID of the Azure log analytics workspace.
-        required: true
-        env:
-          - name: WORKSPACE_ID
-        ini:
-          - section: callback_loganalytics
-            key: workspace_id
-      shared_key:
-        description: Shared key to connect to Azure log analytics workspace.
-        required: true
-        env:
-          - name: WORKSPACE_SHARED_KEY
-        ini:
-          - section: callback_loganalytics
-            key: shared_key
-'''
+DOCUMENTATION = r"""
+name: loganalytics
+type: notification
+short_description: Posts task results to Azure Log Analytics
+author: "Cyrus Li (@zhcli) <cyrus1006@gmail.com>"
+description:
+  - This callback plugin will post task results in JSON formatted to an Azure Log Analytics workspace.
+  - Credits to authors of splunk callback plugin.
+version_added: "2.4.0"
+requirements:
+  - Whitelisting this callback plugin.
+  - An Azure log analytics work space has been established.
+options:
+  workspace_id:
+    description: Workspace ID of the Azure log analytics workspace.
+    type: str
+    required: true
+    env:
+      - name: WORKSPACE_ID
+    ini:
+      - section: callback_loganalytics
+        key: workspace_id
+  shared_key:
+    description: Shared key to connect to Azure log analytics workspace.
+    type: str
+    required: true
+    env:
+      - name: WORKSPACE_SHARED_KEY
+    ini:
+      - section: callback_loganalytics
+        key: shared_key
+"""
 
-EXAMPLES = '''
-examples: |
+EXAMPLES = r"""
+examples: |-
   Whitelist the plugin in ansible.cfg:
     [defaults]
     callback_whitelist = community.general.loganalytics
@@ -49,7 +51,7 @@ examples: |
     [callback_loganalytics]
     workspace_id = 01234567-0123-0123-0123-01234567890a
     shared_key = dZD0kCbKl3ehZG6LHFMuhtE0yHiFCmetzFMc2u+roXIUQuatqU924SsAAAAPemhjbGlAemhjbGktTUJQAQIDBA==
-'''
+"""
 
 import hashlib
 import hmac
@@ -59,12 +61,15 @@ import uuid
 import socket
 import getpass
 
-from datetime import datetime
 from os.path import basename
 
 from ansible.module_utils.urls import open_url
 from ansible.parsing.ajson import AnsibleJSONEncoder
 from ansible.plugins.callback import CallbackBase
+
+from ansible_collections.community.general.plugins.module_utils.datetime import (
+    now,
+)
 
 
 class AzureLogAnalyticsSource(object):
@@ -93,7 +98,7 @@ class AzureLogAnalyticsSource(object):
         return "https://{0}.ods.opinsights.azure.com/api/logs?api-version=2016-04-01".format(workspace_id)
 
     def __rfc1123date(self):
-        return datetime.utcnow().strftime('%a, %d %b %Y %H:%M:%S GMT')
+        return now().strftime('%a, %d %b %Y %H:%M:%S GMT')
 
     def send_event(self, workspace_id, shared_key, state, result, runtime):
         if result._task_fields['args'].get('_ansible_check_mode') is True:
@@ -167,7 +172,7 @@ class CallbackModule(CallbackBase):
 
     def _seconds_since_start(self, result):
         return (
-            datetime.utcnow() -
+            now() -
             self.start_datetimes[result._task._uuid]
         ).total_seconds()
 
@@ -185,10 +190,10 @@ class CallbackModule(CallbackBase):
         self.loganalytics.ansible_playbook = basename(playbook._file_name)
 
     def v2_playbook_on_task_start(self, task, is_conditional):
-        self.start_datetimes[task._uuid] = datetime.utcnow()
+        self.start_datetimes[task._uuid] = now()
 
     def v2_playbook_on_handler_task_start(self, task):
-        self.start_datetimes[task._uuid] = datetime.utcnow()
+        self.start_datetimes[task._uuid] = now()
 
     def v2_runner_on_ok(self, result, **kwargs):
         self.loganalytics.send_event(

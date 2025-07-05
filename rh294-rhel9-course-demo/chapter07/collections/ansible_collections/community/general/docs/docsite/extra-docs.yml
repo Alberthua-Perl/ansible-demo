@@ -8,3 +8,15 @@ sections:
     toctree:
       - filter_guide
       - test_guide
+  - title: Cloud Guides
+    toctree:
+      - guide_alicloud
+      - guide_online
+      - guide_packet
+      - guide_scaleway
+  - title: Developer Guides
+    toctree:
+      - guide_deps
+      - guide_vardict
+      - guide_cmdrunner
+      - guide_modulehelper

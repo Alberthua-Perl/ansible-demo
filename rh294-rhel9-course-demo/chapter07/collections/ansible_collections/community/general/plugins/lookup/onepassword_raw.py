@@ -15,44 +15,25 @@ DOCUMENTATION = '''
       - Andrew Zenk (@azenk)
       - Sam Doran (@samdoran)
     requirements:
-      - C(op) 1Password command line utility. See U(https://support.1password.com/command-line/)
-    short_description: fetch an entire item from 1Password
+      - C(op) 1Password command line utility
+    short_description: Fetch an entire item from 1Password
     description:
-      - C(onepassword_raw) wraps C(op) command line utility to fetch an entire item from 1Password
+      - P(community.general.onepassword_raw#lookup) wraps C(op) command line utility to fetch an entire item from 1Password.
     options:
       _terms:
-        description: identifier(s) (UUID, name, or domain; case-insensitive) of item(s) to retrieve.
+        description: Identifier(s) (case-insensitive UUID or name) of item(s) to retrieve.
         required: true
-      master_password:
-        description: The password used to unlock the specified vault.
-        aliases: ['vault_password']
-      section:
-        description: Item section containing the field to retrieve (case-insensitive). If absent will return first match from any section.
-      subdomain:
-        description: The 1Password subdomain to authenticate against.
+        type: list
+        elements: string
+      account_id:
+        version_added: 7.5.0
       domain:
-        description: Domain of 1Password.
         version_added: 6.0.0
-        default: '1password.com'
-        type: str
-      username:
-        description: The username used to sign in.
-      secret_key:
-        description: The secret key used when performing an initial sign in.
-      vault:
-        description: Vault containing the item to retrieve (case-insensitive). If absent will search all vaults.
-    notes:
-      - This lookup will use an existing 1Password session if one exists. If not, and you have already
-        performed an initial sign in (meaning C(~/.op/config exists)), then only the C(master_password) is required.
-        You may optionally specify C(subdomain) in this scenario, otherwise the last used subdomain will be used by C(op).
-      - This lookup can perform an initial login by providing C(subdomain), C(username), C(secret_key), and C(master_password).
-      - Due to the B(very) sensitive nature of these credentials, it is B(highly) recommended that you only pass in the minimal credentials
-        needed at any given time. Also, store these credentials in an Ansible Vault using a key that is equal to or greater in strength
-        to the 1Password master password.
-      - This lookup stores potentially sensitive data from 1Password as Ansible facts.
-        Facts are subject to caching if enabled, which means this data could be stored in clear text
-        on disk or in a database.
-      - Tested with C(op) version 2.7.0
+      service_account_token:
+        version_added: 7.1.0
+    extends_documentation_fragment:
+      - community.general.onepassword
+      - community.general.onepassword.lookup
 '''
 
 EXAMPLES = """
@@ -67,7 +48,7 @@ EXAMPLES = """
 
 RETURN = """
   _raw:
-    description: field data requested
+    description: Entire item requested.
     type: list
     elements: dict
 """
@@ -89,8 +70,22 @@ class LookupModule(LookupBase):
         username = self.get_option("username")
         secret_key = self.get_option("secret_key")
         master_password = self.get_option("master_password")
+        service_account_token = self.get_option("service_account_token")
+        account_id = self.get_option("account_id")
+        connect_host = self.get_option("connect_host")
+        connect_token = self.get_option("connect_token")
 
-        op = OnePass(subdomain, domain, username, secret_key, master_password)
+        op = OnePass(
+            subdomain=subdomain,
+            domain=domain,
+            username=username,
+            secret_key=secret_key,
+            master_password=master_password,
+            service_account_token=service_account_token,
+            account_id=account_id,
+            connect_host=connect_host,
+            connect_token=connect_token,
+        )
         op.assert_logged_in()
 
         values = []

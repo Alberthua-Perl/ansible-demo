@@ -18,6 +18,7 @@
       - files:
           - '{{ ansible_distribution }}-{{ ansible_distribution_major_version }}.yml'
           - '{{ ansible_distribution }}-{{ ansible_distribution_version }}.yml'
+          - '{{ ansible_distribution }}.yml'
           - '{{ ansible_os_family }}.yml'
           - 'default.yml'
         paths: '../vars'
@@ -109,7 +110,7 @@
           - current_gems.stdout is not search('gist\s+\([0-9.]+\)')
     when: ansible_user_uid == 0
 
-  # Check cutom gem directory
+  # Check custom gem directory
   - name: Install gem in a custom directory with incorrect options
     gem:
       name: gist

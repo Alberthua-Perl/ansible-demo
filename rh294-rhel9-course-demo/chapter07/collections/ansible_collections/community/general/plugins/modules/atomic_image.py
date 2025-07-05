@@ -21,7 +21,6 @@ notes:
     - Host should support C(atomic) command.
 requirements:
   - atomic
-  - python >= 2.6
 extends_documentation_fragment:
   - community.general.attributes
 attributes:
@@ -43,7 +42,7 @@ options:
     state:
         description:
           - The state of the container image.
-          - The state C(latest) will ensure container image is upgraded to the latest version and forcefully restart container, if running.
+          - The state V(latest) will ensure container image is upgraded to the latest version and forcefully restart container, if running.
         choices: [ 'absent', 'latest', 'present' ]
         default: 'latest'
         type: str

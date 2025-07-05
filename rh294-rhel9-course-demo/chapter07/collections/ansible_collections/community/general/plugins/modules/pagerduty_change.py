@@ -8,7 +8,7 @@ from __future__ import absolute_import, division, print_function
 __metaclass__ = type
 
 
-DOCUMENTATION = '''
+DOCUMENTATION = r"""
 module: pagerduty_change
 short_description: Track a code or infrastructure change as a PagerDuty change event
 version_added: 1.3.0
@@ -25,14 +25,13 @@ attributes:
   check_mode:
     support: full
     details:
-      - Check mode simply does nothing except returning C(changed=true) in case the I(url) seems to be correct.
+      - Check mode simply does nothing except returning C(changed=true) in case the O(url) seems to be correct.
   diff_mode:
     support: none
 options:
   integration_key:
     description:
-      - The integration key that identifies the service the change was made to.
-        This can be found by adding an integration to a service in PagerDuty.
+      - The integration key that identifies the service the change was made to. This can be found by adding an integration to a service in PagerDuty.
     required: true
     type: str
   summary:
@@ -61,7 +60,7 @@ options:
     type: str
   environment:
     description:
-      - The environment name, typically C(production), C(staging), etc.
+      - The environment name, typically V(production), V(staging), and so on.
     required: false
     type: str
   link_url:
@@ -82,14 +81,14 @@ options:
     type: str
   validate_certs:
     description:
-      - If C(false), SSL certificates for the target URL will not be validated.
-        This should only be used on personally controlled sites using self-signed certificates.
+      - If V(false), SSL certificates for the target URL will not be validated. This should only be used on personally controlled sites using
+        self-signed certificates.
     required: false
     default: true
     type: bool
-'''
+"""
 
-EXAMPLES = '''
+EXAMPLES = r"""
 - name: Track the deployment as a PagerDuty change event
   community.general.pagerduty_change:
     integration_key: abc123abc123abc123abc123abc123ab
@@ -106,11 +105,14 @@ EXAMPLES = '''
     environment: production
     link_url: https://github.com/ansible-collections/community.general/pull/1269
     link_text: View changes on GitHub
-'''
+"""
 
 from ansible.module_utils.urls import fetch_url
 from ansible.module_utils.basic import AnsibleModule
-from datetime import datetime
+
+from ansible_collections.community.general.plugins.module_utils.datetime import (
+    now,
+)
 
 
 def main():
@@ -161,8 +163,7 @@ def main():
     if module.params['environment']:
         custom_details['environment'] = module.params['environment']
 
-    now = datetime.utcnow()
-    timestamp = now.strftime("%Y-%m-%dT%H:%M:%S.%fZ")
+    timestamp = now().strftime("%Y-%m-%dT%H:%M:%S.%fZ")
 
     payload = {
         'summary': module.params['summary'],

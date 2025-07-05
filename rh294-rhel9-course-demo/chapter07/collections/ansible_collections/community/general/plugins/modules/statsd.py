@@ -7,15 +7,14 @@
 from __future__ import absolute_import, division, print_function
 __metaclass__ = type
 
-DOCUMENTATION = '''
+DOCUMENTATION = r"""
 module: statsd
 short_description: Send metrics to StatsD
 version_added: 2.1.0
 description:
   - The C(statsd) module sends metrics to StatsD.
   - For more information, see U(https://statsd-metrics.readthedocs.io/en/latest/).
-  - Supported metric types are C(counter) and C(gauge).
-    Currently unupported metric types are C(timer), C(set), and C(gaugedelta).
+  - Supported metric types are V(counter) and V(gauge). Currently unupported metric types are V(timer), V(set), and V(gaugedelta).
 author: "Mark Mercado (@mamercad)"
 requirements:
   - statsd
@@ -30,7 +29,7 @@ options:
   state:
     type: str
     description:
-      - State of the check, only C(present) makes sense.
+      - State of the check, only V(present) makes sense.
     choices: ["present"]
     default: present
   host:
@@ -42,7 +41,7 @@ options:
     type: int
     default: 8125
     description:
-      - The port on C(host) which StatsD is listening on.
+      - The port on O(host) which StatsD is listening on.
   protocol:
     type: str
     default: udp
@@ -53,7 +52,7 @@ options:
     type: float
     default: 1.0
     description:
-      - Sender timeout, only applicable if C(protocol) is C(tcp).
+      - Sender timeout, only applicable if O(protocol) is V(tcp).
   metric:
     type: str
     required: true
@@ -79,10 +78,10 @@ options:
     type: bool
     default: false
     description:
-      - If the metric is of type C(gauge), change the value by C(delta).
-'''
+      - If the metric is of type V(gauge), change the value by O(delta).
+"""
 
-EXAMPLES = '''
+EXAMPLES = r"""
 - name: Increment the metric my_counter by 1
   community.general.statsd:
     host: localhost
@@ -100,7 +99,7 @@ EXAMPLES = '''
     metric: my_gauge
     metric_type: gauge
     value: 7
-'''
+"""
 
 
 from ansible.module_utils.basic import (AnsibleModule, missing_required_lib)

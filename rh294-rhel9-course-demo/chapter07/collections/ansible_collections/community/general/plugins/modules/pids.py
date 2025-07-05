@@ -31,7 +31,7 @@ options:
     type: str
     version_added: 3.0.0
   ignore_case:
-    description: Ignore case in pattern if using the I(pattern) option.
+    description: Ignore case in pattern if using the O(pattern) option.
     type: bool
     default: false
     version_added: 3.0.0
@@ -111,7 +111,7 @@ class PSAdapter(object):
                 attributes['cmdline'] and compare_lower(attributes['cmdline'][0], name))
 
     def _get_proc_attributes(self, proc, *attributes):
-        return dict((attribute, self._get_attribute_from_proc(proc, attribute)) for attribute in attributes)
+        return {attribute: self._get_attribute_from_proc(proc, attribute) for attribute in attributes}
 
     @staticmethod
     @abc.abstractmethod

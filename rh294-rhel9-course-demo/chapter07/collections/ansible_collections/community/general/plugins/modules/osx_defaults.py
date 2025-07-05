@@ -38,7 +38,7 @@ options:
   host:
     description:
       - The host on which the preference should apply.
-      - The special value C(currentHost) corresponds to the C(-currentHost) switch of the defaults commandline tool.
+      - The special value V(currentHost) corresponds to the C(-currentHost) switch of the defaults commandline tool.
     type: str
   key:
     description:
@@ -50,6 +50,13 @@ options:
     type: str
     choices: [ array, bool, boolean, date, float, int, integer, string ]
     default: string
+  check_type:
+    description:
+      - Checks if the type of the provided O(value) matches the type of an existing default.
+      - If the types do not match, raises an error.
+    type: bool
+    default: true
+    version_added: 8.6.0
   array_add:
     description:
       - Add new elements to the array for a key which has an array as its value.
@@ -58,13 +65,12 @@ options:
   value:
     description:
       - The value to write.
-      - Only required when I(state=present).
+      - Only required when O(state=present).
     type: raw
   state:
     description:
       - The state of the user defaults.
-      - If set to C(list) will query the given parameter specified by C(key). Returns 'null' is nothing found or mis-spelled.
-      - C(list) added in version 2.8.
+      - If set to V(list) will query the given parameter specified by O(key). Returns V(null) is nothing found or mis-spelled.
     type: str
     choices: [ absent, list, present ]
     default: present
@@ -159,6 +165,7 @@ class OSXDefaults(object):
         self.domain = module.params['domain']
         self.host = module.params['host']
         self.key = module.params['key']
+        self.check_type = module.params['check_type']
         self.type = module.params['type']
         self.array_add = module.params['array_add']
         self.value = module.params['value']
@@ -350,10 +357,11 @@ class OSXDefaults(object):
             self.delete()
             return True
 
-        # There is a type mismatch! Given type does not match the type in defaults
-        value_type = type(self.value)
-        if self.current_value is not None and not isinstance(self.current_value, value_type):
-            raise OSXDefaultsException("Type mismatch. Type in defaults: %s" % type(self.current_value).__name__)
+        # Check if there is a type mismatch, e.g. given type does not match the type in defaults
+        if self.check_type:
+            value_type = type(self.value)
+            if self.current_value is not None and not isinstance(self.current_value, value_type):
+                raise OSXDefaultsException("Type mismatch. Type in defaults: %s" % type(self.current_value).__name__)
 
         # Current value matches the given value. Nothing need to be done. Arrays need extra care
         if self.type == "array" and self.current_value is not None and not self.array_add and \
@@ -384,6 +392,7 @@ def main():
             domain=dict(type='str', default='NSGlobalDomain'),
             host=dict(type='str'),
             key=dict(type='str', no_log=False),
+            check_type=dict(type='bool', default=True),
             type=dict(type='str', default='string', choices=['array', 'bool', 'boolean', 'date', 'float', 'int', 'integer', 'string']),
             array_add=dict(type='bool', default=False),
             value=dict(type='raw'),

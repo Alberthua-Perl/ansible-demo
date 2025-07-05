@@ -14,8 +14,6 @@ module: oneview_enclosure_info
 short_description: Retrieve information about one or more Enclosures
 description:
     - Retrieve information about one or more of the Enclosures from OneView.
-    - This module was called C(oneview_enclosure_facts) before Ansible 2.9, returning C(ansible_facts).
-      Note that the M(community.general.oneview_enclosure_info) module no longer returns C(ansible_facts)!
 requirements:
     - hpOneView >= 2.0.1
 author:
@@ -34,7 +32,7 @@ options:
     options:
       description:
         - "List with options to gather additional information about an Enclosure and related resources.
-          Options allowed: C(script), C(environmentalConfiguration), and C(utilization). For the option C(utilization),
+          Options allowed: V(script), V(environmentalConfiguration), and V(utilization). For the option V(utilization),
           you can provide specific parameters."
       type: list
       elements: raw
@@ -77,7 +75,7 @@ EXAMPLES = '''
   delegate_to: localhost
   register: result
 
-- name: Print fetched information about paginated, filtered ans sorted list of Enclosures
+- name: Print fetched information about paginated, filtered and sorted list of Enclosures
   ansible.builtin.debug:
     msg: "{{ result.enclosures }}"
 

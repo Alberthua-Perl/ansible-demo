@@ -9,33 +9,28 @@ from __future__ import absolute_import, division, print_function
 __metaclass__ = type
 
 
-DOCUMENTATION = '''
----
+DOCUMENTATION = r"""
 module: smartos_image_info
 short_description: Get SmartOS image details
 description:
-    - Retrieve information about all installed images on SmartOS.
-    - This module was called C(smartos_image_facts) before Ansible 2.9, returning C(ansible_facts).
-      Note that the M(community.general.smartos_image_info) module no longer returns C(ansible_facts)!
+  - Retrieve information about all installed images on SmartOS.
 author: Adam Števko (@xen0l)
 extends_documentation_fragment:
-    - community.general.attributes
-    - community.general.attributes.info_module
+  - community.general.attributes
+  - community.general.attributes.info_module
 attributes:
-    check_mode:
-        version_added: 3.3.0
-        # This was backported to 2.5.4 and 1.3.11 as well, since this was a bugfix
+  check_mode:
+    version_added: 3.3.0
+    # This was backported to 2.5.4 and 1.3.11 as well, since this was a bugfix
 options:
-    filters:
-        description:
-            - Criteria for selecting image. Can be any value from image
-              manifest and 'published_date', 'published', 'source', 'clones',
-              and 'size'. More information can be found at U(https://smartos.org/man/1m/imgadm)
-              under 'imgadm list'.
-        type: str
-'''
+  filters:
+    description:
+      - Criteria for selecting image. Can be any value from image manifest and V(published_date), V(published), V(source), V(clones), and V(size).
+      - More information can be found at U(https://smartos.org/man/1m/imgadm) under C(imgadm list).
+    type: str
+"""
 
-EXAMPLES = '''
+EXAMPLES = r"""
 - name: Return information about all installed images
   community.general.smartos_image_info:
   register: result
@@ -51,19 +46,17 @@ EXAMPLES = '''
 
 - name: Print information
   ansible.builtin.debug:
-    msg: "{{ result.smartos_images[item]['name'] }}-{{ result.smartos_images[item]['version'] }}
-         has {{ result.smartos_images[item]['clones'] }} VM(s)"
+    msg: "{{ result.smartos_images[item]['name'] }}-{{ result.smartos_images[item]['version'] }} has {{ result.smartos_images[item]['clones'] }} VM(s)"
   with_items: "{{ result.smartos_images.keys() | list }}"
 
 - name: Print information
   ansible.builtin.debug:
-    msg: "{{ smartos_images[item]['name'] }}-{{ smartos_images[item]['version'] }}
-         has {{ smartos_images[item]['clones'] }} VM(s)"
+    msg: "{{ smartos_images[item]['name'] }}-{{ smartos_images[item]['version'] }} has {{ smartos_images[item]['clones'] }} VM(s)"
   with_items: "{{ smartos_images.keys() | list }}"
-'''
+"""
 
-RETURN = '''
-'''
+RETURN = r"""
+"""
 
 import json
 from ansible.module_utils.basic import AnsibleModule

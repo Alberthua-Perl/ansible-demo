@@ -26,7 +26,9 @@ extends_documentation_fragment:
   - community.general.attributes
 attributes:
   check_mode:
-    support: full
+    support: partial
+    details:
+      - If O(state=latest), the module will always return C(changed=true).
   diff_mode:
     support: none
 options:
@@ -39,8 +41,8 @@ options:
   method:
     description:
     - The installation method to use.
-    - Defines if the I(flatpak) is supposed to be installed globally for the whole C(system)
-      or only for the current C(user).
+    - Defines if the C(flatpak) is supposed to be installed globally for the whole V(system)
+      or only for the current V(user).
     type: str
     choices: [ system, user ]
     default: system
@@ -48,17 +50,17 @@ options:
     description:
     - The name of the flatpak to manage. To operate on several packages this
       can accept a list of packages.
-    - When used with I(state=present), I(name) can be specified as a URL to a
+    - When used with O(state=present), O(name) can be specified as a URL to a
       C(flatpakref) file or the unique reverse DNS name that identifies a flatpak.
     - Both C(https://) and C(http://) URLs are supported.
-    - When supplying a reverse DNS name, you can use the I(remote) option to specify on what remote
+    - When supplying a reverse DNS name, you can use the O(remote) option to specify on what remote
       to look for the flatpak. An example for a reverse DNS name is C(org.gnome.gedit).
-    - When used with I(state=absent), it is recommended to specify the name in the reverse DNS
-      format.
-    - When supplying a URL with I(state=absent), the module will try to match the
-      installed flatpak based on the name of the flatpakref to remove it. However, there is no
-      guarantee that the names of the flatpakref file and the reverse DNS name of the installed
-      flatpak do match.
+    - When used with O(state=absent) or O(state=latest), it is recommended to specify the name in
+      the reverse DNS format.
+    - When supplying a URL with O(state=absent) or O(state=latest), the module will try to match the
+      installed flatpak based on the name of the flatpakref to remove or update it. However, there
+      is no guarantee that the names of the flatpakref file and the reverse DNS name of the
+      installed flatpak do match.
     type: list
     elements: str
     required: true
@@ -74,7 +76,7 @@ options:
   remote:
     description:
     - The flatpak remote (repository) to install the flatpak from.
-    - By default, C(flathub) is assumed, but you do need to add the flathub flatpak_remote before
+    - By default, V(flathub) is assumed, but you do need to add the flathub flatpak_remote before
       you can use this.
     - See the M(community.general.flatpak_remote) module for managing flatpak remotes.
     type: str
@@ -82,7 +84,8 @@ options:
   state:
     description:
     - Indicates the desired package state.
-    choices: [ absent, present ]
+    - The value V(latest) is supported since community.general 8.6.0.
+    choices: [ absent, present, latest ]
     type: str
     default: present
 '''
@@ -117,6 +120,37 @@ EXAMPLES = r'''
       - org.gimp.GIMP
       - org.inkscape.Inkscape
       - org.mozilla.firefox
+
+- name: Update the spotify flatpak
+  community.general.flatpak:
+    name:  https://s3.amazonaws.com/alexlarsson/spotify-repo/spotify.flatpakref
+    state: latest
+
+- name: Update the gedit flatpak package without dependencies (not recommended)
+  community.general.flatpak:
+    name: https://git.gnome.org/browse/gnome-apps-nightly/plain/gedit.flatpakref
+    state: latest
+    no_dependencies: true
+
+- name: Update the gedit package from flathub for current user
+  community.general.flatpak:
+    name: org.gnome.gedit
+    state: latest
+    method: user
+
+- name: Update the Gnome Calendar flatpak from the gnome remote system-wide
+  community.general.flatpak:
+    name: org.gnome.Calendar
+    state: latest
+    remote: gnome
+
+- name: Update multiple packages
+  community.general.flatpak:
+    name:
+      - org.gimp.GIMP
+      - org.inkscape.Inkscape
+      - org.mozilla.firefox
+    state: latest
 
 - name: Remove the gedit flatpak
   community.general.flatpak:
@@ -193,6 +227,28 @@ def install_flat(module, binary, remote, names, method, no_dependencies):
         command = base_command + [remote] + id_names
         _flatpak_command(module, module.check_mode, command)
     result['changed'] = True
+
+
+def update_flat(module, binary, names, method, no_dependencies):
+    """Update existing flatpaks."""
+    global result  # pylint: disable=global-variable-not-assigned
+    installed_flat_names = [
+        _match_installed_flat_name(module, binary, name, method)
+        for name in names
+    ]
+    command = [binary, "update", "--{0}".format(method)]
+    flatpak_version = _flatpak_version(module, binary)
+    if LooseVersion(flatpak_version) < LooseVersion('1.1.3'):
+        command += ["-y"]
+    else:
+        command += ["--noninteractive"]
+    if no_dependencies:
+        command += ["--no-deps"]
+    command += installed_flat_names
+    stdout = _flatpak_command(module, module.check_mode, command)
+    result["changed"] = (
+        True if module.check_mode else stdout.find("Nothing to do.") == -1
+    )
 
 
 def uninstall_flat(module, binary, names, method):
@@ -273,13 +329,39 @@ def _match_flat_using_flatpak_column_feature(module, binary, parsed_name, method
             return row.split()[0]
 
 
+def _is_flatpak_id(part):
+    # For guidelines on application IDs, refer to the following resources:
+    # Flatpak:
+    # https://docs.flatpak.org/en/latest/conventions.html#application-ids
+    # Flathub:
+    # https://docs.flathub.org/docs/for-app-authors/requirements#application-id
+    if '.' not in part:
+        return False
+    sections = part.split('.')
+    if len(sections) < 2:
+        return False
+    domain = sections[0]
+    if not domain.islower():
+        return False
+    for section in sections[1:]:
+        if not section.isalnum():
+            return False
+    return True
+
+
 def _parse_flatpak_name(name):
     if name.startswith('http://') or name.startswith('https://'):
         file_name = urlparse(name).path.split('/')[-1]
         file_name_without_extension = file_name.split('.')[0:-1]
         common_name = ".".join(file_name_without_extension)
     else:
-        common_name = name
+        parts = name.split('/')
+        for part in parts:
+            if _is_flatpak_id(part):
+                common_name = part
+                break
+        else:
+            common_name = name
     return common_name
 
 
@@ -313,7 +395,7 @@ def main():
             method=dict(type='str', default='system',
                         choices=['user', 'system']),
             state=dict(type='str', default='present',
-                       choices=['absent', 'present']),
+                       choices=['absent', 'present', 'latest']),
             no_dependencies=dict(type='bool', default=False),
             executable=dict(type='path', default='flatpak')
         ),
@@ -337,11 +419,16 @@ def main():
     if not binary:
         module.fail_json(msg="Executable '%s' was not found on the system." % executable, **result)
 
+    module.run_command_environ_update = dict(LANGUAGE='C', LC_ALL='C')
+
     installed, not_installed = flatpak_exists(module, binary, name, method)
-    if state == 'present' and not_installed:
-        install_flat(module, binary, remote, not_installed, method, no_dependencies)
-    elif state == 'absent' and installed:
+    if state == 'absent' and installed:
         uninstall_flat(module, binary, installed, method)
+    else:
+        if state == 'latest' and installed:
+            update_flat(module, binary, installed, method, no_dependencies)
+        if state in ('present', 'latest') and not_installed:
+            install_flat(module, binary, remote, not_installed, method, no_dependencies)
 
     module.exit_json(**result)
 

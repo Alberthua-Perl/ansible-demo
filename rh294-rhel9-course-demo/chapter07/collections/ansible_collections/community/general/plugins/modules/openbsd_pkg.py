@@ -24,7 +24,10 @@ attributes:
     check_mode:
         support: full
     diff_mode:
-        support: none
+        support: partial
+        version_added: 9.1.0
+        details:
+          - Only works when check mode is not enabled.
 options:
     name:
         description:
@@ -34,9 +37,9 @@ options:
         elements: str
     state:
         description:
-          - C(present) will make sure the package is installed.
-            C(latest) will make sure the latest version of the package is installed.
-            C(absent) will make sure the specified package is not installed.
+          - V(present) will make sure the package is installed.
+          - V(latest) will make sure the latest version of the package is installed.
+          - V(absent) will make sure the specified package is not installed.
         choices: [ absent, latest, present, installed, removed ]
         default: present
         type: str
@@ -46,19 +49,19 @@ options:
             a binary. Requires that the port source tree is already installed.
             Automatically builds and installs the 'sqlports' package, if it is
             not already installed.
-          - Mutually exclusive with I(snapshot).
+          - Mutually exclusive with O(snapshot).
         type: bool
         default: false
     snapshot:
         description:
           - Force C(%c) and C(%m) to expand to C(snapshots), even on a release kernel.
-          - Mutually exclusive with I(build).
+          - Mutually exclusive with O(build).
         type: bool
         default: false
         version_added: 1.3.0
     ports_dir:
         description:
-          - When used in combination with the C(build) option, allows overriding
+          - When used in combination with the O(build) option, allows overriding
             the default ports source directory.
         default: /usr/ports
         type: path
@@ -77,7 +80,7 @@ options:
         default: false
 notes:
   - When used with a C(loop:) each package will be processed individually,
-    it is much more efficient to pass the list directly to the I(name) option.
+    it is much more efficient to pass the list directly to the O(name) option.
 '''
 
 EXAMPLES = '''
@@ -159,6 +162,20 @@ def execute_command(cmd, module):
     return module.run_command(cmd_args, environ_update={'TERM': 'dumb'})
 
 
+def get_all_installed(module):
+    """
+    Get all installed packaged. Used to support diff mode
+    """
+    command = 'pkg_info -Iq'
+
+    rc, stdout, stderr = execute_command(command, module)
+
+    if stderr:
+        module.fail_json(msg="failed in get_all_installed(): %s" % stderr)
+
+    return stdout
+
+
 # Function used to find out if a package is currently installed.
 def get_package_state(names, pkg_spec, module):
     info_cmd = 'pkg_info -Iq'
@@ -169,7 +186,11 @@ def get_package_state(names, pkg_spec, module):
         rc, stdout, stderr = execute_command(command, module)
 
         if stderr:
-            module.fail_json(msg="failed in get_package_state(): " + stderr)
+            match = re.search(r"^Can't find inst:%s$" % re.escape(name), stderr)
+            if match:
+                pkg_spec[name]['installed_state'] = False
+            else:
+                module.fail_json(msg="failed in get_package_state(): " + stderr)
 
         if stdout:
             # If the requested package name is just a stem, like "python", we may
@@ -569,9 +590,12 @@ def main():
     result['name'] = name
     result['state'] = state
     result['build'] = build
+    result['diff'] = {}
 
     # The data structure used to keep track of package information.
     pkg_spec = {}
+
+    new_package_list = original_package_list = get_all_installed(module)
 
     if build is True:
         if not os.path.isdir(ports_dir):
@@ -656,6 +680,10 @@ def main():
         module.fail_json(msg=combined_error_message, **result)
 
     result['changed'] = combined_changed
+
+    if result['changed'] and not module.check_mode:
+        new_package_list = get_all_installed(module)
+        result['diff'] = dict(before=original_package_list, after=new_package_list)
 
     module.exit_json(**result)
 

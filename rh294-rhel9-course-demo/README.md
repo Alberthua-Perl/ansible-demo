@@ -12,9 +12,8 @@
 - Use following command to run most playbooks:
 
   ```bash
-  $ cd rh294-rhel9-course-demo/
-  $ ansible-navigator run -m stdout chapterXX/playbook-name.yml
-  # run playbook in rh294-rhel9-course-demo directory if current directory doesn't exist ansible.cfg
+  [devops@workstation ~]$ cd rh294-rhel9-course-demo/
+  [devops@workstation rh294-rhel9-course-demo]$ ansible-navigator run chapterXX/playbook-name.yml
   ```
 
 - References:

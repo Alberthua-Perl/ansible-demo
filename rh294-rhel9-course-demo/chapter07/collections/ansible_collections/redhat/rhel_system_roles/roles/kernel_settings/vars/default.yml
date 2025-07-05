@@ -1,3 +1,0 @@
----
-__kernel_settings_packages: ["tuned", "python3-configobj"]
-__kernel_settings_services: ["tuned"]

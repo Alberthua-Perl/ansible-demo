@@ -16,6 +16,9 @@ short_description: Retrieve information about one or more Proxmox VE users
 version_added: 1.3.0
 description:
   - Retrieve information about one or more Proxmox VE users
+attributes:
+  action_group:
+    version_added: 9.0.0
 options:
   domain:
     description:
@@ -33,6 +36,7 @@ options:
     type: str
 author: Tristan Le Guern (@tleguern)
 extends_documentation_fragment:
+  - community.general.proxmox.actiongroup_proxmox
   - community.general.proxmox.documentation
   - community.general.attributes
   - community.general.attributes.info_module
@@ -193,14 +197,14 @@ class ProxmoxUser:
                 self.user[k] = v
             elif k in ['groups', 'tokens'] and (v == '' or v is None):
                 self.user[k] = []
-            elif k == 'groups' and type(v) == str:
+            elif k == 'groups' and isinstance(v, str):
                 self.user['groups'] = v.split(',')
-            elif k == 'tokens' and type(v) == list:
+            elif k == 'tokens' and isinstance(v, list):
                 for token in v:
                     if 'privsep' in token:
                         token['privsep'] = proxmox_to_ansible_bool(token['privsep'])
                 self.user['tokens'] = v
-            elif k == 'tokens' and type(v) == dict:
+            elif k == 'tokens' and isinstance(v, dict):
                 self.user['tokens'] = list()
                 for tokenid, tokenvalues in v.items():
                     t = tokenvalues

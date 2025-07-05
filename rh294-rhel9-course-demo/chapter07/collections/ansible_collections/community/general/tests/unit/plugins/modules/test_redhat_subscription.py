@@ -22,12 +22,14 @@ def patch_redhat_subscription(mocker):
     """
     Function used for mocking some parts of redhat_subscription module
     """
-    mocker.patch('ansible_collections.community.general.plugins.modules.redhat_subscription.RegistrationBase.REDHAT_REPO')
+    mocker.patch('ansible_collections.community.general.plugins.modules.redhat_subscription.Rhsm.REDHAT_REPO')
     mocker.patch('ansible_collections.community.general.plugins.modules.redhat_subscription.isfile', return_value=False)
     mocker.patch('ansible_collections.community.general.plugins.modules.redhat_subscription.unlink', return_value=True)
     mocker.patch('ansible_collections.community.general.plugins.modules.redhat_subscription.AnsibleModule.get_bin_path',
                  return_value='/testbin/subscription-manager')
     mocker.patch('ansible_collections.community.general.plugins.modules.redhat_subscription.Rhsm._can_connect_to_dbus',
+                 return_value=False)
+    mocker.patch('ansible_collections.community.general.plugins.modules.redhat_subscription.Rhsm._has_dbus_interface',
                  return_value=False)
     mocker.patch('ansible_collections.community.general.plugins.modules.redhat_subscription.getuid',
                  return_value=0)
@@ -196,11 +198,6 @@ TEST_CASES = [
                     ['/testbin/subscription-manager', 'identity'],
                     {'check_rc': False},
                     (0, 'system identity: b26df632-25ed-4452-8f89-0308bfd167cb', '')
-                ),
-                (
-                    ['/testbin/subscription-manager', 'remove', '--all'],
-                    {'check_rc': True},
-                    (0, '', '')
                 ),
                 (
                     ['/testbin/subscription-manager', 'unregister'],

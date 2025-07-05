@@ -16,39 +16,36 @@ options:
   hostname:
     description:
     - The hostname or IP address on which InfluxDB server is listening.
-    - Since Ansible 2.5, defaulted to localhost.
     type: str
     default: localhost
   username:
     description:
     - Username that will be used to authenticate against InfluxDB server.
-    - Alias C(login_username) added in Ansible 2.5.
     type: str
     default: root
     aliases: [ login_username ]
   password:
     description:
     - Password that will be used to authenticate against InfluxDB server.
-    - Alias C(login_password) added in Ansible 2.5.
     type: str
     default: root
     aliases: [ login_password ]
   port:
     description:
-    - The port on which InfluxDB server is listening
+    - The port on which InfluxDB server is listening.
     type: int
     default: 8086
   path:
     description:
-    - The path on which InfluxDB server is accessible
-    - Only available when using python-influxdb >= 5.1.0
+    - The path on which InfluxDB server is accessible.
+    - Only available when using python-influxdb >= 5.1.0.
     type: str
     default: ''
     version_added: '0.2.0'
   validate_certs:
     description:
-    - If set to C(false), the SSL certificates will not be validated.
-    - This should only set to C(false) used on personally controlled sites using self-signed certificates.
+    - If set to V(false), the SSL certificates will not be validated.
+    - This should only set to V(false) used on personally controlled sites using self-signed certificates.
     type: bool
     default: true
   ssl:
@@ -63,8 +60,8 @@ options:
   retries:
     description:
     - Number of retries client will try before aborting.
-    - C(0) indicates try until success.
-    - Only available when using python-influxdb >= 4.1.0
+    - V(0) indicates try until success.
+    - Only available when using python-influxdb >= 4.1.0.
     type: int
     default: 3
   use_udp:

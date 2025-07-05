@@ -9,22 +9,19 @@ from __future__ import absolute_import, division, print_function
 __metaclass__ = type
 
 
-DOCUMENTATION = r'''
----
+DOCUMENTATION = r"""
 author:
- - Fabrizio Colonna (@ColOfAbRiX)
+  - Fabrizio Colonna (@ColOfAbRiX)
 module: parted
 short_description: Configure block device partitions
 description:
-  - This module allows configuring block device partition using the C(parted)
-    command line tool. For a full description of the fields and the options
-    check the GNU parted manual.
+  - This module allows configuring block device partition using the C(parted) command line tool. For a full description of the fields and the
+    options check the GNU parted manual.
 requirements:
   - This module requires C(parted) version 1.8.3 and above.
-  - Option I(align) (except C(undefined)) requires C(parted) 2.1 or above.
-  - If the version of C(parted) is below 3.1, it requires a Linux version running
-    the C(sysfs) file system C(/sys/).
-  - Requires the C(resizepart) command when using the I(resize) parameter.
+  - Option O(align) (except V(undefined)) requires C(parted) 2.1 or above.
+  - If the version of C(parted) is below 3.1, it requires a Linux version running the C(sysfs) file system C(/sys/).
+  - Requires the C(resizepart) command when using the O(resize) parameter.
 extends_documentation_fragment:
   - community.general.attributes
 attributes:
@@ -36,15 +33,14 @@ options:
   device:
     description:
       - The block device (disk) where to operate.
-      - Regular files can also be partitioned, but it is recommended to create a
-        loopback device using C(losetup) to easily access its partitions.
+      - Regular files can also be partitioned, but it is recommended to create a loopback device using C(losetup) to easily access its partitions.
     type: str
     required: true
   align:
     description:
-      - Set alignment for newly created partitions. Use C(undefined) for parted default aligment.
+      - Set alignment for newly created partitions. Use V(undefined) for parted default alignment.
     type: str
-    choices: [ cylinder, minimal, none, optimal, undefined ]
+    choices: [cylinder, minimal, none, optimal, undefined]
     default: optimal
   number:
     description:
@@ -53,46 +49,40 @@ options:
     type: int
   unit:
     description:
-      - Selects the current default unit that Parted will use to display
-        locations and capacities on the disk and to interpret those given by the
-        user if they are not suffixed by an unit.
+      - Selects the current default unit that Parted will use to display locations and capacities on the disk and to interpret those given by
+        the user if they are not suffixed by an unit.
       - When fetching information about a disk, it is recommended to always specify a unit.
     type: str
-    choices: [ s, B, KB, KiB, MB, MiB, GB, GiB, TB, TiB, '%', cyl, chs, compact ]
+    choices: [s, B, KB, KiB, MB, MiB, GB, GiB, TB, TiB, '%', cyl, chs, compact]
     default: KiB
   label:
     description:
       - Disk label type or partition table to use.
-      - If I(device) already contains a different label, it will be changed to I(label)
-        and any previous partitions will be lost.
-      - A I(name) must be specified for a C(gpt) partition table.
+      - If O(device) already contains a different label, it will be changed to O(label) and any previous partitions will be lost.
+      - A O(name) must be specified for a V(gpt) partition table.
     type: str
-    choices: [ aix, amiga, bsd, dvh, gpt, loop, mac, msdos, pc98, sun ]
+    choices: [aix, amiga, bsd, dvh, gpt, loop, mac, msdos, pc98, sun]
     default: msdos
   part_type:
     description:
-      - May be specified only with I(label=msdos) or I(label=dvh).
-      - Neither I(part_type) nor I(name) may be used with I(label=sun).
+      - May be specified only with O(label=msdos) or O(label=dvh).
+      - Neither O(part_type) nor O(name) may be used with O(label=sun).
     type: str
-    choices: [ extended, logical, primary ]
+    choices: [extended, logical, primary]
     default: primary
   part_start:
     description:
-      - Where the partition will start as offset from the beginning of the disk,
-        that is, the "distance" from the start of the disk. Negative numbers
-        specify distance from the end of the disk.
-      - The distance can be specified with all the units supported by parted
-        (except compat) and it is case sensitive, e.g. C(10GiB), C(15%).
-      - Using negative values may require setting of I(fs_type) (see notes).
+      - Where the partition will start as offset from the beginning of the disk, that is, the "distance" from the start of the disk. Negative
+        numbers specify distance from the end of the disk.
+      - The distance can be specified with all the units supported by parted (except compat) and it is case sensitive, for example V(10GiB), V(15%).
+      - Using negative values may require setting of O(fs_type) (see notes).
     type: str
     default: 0%
   part_end:
     description:
-      - Where the partition will end as offset from the beginning of the disk,
-        that is, the "distance" from the start of the disk. Negative numbers
+      - Where the partition will end as offset from the beginning of the disk, that is, the "distance" from the start of the disk. Negative numbers
         specify distance from the end of the disk.
-      - The distance can be specified with all the units supported by parted
-        (except compat) and it is case sensitive, e.g. C(10GiB), C(15%).
+      - The distance can be specified with all the units supported by parted (except compat) and it is case sensitive, for example V(10GiB), V(15%).
     type: str
     default: 100%
   name:
@@ -106,36 +96,33 @@ options:
   state:
     description:
       - Whether to create or delete a partition.
-      - If set to C(info) the module will only return the device information.
+      - If set to V(info) the module will only return the device information.
     type: str
-    choices: [ absent, present, info ]
+    choices: [absent, present, info]
     default: info
   fs_type:
     description:
       - If specified and the partition does not exist, will set filesystem type to given partition.
-      - Parameter optional, but see notes below about negative I(part_start) values.
+      - Parameter optional, but see notes below about negative O(part_start) values.
     type: str
     version_added: '0.2.0'
   resize:
     description:
-      - Call C(resizepart) on existing partitions to match the size specified by I(part_end).
+      - Call C(resizepart) on existing partitions to match the size specified by O(part_end).
     type: bool
     default: false
     version_added: '1.3.0'
 
 notes:
-  - When fetching information about a new disk and when the version of parted
-    installed on the system is before version 3.1, the module queries the kernel
-    through C(/sys/) to obtain disk information. In this case the units CHS and
-    CYL are not supported.
-  - Negative I(part_start) start values were rejected if I(fs_type) was not given.
-    This bug was fixed in parted 3.2.153. If you want to use negative I(part_start),
-    specify I(fs_type) as well or make sure your system contains newer parted.
-'''
+  - When fetching information about a new disk and when the version of parted installed on the system is before version 3.1, the module queries
+    the kernel through C(/sys/) to obtain disk information. In this case the units CHS and CYL are not supported.
+  - Negative O(part_start) start values were rejected if O(fs_type) was not given. This bug was fixed in parted 3.2.153. If you want to use negative
+    O(part_start), specify O(fs_type) as well or make sure your system contains newer parted.
+"""
 
-RETURN = r'''
+RETURN = r"""
 partition_info:
-  description: Current partition information
+  description: Current partition information.
   returned: success
   type: complex
   contains:
@@ -146,7 +133,7 @@ partition_info:
       description: List of device partitions.
       type: list
     script:
-      description: parted script executed by module
+      description: Parted script executed by module.
       type: str
   sample: {
       "disk": {
@@ -177,9 +164,9 @@ partition_info:
       }],
       "script": "unit KiB print "
     }
-'''
+"""
 
-EXAMPLES = r'''
+EXAMPLES = r"""
 - name: Create a new ext4 primary partition
   community.general.parted:
     device: /dev/sdb
@@ -204,7 +191,7 @@ EXAMPLES = r'''
   community.general.parted:
     device: /dev/sdb
     number: 2
-    flags: [ lvm ]
+    flags: [lvm]
     state: present
     part_start: 1GiB
 
@@ -235,7 +222,7 @@ EXAMPLES = r'''
     part_end: "100%"
     resize: true
     state: present
-'''
+"""
 
 
 from ansible.module_utils.basic import AnsibleModule
@@ -480,12 +467,12 @@ def get_device_info(device, unit):
     if label_needed:
         return get_unlabeled_device_info(device, unit)
 
-    command = "%s -s -m %s -- unit '%s' print" % (parted_exec, device, unit)
+    command = [parted_exec, "-s", "-m", device, "--", "unit", unit, "print"]
     rc, out, err = module.run_command(command)
     if rc != 0 and 'unrecognised disk label' not in err:
         module.fail_json(msg=(
             "Error while getting device information with parted "
-            "script: '%s'" % command),
+            "script: '%s'" % " ".join(command)),
             rc=rc, out=out, err=err
         )
 
@@ -506,7 +493,7 @@ def check_parted_label(device):
         return False
 
     # Older parted versions return a message in the stdout and RC > 0.
-    rc, out, err = module.run_command("%s -s -m %s print" % (parted_exec, device))
+    rc, out, err = module.run_command([parted_exec, "-s", "-m", device, "print"])
     if rc != 0 and 'unrecognised disk label' in out.lower():
         return True
 
@@ -546,7 +533,7 @@ def parted_version():
     """
     global module, parted_exec  # pylint: disable=global-variable-not-assigned
 
-    rc, out, err = module.run_command("%s --version" % parted_exec)
+    rc, out, err = module.run_command([parted_exec, "--version"])
     if rc != 0:
         module.fail_json(
             msg="Failed to get parted version.", rc=rc, out=out, err=err
@@ -569,8 +556,19 @@ def parted(script, device, align):
     if align == 'undefined':
         align_option = ''
 
+    """
+    Use option --fix (-f) if available. Versions prior
+    to 3.4.64 don't have it. For more information see:
+    http://savannah.gnu.org/news/?id=10114
+    """
+    if parted_version() >= (3, 4, 64):
+        script_option = '-s -f'
+    else:
+        script_option = '-s'
+
     if script and not module.check_mode:
-        command = "%s -s -m %s %s -- %s" % (parted_exec, align_option, device, script)
+        # TODO: convert run_comand() argument to list!
+        command = "%s %s -m %s %s -- %s" % (parted_exec, script_option, align_option, device, script)
         rc, out, err = module.run_command(command)
 
         if rc != 0:

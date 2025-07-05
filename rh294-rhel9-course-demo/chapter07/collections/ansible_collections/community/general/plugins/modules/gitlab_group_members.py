@@ -8,8 +8,7 @@
 from __future__ import absolute_import, division, print_function
 __metaclass__ = type
 
-DOCUMENTATION = r'''
----
+DOCUMENTATION = r"""
 module: gitlab_group_members
 short_description: Manage group members on GitLab Server
 description:
@@ -40,22 +39,22 @@ options:
   gitlab_user:
     description:
       - A username or a list of usernames to add to/remove from the GitLab group.
-      - Mutually exclusive with I(gitlab_users_access).
+      - Mutually exclusive with O(gitlab_users_access).
     type: list
     elements: str
   access_level:
     description:
       - The access level for the user.
-      - Required if I(state=present), user state is set to present.
-      - Mutually exclusive with I(gitlab_users_access).
+      - Required if O(state=present), user state is set to present.
+      - Mutually exclusive with O(gitlab_users_access).
     type: str
     choices: ['guest', 'reporter', 'developer', 'maintainer', 'owner']
   gitlab_users_access:
     description:
       - Provide a list of user to access level mappings.
       - Every dictionary in this list specifies a user (by username) and the access level the user should have.
-      - Mutually exclusive with I(gitlab_user) and I(access_level).
-      - Use together with I(purge_users) to remove all users not specified here from the group.
+      - Mutually exclusive with O(gitlab_user) and O(access_level).
+      - Use together with O(purge_users) to remove all users not specified here from the group.
     type: list
     elements: dict
     suboptions:
@@ -66,7 +65,7 @@ options:
       access_level:
         description:
           - The access level for the user.
-          - Required if I(state=present), user state is set to present.
+          - Required if O(state=present), user state is set to present.
         type: str
         choices: ['guest', 'reporter', 'developer', 'maintainer', 'owner']
         required: true
@@ -74,23 +73,23 @@ options:
   state:
     description:
       - State of the member in the group.
-      - On C(present), it adds a user to a GitLab group.
-      - On C(absent), it removes a user from a GitLab group.
+      - On V(present), it adds a user to a GitLab group.
+      - On V(absent), it removes a user from a GitLab group.
     choices: ['present', 'absent']
     default: 'present'
     type: str
   purge_users:
     description:
-      - Adds/remove users of the given access_level to match the given I(gitlab_user)/I(gitlab_users_access) list.
-        If omitted do not purge orphaned members.
-      - Is only used when I(state=present).
+      - Adds/remove users of the given access_level to match the given O(gitlab_user)/O(gitlab_users_access) list. If omitted
+        do not purge orphaned members.
+      - Is only used when O(state=present).
     type: list
     elements: str
     choices: ['guest', 'reporter', 'developer', 'maintainer', 'owner']
     version_added: 3.6.0
-'''
+"""
 
-EXAMPLES = r'''
+EXAMPLES = r"""
 - name: Add a user to a GitLab Group
   community.general.gitlab_group_members:
     api_url: 'https://gitlab.example.com'
@@ -152,15 +151,15 @@ EXAMPLES = r'''
       - name: user2
         access_level: maintainer
     state: absent
-'''
+"""
 
-RETURN = r''' # '''
+RETURN = r""" # """
 
 from ansible.module_utils.api import basic_auth_argument_spec
 from ansible.module_utils.basic import AnsibleModule
 
 from ansible_collections.community.general.plugins.module_utils.gitlab import (
-    auth_argument_spec, gitlab_authentication, gitlab, ensure_gitlab_package
+    auth_argument_spec, gitlab_authentication, gitlab, list_all_kwargs
 )
 
 
@@ -171,16 +170,20 @@ class GitLabGroup(object):
 
     # get user id if the user exists
     def get_user_id(self, gitlab_user):
-        user_exists = self._gitlab.users.list(username=gitlab_user, all=True)
-        if user_exists:
-            return user_exists[0].id
+        return next(
+            (u.id for u in self._gitlab.users.list(username=gitlab_user, **list_all_kwargs)),
+            None
+        )
 
     # get group id if group exists
     def get_group_id(self, gitlab_group):
-        groups = self._gitlab.groups.list(search=gitlab_group, all=True)
-        for group in groups:
-            if group.full_path == gitlab_group:
-                return group.id
+        return next(
+            (
+                g.id for g in self._gitlab.groups.list(search=gitlab_group, **list_all_kwargs)
+                if g.full_path == gitlab_group
+            ),
+            None
+        )
 
     # get all members in a group
     def get_members_in_a_group(self, gitlab_group_id):
@@ -273,14 +276,16 @@ def main():
         ],
         supports_check_mode=True,
     )
-    ensure_gitlab_package(module)
+
+    # check prerequisites and connect to gitlab server
+    gl = gitlab_authentication(module)
 
     access_level_int = {
-        'guest': gitlab.GUEST_ACCESS,
-        'reporter': gitlab.REPORTER_ACCESS,
-        'developer': gitlab.DEVELOPER_ACCESS,
-        'maintainer': gitlab.MAINTAINER_ACCESS,
-        'owner': gitlab.OWNER_ACCESS,
+        'guest': gitlab.const.GUEST_ACCESS,
+        'reporter': gitlab.const.REPORTER_ACCESS,
+        'developer': gitlab.const.DEVELOPER_ACCESS,
+        'maintainer': gitlab.const.MAINTAINER_ACCESS,
+        'owner': gitlab.const.OWNER_ACCESS,
     }
 
     gitlab_group = module.params['gitlab_group']
@@ -290,9 +295,6 @@ def main():
 
     if purge_users:
         purge_users = [access_level_int[level] for level in purge_users]
-
-    # connect to gitlab server
-    gl = gitlab_authentication(module)
 
     group = GitLabGroup(module, gl)
 

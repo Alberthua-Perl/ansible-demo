@@ -46,17 +46,18 @@ options:
         type: str
         choices: [ disabled, absent, present ]
         default: disabled
+        version_added: 7.0.0
         description:
             - Persistency between reboots for configured module.
             - This option creates files in C(/etc/modules-load.d/) and C(/etc/modprobe.d/) that make your module configuration persistent during reboots.
-            - If C(present), adds module name to C(/etc/modules-load.d/) and params to C(/etc/modprobe.d/) so the module will be loaded on next reboot.
-            - If C(absent), will comment out module name from C(/etc/modules-load.d/) and comment out params from C(/etc/modprobe.d/) so the module will not be
+            - If V(present), adds module name to C(/etc/modules-load.d/) and params to C(/etc/modprobe.d/) so the module will be loaded on next reboot.
+            - If V(absent), will comment out module name from C(/etc/modules-load.d/) and comment out params from C(/etc/modprobe.d/) so the module will not be
               loaded on next reboot.
-            - If C(disabled), will not touch anything and leave C(/etc/modules-load.d/) and C(/etc/modprobe.d/) as it is.
+            - If V(disabled), will not touch anything and leave C(/etc/modules-load.d/) and C(/etc/modprobe.d/) as it is.
             - Note that it is usually a better idea to rely on the automatic module loading by PCI IDs, USB IDs, DMI IDs or similar triggers encoded in the
               kernel modules themselves instead of configuration like this.
             - In fact, most modern kernel modules are prepared for automatic loading already.
-            - "B(Note:) This option works only with distributions that use C(systemd) when set to values other than C(disabled)."
+            - "B(Note:) This option works only with distributions that use C(systemd) when set to values other than V(disabled)."
 '''
 
 EXAMPLES = '''
@@ -163,8 +164,9 @@ class Modprobe(object):
     def create_module_file(self):
         file_path = os.path.join(MODULES_LOAD_LOCATION,
                                  self.name + '.conf')
-        with open(file_path, 'w') as file:
-            file.write(self.name + '\n')
+        if not self.check_mode:
+            with open(file_path, 'w') as file:
+                file.write(self.name + '\n')
 
     @property
     def module_options_file_content(self):
@@ -175,8 +177,9 @@ class Modprobe(object):
     def create_module_options_file(self):
         new_file_path = os.path.join(PARAMETERS_FILES_LOCATION,
                                      self.name + '.conf')
-        with open(new_file_path, 'w') as file:
-            file.write(self.module_options_file_content)
+        if not self.check_mode:
+            with open(new_file_path, 'w') as file:
+                file.write(self.module_options_file_content)
 
     def disable_old_params(self):
 
@@ -190,7 +193,7 @@ class Modprobe(object):
                     file_content[index] = '#' + line
                     content_changed = True
 
-            if content_changed:
+            if not self.check_mode and content_changed:
                 with open(modprobe_file, 'w') as file:
                     file.write('\n'.join(file_content))
 
@@ -206,7 +209,7 @@ class Modprobe(object):
                     file_content[index] = '#' + line
                     content_changed = True
 
-            if content_changed:
+            if not self.check_mode and content_changed:
                 with open(module_file, 'w') as file:
                     file.write('\n'.join(file_content))
 
@@ -232,12 +235,16 @@ class Modprobe(object):
 
     @property
     def modules_files(self):
+        if not os.path.isdir(MODULES_LOAD_LOCATION):
+            return []
         modules_paths = [os.path.join(MODULES_LOAD_LOCATION, path)
                          for path in os.listdir(MODULES_LOAD_LOCATION)]
         return [path for path in modules_paths if os.path.isfile(path)]
 
     @property
     def modprobe_files(self):
+        if not os.path.isdir(PARAMETERS_FILES_LOCATION):
+            return []
         modules_paths = [os.path.join(PARAMETERS_FILES_LOCATION, path)
                          for path in os.listdir(PARAMETERS_FILES_LOCATION)]
         return [path for path in modules_paths if os.path.isfile(path)]

@@ -20,15 +20,17 @@ DOCUMENTATION = '''
     options:
         plugin:
             description: token that ensures this is a source file for the 'nmap' plugin.
+            type: string
             required: true
             choices: ['nmap', 'community.general.nmap']
         sudo:
-            description: Set to C(true) to execute a C(sudo nmap) plugin scan.
+            description: Set to V(true) to execute a C(sudo nmap) plugin scan.
             version_added: 4.8.0
             default: false
             type: boolean
         address:
             description: Network IP or range of IPs to scan, you can use a simple range (10.2.2.15-25) or CIDR notation.
+            type: string
             required: true
             env:
                 - name: ANSIBLE_NMAP_ADDRESS
@@ -36,7 +38,7 @@ DOCUMENTATION = '''
         exclude:
             description:
               - List of addresses to exclude.
-              - For example C(10.2.2.15-25) or C(10.2.2.15,10.2.2.16).
+              - For example V(10.2.2.15-25) or V(10.2.2.15,10.2.2.16).
             type: list
             elements: string
             env:
@@ -45,8 +47,8 @@ DOCUMENTATION = '''
         port:
             description:
                 - Only scan specific port or port range (C(-p)).
-                - For example, you could pass C(22) for a single port, C(1-65535) for a range of ports,
-                  or C(U:53,137,T:21-25,139,8080,S:9) to check port 53 with UDP, ports 21-25 with TCP, port 9 with SCTP, and ports 137, 139, and 8080 with all.
+                - For example, you could pass V(22) for a single port, V(1-65535) for a range of ports,
+                  or V(U:53,137,T:21-25,139,8080,S:9) to check port 53 with UDP, ports 21-25 with TCP, port 9 with SCTP, and ports 137, 139, and 8080 with all.
             type: string
             version_added: 6.5.0
         ports:
@@ -64,14 +66,14 @@ DOCUMENTATION = '''
         udp_scan:
             description:
                 - Scan via UDP.
-                - Depending on your system you might need I(sudo=true) for this to work.
+                - Depending on your system you might need O(sudo=true) for this to work.
             type: boolean
             default: false
             version_added: 6.1.0
         icmp_timestamp:
             description:
                 - Scan via ICMP Timestamp (C(-PP)).
-                - Depending on your system you might need I(sudo=true) for this to work.
+                - Depending on your system you might need O(sudo=true) for this to work.
             type: boolean
             default: false
             version_added: 6.1.0
@@ -81,12 +83,17 @@ DOCUMENTATION = '''
             default: false
             version_added: 6.5.0
         dns_resolve:
-            description: Whether to always (C(true)) or never (C(false)) do DNS resolution.
+            description: Whether to always (V(true)) or never (V(false)) do DNS resolution.
             type: boolean
             default: false
             version_added: 6.1.0
+        use_arp_ping:
+            description: Whether to always (V(true)) use the quick ARP ping or (V(false)) a slower but more reliable method.
+            type: boolean
+            default: true
+            version_added: 7.4.0
     notes:
-        - At least one of ipv4 or ipv6 is required to be True, both can be True, but they cannot both be False.
+        - At least one of O(ipv4) or O(ipv6) is required to be V(true); both can be V(true), but they cannot both be V(false).
         - 'TODO: add OS fingerprinting'
 '''
 EXAMPLES = '''
@@ -122,6 +129,8 @@ from ansible.module_utils.common.text.converters import to_native, to_text
 from ansible.plugins.inventory import BaseInventoryPlugin, Constructable, Cacheable
 from ansible.module_utils.common.process import get_bin_path
 
+from ansible_collections.community.general.plugins.plugin_utils.unsafe import make_unsafe
+
 
 class InventoryModule(BaseInventoryPlugin, Constructable, Cacheable):
 
@@ -138,6 +147,7 @@ class InventoryModule(BaseInventoryPlugin, Constructable, Cacheable):
         strict = self.get_option('strict')
 
         for host in hosts:
+            host = make_unsafe(host)
             hostname = host['name']
             self.inventory.add_host(hostname)
             for var, value in host.items():
@@ -196,40 +206,43 @@ class InventoryModule(BaseInventoryPlugin, Constructable, Cacheable):
             # setup command
             cmd = [self._nmap]
 
-            if self._options['sudo']:
+            if self.get_option('sudo'):
                 cmd.insert(0, 'sudo')
 
-            if self._options['port']:
+            if self.get_option('port'):
                 cmd.append('-p')
-                cmd.append(self._options['port'])
+                cmd.append(self.get_option('port'))
 
-            if not self._options['ports']:
+            if not self.get_option('ports'):
                 cmd.append('-sP')
 
-            if self._options['ipv4'] and not self._options['ipv6']:
+            if self.get_option('ipv4') and not self.get_option('ipv6'):
                 cmd.append('-4')
-            elif self._options['ipv6'] and not self._options['ipv4']:
+            elif self.get_option('ipv6') and not self.get_option('ipv4'):
                 cmd.append('-6')
-            elif not self._options['ipv6'] and not self._options['ipv4']:
+            elif not self.get_option('ipv6') and not self.get_option('ipv4'):
                 raise AnsibleParserError('One of ipv4 or ipv6 must be enabled for this plugin')
 
-            if self._options['exclude']:
+            if self.get_option('exclude'):
                 cmd.append('--exclude')
-                cmd.append(','.join(self._options['exclude']))
+                cmd.append(','.join(self.get_option('exclude')))
 
-            if self._options['dns_resolve']:
+            if self.get_option('dns_resolve'):
                 cmd.append('-n')
 
-            if self._options['udp_scan']:
+            if self.get_option('udp_scan'):
                 cmd.append('-sU')
 
-            if self._options['icmp_timestamp']:
+            if self.get_option('icmp_timestamp'):
                 cmd.append('-PP')
 
-            if self._options['open']:
+            if self.get_option('open'):
                 cmd.append('--open')
 
-            cmd.append(self._options['address'])
+            if not self.get_option('use_arp_ping'):
+                cmd.append('--disable-arp-ping')
+
+            cmd.append(self.get_option('address'))
             try:
                 # execute
                 p = Popen(cmd, stdout=PIPE, stderr=PIPE)

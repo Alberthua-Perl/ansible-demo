@@ -9,23 +9,24 @@
 from __future__ import (absolute_import, division, print_function)
 __metaclass__ = type
 
-DOCUMENTATION = '''
-    author: Michael Scherer (@mscherer) <misc@zarb.org>
-    name: funcd
-    short_description: Use funcd to connect to target
+DOCUMENTATION = r"""
+author: Michael Scherer (@mscherer) <misc@zarb.org>
+name: funcd
+short_description: Use funcd to connect to target
+description:
+  - This transport permits you to use Ansible over Func.
+  - For people who have already setup func and that wish to play with ansible, this permit to move gradually to ansible without
+    having to redo completely the setup of the network.
+options:
+  remote_addr:
     description:
-        - This transport permits you to use Ansible over Func.
-        - For people who have already setup func and that wish to play with ansible,
-          this permit to move gradually to ansible without having to redo completely the setup of the network.
-    options:
-      remote_addr:
-        description:
-            - The path of the chroot you want to access.
-        default: inventory_hostname
-        vars:
-            - name: ansible_host
-            - name: ansible_func_host
-'''
+      - The path of the chroot you want to access.
+    type: string
+    default: inventory_hostname
+    vars:
+      - name: ansible_host
+      - name: ansible_func_host
+"""
 
 HAVE_FUNC = False
 try:
@@ -70,7 +71,7 @@ class Connection(ConnectionBase):
         if in_data:
             raise AnsibleError("Internal Error: this module does not support optimized module pipelining")
 
-        # totally ignores privlege escalation
+        # totally ignores privilege escalation
         display.vvv("EXEC %s" % cmd, host=self.host)
         p = self.client.command.run(cmd)[self.host]
         return p[0], p[1], p[2]

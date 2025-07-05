@@ -9,13 +9,11 @@ from __future__ import absolute_import, division, print_function
 __metaclass__ = type
 
 
-DOCUMENTATION = '''
----
+DOCUMENTATION = r"""
 module: grove
 short_description: Sends a notification to a grove.io channel
 description:
-     - The C(grove) module sends a message for a service to a Grove.io
-       channel.
+  - The C(grove) module sends a message for a service to a Grove.io channel.
 extends_documentation_fragment:
   - community.general.attributes
 attributes:
@@ -32,41 +30,41 @@ options:
   service:
     type: str
     description:
-      - Name of the service (displayed as the "user" in the message)
+      - Name of the service (displayed as the "user" in the message).
     required: false
     default: ansible
   message_content:
     type: str
     description:
       - Message content.
-      - The alias I(message) is deprecated and will be removed in community.general 4.0.0.
+      - The alias O(ignore:message) has been removed in community.general 4.0.0.
     required: true
   url:
     type: str
     description:
-      - Service URL for the web client
+      - Service URL for the web client.
     required: false
   icon_url:
     type: str
     description:
-      -  Icon for the service
+      - Icon for the service.
     required: false
   validate_certs:
     description:
-      - If C(false), SSL certificates will not be validated. This should only be used
-        on personally controlled sites using self-signed certificates.
+      - If V(false), SSL certificates will not be validated. This should only be used on personally controlled sites using
+        self-signed certificates.
     default: true
     type: bool
 author: "Jonas Pfenniger (@zimbatm)"
-'''
+"""
 
-EXAMPLES = '''
+EXAMPLES = r"""
 - name: Sends a notification to a grove.io channel
   community.general.grove:
     channel_token: 6Ph62VBBJOccmtTPZbubiPzdrhipZXtg
     service: my-app
     message: 'deployed {{ target }}'
-'''
+"""
 
 from ansible.module_utils.basic import AnsibleModule
 from ansible.module_utils.six.moves.urllib.parse import urlencode

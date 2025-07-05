@@ -48,7 +48,7 @@ options:
     description:  Assigned user of the token.
     type: str
   enabled:
-    description: Mark the token as enabled (default C(true)).
+    description: Mark the token as enabled (default V(true)).
     default: true
     type: bool
   notbefore:
@@ -237,7 +237,7 @@ def get_otptoken_dict(ansible_to_ipa, uniqueid=None, newuniqueid=None, otptype=N
     if owner is not None:
         otptoken[ansible_to_ipa['owner']] = owner
     if enabled is not None:
-        otptoken[ansible_to_ipa['enabled']] = 'FALSE' if enabled else 'TRUE'
+        otptoken[ansible_to_ipa['enabled']] = False if enabled else True
     if notbefore is not None:
         otptoken[ansible_to_ipa['notbefore']] = notbefore + 'Z'
     if notafter is not None:
@@ -392,9 +392,7 @@ def ensure(module, client):
                       'counter': 'ipatokenhotpcounter'}
 
     # Create inverse dictionary for mapping return values
-    ipa_to_ansible = {}
-    for (k, v) in ansible_to_ipa.items():
-        ipa_to_ansible[v] = k
+    ipa_to_ansible = {v: k for k, v in ansible_to_ipa.items()}
 
     unmodifiable_after_creation = ['otptype', 'secretkey', 'algorithm',
                                    'digits', 'offset', 'interval', 'counter']

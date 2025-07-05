@@ -17,9 +17,9 @@ notes:
   - Zones can be thought of as a logical group of domains, all of which share the
     same DNS records (i.e. they point to the same IP). An API key generated via the
     Memset customer control panel is needed with the following minimum scope -
-    I(dns.zone_create), I(dns.zone_delete), I(dns.zone_list).
+    C(dns.zone_create), C(dns.zone_delete), C(dns.zone_list).
   - Currently this module can only create one DNS record at a time. Multiple records
-    should be created using C(with_items).
+    should be created using C(loop).
 description:
   - Manage DNS records in a Memset account.
 extends_documentation_fragment:
@@ -181,6 +181,7 @@ def api_validation(args=None):
     https://www.memset.com/apidocs/methods_dns.html#dns.zone_record_create)
     '''
     failed_validation = False
+    error = None
 
     # priority can only be integer 0 > 999
     if not 0 <= args['priority'] <= 999:
@@ -373,9 +374,7 @@ def main():
     )
 
     # populate the dict with the user-provided vars.
-    args = dict()
-    for key, arg in module.params.items():
-        args[key] = arg
+    args = dict(module.params)
     args['check_mode'] = module.check_mode
 
     # perform some Memset API-specific validation

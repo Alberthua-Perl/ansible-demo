@@ -6,62 +6,67 @@
 from __future__ import (absolute_import, division, print_function)
 __metaclass__ = type
 
-DOCUMENTATION = '''
-    author: Unknown (!UNKNOWN)
-    name: redis
-    short_description: Use Redis DB for cache
+DOCUMENTATION = r"""
+author: Unknown (!UNKNOWN)
+name: redis
+short_description: Use Redis DB for cache
+description:
+  - This cache uses JSON formatted, per host records saved in Redis.
+requirements:
+  - redis>=2.4.5 (python lib)
+options:
+  _uri:
     description:
-        - This cache uses JSON formatted, per host records saved in Redis.
-    requirements:
-      - redis>=2.4.5 (python lib)
-    options:
-      _uri:
-        description:
-          - A colon separated string of connection information for Redis.
-          - The format is C(host:port:db:password), for example C(localhost:6379:0:changeme).
-          - To use encryption in transit, prefix the connection with C(tls://), as in C(tls://localhost:6379:0:changeme).
-          - To use redis sentinel, use separator C(;), for example C(localhost:26379;localhost:26379;0:changeme). Requires redis>=2.9.0.
-        required: true
-        env:
-          - name: ANSIBLE_CACHE_PLUGIN_CONNECTION
-        ini:
-          - key: fact_caching_connection
-            section: defaults
-      _prefix:
-        description: User defined prefix to use when creating the DB entries
-        default: ansible_facts
-        env:
-          - name: ANSIBLE_CACHE_PLUGIN_PREFIX
-        ini:
-          - key: fact_caching_prefix
-            section: defaults
-      _keyset_name:
-        description: User defined name for cache keyset name.
-        default: ansible_cache_keys
-        env:
-          - name: ANSIBLE_CACHE_REDIS_KEYSET_NAME
-        ini:
-          - key: fact_caching_redis_keyset_name
-            section: defaults
-        version_added: 1.3.0
-      _sentinel_service_name:
-        description: The redis sentinel service name (or referenced as cluster name).
-        env:
-          - name: ANSIBLE_CACHE_REDIS_SENTINEL
-        ini:
-          - key: fact_caching_redis_sentinel
-            section: defaults
-        version_added: 1.3.0
-      _timeout:
-        default: 86400
-        description: Expiration timeout in seconds for the cache plugin data. Set to 0 to never expire
-        env:
-          - name: ANSIBLE_CACHE_PLUGIN_TIMEOUT
-        ini:
-          - key: fact_caching_timeout
-            section: defaults
-        type: integer
-'''
+      - A colon separated string of connection information for Redis.
+      - The format is V(host:port:db:password), for example V(localhost:6379:0:changeme).
+      - To use encryption in transit, prefix the connection with V(tls://), as in V(tls://localhost:6379:0:changeme).
+      - To use redis sentinel, use separator V(;), for example V(localhost:26379;localhost:26379;0:changeme). Requires redis>=2.9.0.
+    type: string
+    required: true
+    env:
+      - name: ANSIBLE_CACHE_PLUGIN_CONNECTION
+    ini:
+      - key: fact_caching_connection
+        section: defaults
+  _prefix:
+    description: User defined prefix to use when creating the DB entries.
+    type: string
+    default: ansible_facts
+    env:
+      - name: ANSIBLE_CACHE_PLUGIN_PREFIX
+    ini:
+      - key: fact_caching_prefix
+        section: defaults
+  _keyset_name:
+    description: User defined name for cache keyset name.
+    type: string
+    default: ansible_cache_keys
+    env:
+      - name: ANSIBLE_CACHE_REDIS_KEYSET_NAME
+    ini:
+      - key: fact_caching_redis_keyset_name
+        section: defaults
+    version_added: 1.3.0
+  _sentinel_service_name:
+    description: The redis sentinel service name (or referenced as cluster name).
+    type: string
+    env:
+      - name: ANSIBLE_CACHE_REDIS_SENTINEL
+    ini:
+      - key: fact_caching_redis_sentinel
+        section: defaults
+    version_added: 1.3.0
+  _timeout:
+    default: 86400
+    type: integer
+        # TODO: determine whether it is OK to change to: type: float
+    description: Expiration timeout in seconds for the cache plugin data. Set to 0 to never expire.
+    env:
+      - name: ANSIBLE_CACHE_PLUGIN_TIMEOUT
+    ini:
+      - key: fact_caching_timeout
+        section: defaults
+"""
 
 import re
 import time
@@ -150,7 +155,7 @@ class CacheModule(BaseCacheModule):
         # format: "localhost:26379;localhost2:26379;0:changeme"
         connections = uri.split(';')
         connection_args = connections.pop(-1)
-        if len(connection_args) > 0:  # hanle if no db nr is given
+        if len(connection_args) > 0:  # handle if no db nr is given
             connection_args = connection_args.split(':')
             kw['db'] = connection_args.pop(0)
             try:
@@ -222,7 +227,7 @@ class CacheModule(BaseCacheModule):
 
     def copy(self):
         # TODO: there is probably a better way to do this in redis
-        ret = dict([(k, self.get(k)) for k in self.keys()])
+        ret = {k: self.get(k) for k in self.keys()}
         return ret
 
     def __getstate__(self):

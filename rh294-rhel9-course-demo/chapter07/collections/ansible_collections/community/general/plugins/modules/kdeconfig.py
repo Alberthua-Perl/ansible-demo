@@ -35,11 +35,11 @@ options:
     suboptions:
       group:
         description:
-          - The option's group. One between this and I(groups) is required.
+          - The option's group. One between this and O(values[].groups) is required.
         type: str
       groups:
         description:
-          - List of the option's groups. One between this and I(group) is required.
+          - List of the option's groups. One between this and O(values[].group) is required.
         type: list
         elements: str
       key:
@@ -49,12 +49,12 @@ options:
         required: true
       value:
         description:
-          - The option's value. One between this and I(bool_value) is required.
+          - The option's value. One between this and O(values[].bool_value) is required.
         type: str
       bool_value:
         description:
           - Boolean value.
-          - One between this and I(value) is required.
+          - One between this and O(values[].value) is required.
         type: bool
     required: true
   backup:
@@ -214,7 +214,7 @@ def run_module(module, tmpdir, kwriteconfig):
         if module.params['backup'] and os.path.exists(b_path):
             result['backup_file'] = module.backup_local(result['path'])
         try:
-            module.atomic_move(b_tmpfile, b_path)
+            module.atomic_move(b_tmpfile, os.path.abspath(b_path))
         except IOError:
             module.ansible.fail_json(msg='Unable to move temporary file %s to %s, IOError' % (tmpfile, result['path']), traceback=traceback.format_exc())
 

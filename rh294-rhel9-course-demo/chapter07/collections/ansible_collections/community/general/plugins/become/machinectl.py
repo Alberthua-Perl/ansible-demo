@@ -13,7 +13,8 @@ DOCUMENTATION = '''
     author: Ansible Core Team
     options:
         become_user:
-            description: User you 'become' to execute the task
+            description: User you 'become' to execute the task.
+            type: string
             default: ''
             ini:
               - section: privilege_escalation
@@ -27,7 +28,8 @@ DOCUMENTATION = '''
               - name: ANSIBLE_BECOME_USER
               - name: ANSIBLE_MACHINECTL_USER
         become_exe:
-            description: Machinectl executable
+            description: Machinectl executable.
+            type: string
             default: machinectl
             ini:
               - section: privilege_escalation
@@ -41,7 +43,8 @@ DOCUMENTATION = '''
               - name: ANSIBLE_BECOME_EXE
               - name: ANSIBLE_MACHINECTL_EXE
         become_flags:
-            description: Options to pass to machinectl
+            description: Options to pass to machinectl.
+            type: string
             default: ''
             ini:
               - section: privilege_escalation
@@ -55,7 +58,8 @@ DOCUMENTATION = '''
               - name: ANSIBLE_BECOME_FLAGS
               - name: ANSIBLE_MACHINECTL_FLAGS
         become_pass:
-            description: Password for machinectl
+            description: Password for machinectl.
+            type: string
             required: false
             vars:
               - name: ansible_become_password
@@ -68,7 +72,7 @@ DOCUMENTATION = '''
               - section: machinectl_become_plugin
                 key: password
     notes:
-      - When not using this plugin with user C(root), it only works correctly with a polkit rule which will alter
+      - When not using this plugin with user V(root), it only works correctly with a polkit rule which will alter
         the behaviour of machinectl. This rule must alter the prompt behaviour to ask directly for the user credentials,
         if the user is allowed to perform the action (take a look at the examples section).
         If such a rule is not present the plugin only work if it is used in context with the root user,
@@ -78,12 +82,13 @@ DOCUMENTATION = '''
 EXAMPLES = r'''
 # A polkit rule needed to use the module with a non-root user.
 # See the Notes section for details.
-60-machinectl-fast-user-auth.rules: |
-    polkit.addRule(function(action, subject) {
-        if(action.id == "org.freedesktop.machine1.host-shell" && subject.isInGroup("wheel")) {
-            return polkit.Result.AUTH_SELF_KEEP;
-        }
-    });
+/etc/polkit-1/rules.d/60-machinectl-fast-user-auth.rules: |
+  polkit.addRule(function(action, subject) {
+    if(action.id == "org.freedesktop.machine1.host-shell" &&
+      subject.isInGroup("wheel")) {
+        return polkit.Result.AUTH_SELF_KEEP;
+    }
+  });
 '''
 
 from re import compile as re_compile
@@ -102,6 +107,7 @@ class BecomeModule(BecomeBase):
     prompt = 'Password: '
     fail = ('==== AUTHENTICATION FAILED ====',)
     success = ('==== AUTHENTICATION COMPLETE ====',)
+    require_tty = True  # see https://github.com/ansible-collections/community.general/issues/6932
 
     @staticmethod
     def remove_ansi_codes(line):

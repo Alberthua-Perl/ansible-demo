@@ -13,22 +13,22 @@ short_description: Retrieves the version of an installed collection
 description:
   - This lookup allows to query the version of an installed collection, and to determine whether a
     collection is installed at all.
-  - By default it returns C(none) for non-existing collections and C(*) for collections without a
+  - By default it returns V(none) for non-existing collections and V(*) for collections without a
     version number. The latter should only happen in development environments, or when installing
     a collection from git which has no version in its C(galaxy.yml). This behavior can be adjusted
-    by providing other values with I(result_not_found) and I(result_no_version).
+    by providing other values with O(result_not_found) and O(result_no_version).
 options:
   _terms:
     description:
       - The collections to look for.
-      - For example C(community.general).
+      - For example V(community.general).
     type: list
     elements: str
     required: true
   result_not_found:
     description:
       - The value to return when the collection could not be found.
-      - By default, C(none) is returned.
+      - By default, V(none) is returned.
     type: string
     default: ~
   result_no_version:
@@ -36,7 +36,7 @@ options:
       - The value to return when the collection has no version number.
       - This can happen for collections installed from git which do not have a version number
         in C(galaxy.yml).
-      - By default, C(*) is returned.
+      - By default, V(*) is returned.
     type: string
     default: '*'
 """
@@ -51,11 +51,11 @@ RETURN = """
   _raw:
     description:
       - The version number of the collections listed as input.
-      - If a collection can not be found, it will return the value provided in I(result_not_found).
-        By default, this is C(none).
+      - If a collection can not be found, it will return the value provided in O(result_not_found).
+        By default, this is V(none).
       - If a collection can be found, but the version not identified, it will return the value provided in
-        I(result_no_version). By default, this is C(*). This can happen for collections installed
-        from git which do not have a version number in C(galaxy.yml).
+        O(result_no_version). By default, this is V(*). This can happen for collections installed
+        from git which do not have a version number in V(galaxy.yml).
     type: list
     elements: str
 """
@@ -63,11 +63,11 @@ RETURN = """
 import json
 import os
 import re
+from importlib import import_module
 
 import yaml
 
 from ansible.errors import AnsibleLookupError
-from ansible.module_utils.compat.importlib import import_module
 from ansible.plugins.lookup import LookupBase
 
 
@@ -98,15 +98,10 @@ def load_collection_meta(collection_pkg, no_version='*'):
     if os.path.exists(manifest_path):
         return load_collection_meta_manifest(manifest_path)
 
-    # Try to load galaxy.y(a)ml
+    # Try to load galaxy.yml
     galaxy_path = os.path.join(path, 'galaxy.yml')
-    galaxy_alt_path = os.path.join(path, 'galaxy.yaml')
-    # galaxy.yaml was only supported in ansible-base 2.10 and ansible-core 2.11. Support was removed
-    # in https://github.com/ansible/ansible/commit/595413d11346b6f26bb3d9df2d8e05f2747508a3 for
-    # ansible-core 2.12.
-    for path in (galaxy_path, galaxy_alt_path):
-        if os.path.exists(path):
-            return load_collection_meta_galaxy(path, no_version=no_version)
+    if os.path.exists(galaxy_path):
+        return load_collection_meta_galaxy(galaxy_path, no_version=no_version)
 
     return {}
 

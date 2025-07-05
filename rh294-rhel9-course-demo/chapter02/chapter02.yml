@@ -1,29 +1,33 @@
 ---
 - name: Deploy Apache HTTPD Web Server
-  hosts: managed_nodes,!servera.lab.example.com
+  hosts: managed_nodes,!webserver1
+  #hosts directive refer to inventory_hostname(magic variable)
 
   tasks:
     - name: install httpd packages
-      ansible.builtin.yum:
+      #ansible.builtin.yum:
+      ansible.builtin.dnf:
         name: httpd-2.4.51-7.el9_0.x86_64
         state: present
     - name: start and enable httpd service
       ansible.builtin.service:
-        name: httpd
+        name: httpd  #same as <unit_name>.service
         state: started
         enabled: true
     - name: allow web port access
       ansible.posix.firewalld:
         zone: public
-        service: http
+        service: http  #applied to http protocol
         permanent: true
         state: enabled
         immediate: true
 
 - name: Storage info collect
-  hosts: servera.lab.example.com
+  hosts: webserver1
 
   tasks:
     - name: collect lvm infomation
       ansible.builtin.command: /sbin/lvs
-...
+      #return CHANGED statue every time including ansible.builtin.shell and ansible.builtin.raw module
+      # ansible.builtin.shell: supported cmd pipeline, environment variable
+      # ansible.builtin.raw: supported all command without python environment

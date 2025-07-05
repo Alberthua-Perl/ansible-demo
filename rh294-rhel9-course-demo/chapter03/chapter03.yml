@@ -1,16 +1,16 @@
 ---
 - name: Deploy Apache HTTPD Web Server
-  hosts: managed_nodes,!servera.lab.example.com
+  hosts: managed_nodes,!webserver1
   gather_facts: false
   vars:
     package: httpd-2.4.51-7.el9_0.x86_64
 
   tasks:
-    - name: install httpd packages
-      ansible.builtin.yum:
+    - name: install {{ package }} packages
+      ansible.builtin.dnf:
         name: "{{ package }}"
         state: present
-    - name: start and enable httpd service
+    - name: start and enable {{ package }} service
       ansible.builtin.service:
         name: httpd
         state: started
@@ -24,7 +24,7 @@
         immediate: true
 
 - name: Storage info collect        
-  hosts: servera.lab.example.com
+  hosts: webserver1
   gather_facts: false
 
   tasks:

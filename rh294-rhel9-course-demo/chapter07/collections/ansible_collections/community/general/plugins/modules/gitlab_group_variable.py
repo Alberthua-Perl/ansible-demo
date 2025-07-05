@@ -9,19 +9,18 @@
 from __future__ import absolute_import, division, print_function
 __metaclass__ = type
 
-DOCUMENTATION = r'''
+DOCUMENTATION = r"""
 module: gitlab_group_variable
 short_description: Creates, updates, or deletes GitLab groups variables
 version_added: 1.2.0
 description:
   - Creates a group variable if it does not exist.
   - When a group variable does exist, its value will be updated when the values are different.
-  - Variables which are untouched in the playbook, but are not untouched in the GitLab group,
-    they stay untouched (I(purge) is C(false)) or will be deleted (I(purge) is C(true)).
+  - Variables which are untouched in the playbook, but are not untouched in the GitLab group, they stay untouched (O(purge=false))
+    or will be deleted (O(purge=true)).
 author:
   - Florent Madiot (@scodeman)
 requirements:
-  - python >= 2.7
   - python-gitlab python module
 extends_documentation_fragment:
   - community.general.auth_basic
@@ -48,29 +47,30 @@ options:
     type: str
   purge:
     description:
-      - When set to C(true), delete all variables which are not untouched in the task.
+      - When set to V(true), delete all variables which are not untouched in the task.
     default: false
     type: bool
   vars:
     description:
-      - When the list element is a simple key-value pair, set masked and protected to false.
-      - When the list element is a dict with the keys I(value), I(masked) and I(protected), the user can
-        have full control about whether a value should be masked, protected or both.
+      - When the list element is a simple key-value pair, masked, raw and protected will be set to false.
+      - When the list element is a dict with the keys C(value), C(masked), C(raw) and C(protected), the user can have full
+        control about whether a value should be masked, raw, protected or both.
       - Support for group variables requires GitLab >= 9.5.
       - Support for environment_scope requires GitLab Premium >= 13.11.
       - Support for protected values requires GitLab >= 9.3.
       - Support for masked values requires GitLab >= 11.10.
-      - A I(value) must be a string or a number.
-      - Field I(variable_type) must be a string with either C(env_var), which is the default, or C(file).
-      - When a value is masked, it must be in Base64 and have a length of at least 8 characters.
-        See GitLab documentation on acceptable values for a masked variable (U(https://docs.gitlab.com/ce/ci/variables/#masked-variables)).
+      - Support for raw values requires GitLab >= 15.7.
+      - A C(value) must be a string or a number.
+      - Field C(variable_type) must be a string with either V(env_var), which is the default, or V(file).
+      - When a value is masked, it must be in Base64 and have a length of at least 8 characters. See GitLab documentation
+        on acceptable values for a masked variable (U(https://docs.gitlab.com/ce/ci/variables/#masked-variables)).
     default: {}
     type: dict
   variables:
     version_added: 4.5.0
     description:
       - A list of dictionaries that represents CI/CD variables.
-      - This modules works internal with this sructure, even if the older I(vars) parameter is used.
+      - This modules works internal with this structure, even if the older O(vars) parameter is used.
     default: []
     type: list
     elements: dict
@@ -83,33 +83,40 @@ options:
       value:
         description:
           - The variable value.
-          - Required when I(state=present).
+          - Required when O(state=present).
         type: str
       masked:
         description:
-          - Wether variable value is masked or not.
+          - Whether variable value is masked or not.
         type: bool
         default: false
       protected:
         description:
-          - Wether variable value is protected or not.
+          - Whether variable value is protected or not.
         type: bool
         default: false
+      raw:
+        description:
+          - Whether variable value is raw or not.
+          - Support for raw values requires GitLab >= 15.7.
+        type: bool
+        default: false
+        version_added: '7.4.0'
       variable_type:
         description:
-          - Wether a variable is an environment variable (C(env_var)) or a file (C(file)).
+          - Whether a variable is an environment variable (V(env_var)) or a file (V(file)).
         type: str
-        choices: [ "env_var", "file" ]
+        choices: ["env_var", "file"]
         default: env_var
       environment_scope:
         description:
           - The scope for the variable.
         type: str
         default: '*'
-'''
+"""
 
 
-EXAMPLES = r'''
+EXAMPLES = r"""
 - name: Set or update some CI/CD variables
   community.general.gitlab_group_variable:
     api_url: https://gitlab.com
@@ -126,6 +133,38 @@ EXAMPLES = r'''
         variable_type: env_var
         environment_scope: production
 
+- name: Set or update some CI/CD variables with raw value
+  community.general.gitlab_group_variable:
+    api_url: https://gitlab.com
+    api_token: secret_access_token
+    group: scodeman/testgroup/
+    purge: false
+    vars:
+      ACCESS_KEY_ID: abc123
+      SECRET_ACCESS_KEY:
+        value: 3214cbad
+        masked: true
+        protected: true
+        raw: true
+        variable_type: env_var
+        environment_scope: '*'
+
+- name: Set or update some CI/CD variables with expandable value
+  community.general.gitlab_group_variable:
+    api_url: https://gitlab.com
+    api_token: secret_access_token
+    group: scodeman/testgroup/
+    purge: false
+    vars:
+      ACCESS_KEY_ID: abc123
+      SECRET_ACCESS_KEY:
+        value: '$MY_OTHER_VARIABLE'
+        masked: true
+        protected: true
+        raw: false
+        variable_type: env_var
+        environment_scope: '*'
+
 - name: Delete one variable
   community.general.gitlab_group_variable:
     api_url: https://gitlab.com
@@ -134,9 +173,9 @@ EXAMPLES = r'''
     state: absent
     vars:
       ACCESS_KEY_ID: abc123
-'''
+"""
 
-RETURN = r'''
+RETURN = r"""
 group_variable:
   description: Four lists of the variablenames which were added, updated, removed or exist.
   returned: always
@@ -162,12 +201,13 @@ group_variable:
       returned: always
       type: list
       sample: ['ACCESS_KEY_ID', 'SECRET_ACCESS_KEY']
-'''
+"""
 
 from ansible.module_utils.basic import AnsibleModule
 from ansible.module_utils.api import basic_auth_argument_spec
 from ansible_collections.community.general.plugins.module_utils.gitlab import (
-    auth_argument_spec, gitlab_authentication, ensure_gitlab_package, filter_returned_variables, vars_to_variables
+    auth_argument_spec, gitlab_authentication, filter_returned_variables, vars_to_variables,
+    list_all_kwargs
 )
 
 
@@ -182,14 +222,7 @@ class GitlabGroupVariables(object):
         return self.repo.groups.get(group_name)
 
     def list_all_group_variables(self):
-        page_nb = 1
-        variables = []
-        vars_page = self.group.variables.list(page=page_nb)
-        while len(vars_page) > 0:
-            variables += vars_page
-            page_nb += 1
-            vars_page = self.group.variables.list(page=page_nb)
-        return variables
+        return list(self.group.variables.list(**list_all_kwargs))
 
     def create_variable(self, var_obj):
         if self._module.check_mode:
@@ -199,6 +232,7 @@ class GitlabGroupVariables(object):
             "value": var_obj.get('value'),
             "masked": var_obj.get('masked'),
             "protected": var_obj.get('protected'),
+            "raw": var_obj.get('raw'),
             "variable_type": var_obj.get('variable_type'),
         }
         if var_obj.get('environment_scope') is not None:
@@ -267,6 +301,8 @@ def native_python_main(this_gitlab, purge, requested_variables, state, module):
         item['value'] = str(item.get('value'))
         if item.get('protected') is None:
             item['protected'] = False
+        if item.get('raw') is None:
+            item['raw'] = False
         if item.get('masked') is None:
             item['masked'] = False
         if item.get('environment_scope') is None:
@@ -338,11 +374,14 @@ def main():
         group=dict(type='str', required=True),
         purge=dict(type='bool', required=False, default=False),
         vars=dict(type='dict', required=False, default=dict(), no_log=True),
+        # please mind whenever changing the variables dict to also change module_utils/gitlab.py's
+        # KNOWN dict in filter_returned_variables or bad evil will happen
         variables=dict(type='list', elements='dict', required=False, default=list(), options=dict(
             name=dict(type='str', required=True),
             value=dict(type='str', no_log=True),
             masked=dict(type='bool', default=False),
             protected=dict(type='bool', default=False),
+            raw=dict(type='bool', default=False),
             environment_scope=dict(type='str', default='*'),
             variable_type=dict(type='str', default='env_var', choices=["env_var", "file"])
         )),
@@ -367,7 +406,9 @@ def main():
         ],
         supports_check_mode=True
     )
-    ensure_gitlab_package(module)
+
+    # check prerequisites and connect to gitlab server
+    gitlab_instance = gitlab_authentication(module)
 
     purge = module.params['purge']
     var_list = module.params['vars']
@@ -381,8 +422,6 @@ def main():
     if state == 'present':
         if any(x['value'] is None for x in variables):
             module.fail_json(msg='value parameter is required in state present')
-
-    gitlab_instance = gitlab_authentication(module)
 
     this_gitlab = GitlabGroupVariables(module=module, gitlab_instance=gitlab_instance)
 

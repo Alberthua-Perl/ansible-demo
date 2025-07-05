@@ -10,43 +10,67 @@
 from __future__ import (absolute_import, division, print_function)
 __metaclass__ = type
 
-DOCUMENTATION = '''
-    author: Maykel Moya (!UNKNOWN) <mmoya@speedyrails.com>
-    name: chroot
-    short_description: Interact with local chroot
+DOCUMENTATION = r"""
+author: Maykel Moya (!UNKNOWN) <mmoya@speedyrails.com>
+name: chroot
+short_description: Interact with local chroot
+description:
+  - Run commands or put/fetch files to an existing chroot on the Ansible controller.
+options:
+  remote_addr:
     description:
-        - Run commands or put/fetch files to an existing chroot on the Ansible controller.
-    options:
-      remote_addr:
-        description:
-            - The path of the chroot you want to access.
-        default: inventory_hostname
-        vars:
-            - name: inventory_hostname
-            - name: ansible_host
-      executable:
-        description:
-            - User specified executable shell
-        ini:
-          - section: defaults
-            key: executable
-        env:
-          - name: ANSIBLE_EXECUTABLE
-        vars:
-          - name: ansible_executable
-        default: /bin/sh
-      chroot_exe:
-        description:
-            - User specified chroot binary
-        ini:
-          - section: chroot_connection
-            key: exe
-        env:
-          - name: ANSIBLE_CHROOT_EXE
-        vars:
-          - name: ansible_chroot_exe
-        default: chroot
-'''
+      - The path of the chroot you want to access.
+    type: string
+    default: inventory_hostname
+    vars:
+      - name: inventory_hostname
+      - name: ansible_host
+  executable:
+    description:
+      - User specified executable shell.
+    type: string
+    ini:
+      - section: defaults
+        key: executable
+    env:
+      - name: ANSIBLE_EXECUTABLE
+    vars:
+      - name: ansible_executable
+    default: /bin/sh
+  chroot_exe:
+    description:
+      - User specified chroot binary.
+    type: string
+    ini:
+      - section: chroot_connection
+        key: exe
+    env:
+      - name: ANSIBLE_CHROOT_EXE
+    vars:
+      - name: ansible_chroot_exe
+    default: chroot
+  disable_root_check:
+    description:
+      - Do not check that the user is not root.
+    ini:
+      - section: chroot_connection
+        key: disable_root_check
+    env:
+      - name: ANSIBLE_CHROOT_DISABLE_ROOT_CHECK
+    vars:
+      - name: ansible_chroot_disable_root_check
+    default: false
+    type: bool
+    version_added: 7.3.0
+"""
+
+EXAMPLES = r"""
+- hosts: chroots
+  connection: community.general.chroot
+  tasks:
+    - debug:
+        msg: "This is coming from chroot environment"
+"""
 
 import os
 import os.path
@@ -81,11 +105,7 @@ class Connection(ConnectionBase):
 
         self.chroot = self._play_context.remote_addr
 
-        if os.geteuid() != 0:
-            raise AnsibleError("chroot connection requires running as root")
-
-        # we're running as root on the local system so do some
-        # trivial checks for ensuring 'host' is actually a chroot'able dir
+        # do some trivial checks for ensuring 'host' is actually a chroot'able dir
         if not os.path.isdir(self.chroot):
             raise AnsibleError("%s is not a directory" % self.chroot)
 
@@ -99,6 +119,11 @@ class Connection(ConnectionBase):
 
     def _connect(self):
         """ connect to the chroot """
+        if not self.get_option('disable_root_check') and os.geteuid() != 0:
+            raise AnsibleError(
+                "chroot connection requires running as root. "
+                "You can override this check with the `disable_root_check` option.")
+
         if os.path.isabs(self.get_option('chroot_exe')):
             self.chroot_cmd = self.get_option('chroot_exe')
         else:

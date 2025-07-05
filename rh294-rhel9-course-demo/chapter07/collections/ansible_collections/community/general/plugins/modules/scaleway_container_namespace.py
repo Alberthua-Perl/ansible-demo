@@ -11,8 +11,7 @@ from __future__ import absolute_import, division, print_function
 
 __metaclass__ = type
 
-DOCUMENTATION = '''
----
+DOCUMENTATION = r"""
 module: scaleway_container_namespace
 short_description: Scaleway Container namespace management
 version_added: 6.0.0
@@ -24,7 +23,7 @@ extends_documentation_fragment:
   - community.general.scaleway_waitable_resource
   - community.general.attributes
 requirements:
-   - passlib[argon2] >= 1.7.4
+  - passlib[argon2] >= 1.7.4
 
 attributes:
   check_mode:
@@ -51,7 +50,7 @@ options:
   region:
     type: str
     description:
-      - Scaleway region to use (for example C(fr-par)).
+      - Scaleway region to use (for example V(fr-par)).
     required: true
     choices:
       - fr-par
@@ -80,13 +79,13 @@ options:
   secret_environment_variables:
     description:
       - Secret environment variables of the container namespace.
-      - Updating thoses values will not output a C(changed) state in Ansible.
+      - Updating those values will not output a C(changed) state in Ansible.
       - Injected in containers at runtime.
     type: dict
     default: {}
-'''
+"""
 
-EXAMPLES = '''
+EXAMPLES = r"""
 - name: Create a container namespace
   community.general.scaleway_container_namespace:
     project_id: '{{ scw_project }}'
@@ -105,12 +104,12 @@ EXAMPLES = '''
     state: absent
     region: fr-par
     name: my-awesome-container-namespace
-'''
+"""
 
-RETURN = '''
+RETURN = r"""
 container_namespace:
   description: The container namespace information.
-  returned: when I(state=present)
+  returned: when O(state=present)
   type: dict
   sample:
     description: ""
@@ -128,7 +127,7 @@ container_namespace:
       - key: MY_SECRET_VAR
         value: $argon2id$v=19$m=65536,t=1,p=2$tb6UwSPWx/rH5Vyxt9Ujfw$5ZlvaIjWwNDPxD9Rdght3NarJz4IETKjpvAU3mMSmFg
     status: pending
-'''
+"""
 
 from copy import deepcopy
 
@@ -167,8 +166,7 @@ def absent_strategy(api, wished_cn):
     changed = False
 
     cn_list = api.fetch_all_resources("namespaces")
-    cn_lookup = dict((cn["name"], cn)
-                     for cn in cn_list)
+    cn_lookup = {cn["name"]: cn for cn in cn_list}
 
     if wished_cn["name"] not in cn_lookup:
         return changed, {}
@@ -192,8 +190,7 @@ def present_strategy(api, wished_cn):
     changed = False
 
     cn_list = api.fetch_all_resources("namespaces")
-    cn_lookup = dict((cn["name"], cn)
-                     for cn in cn_list)
+    cn_lookup = {cn["name"]: cn for cn in cn_list}
 
     payload_cn = payload_from_wished_cn(wished_cn)
 

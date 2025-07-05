@@ -32,20 +32,16 @@ options:
   state:
     type: str
     description:
-      - C(absent) - tags should not exist.
-      - C(present) - tags should exist.
-      - >
-        C(list) - list current tags.
-        This state is deprecated and will be removed 8.0.0.
-        Please use the module M(community.general.manageiq_tags_info) instead.
-    choices: ['absent', 'present', 'list']
+      - V(absent) - tags should not exist.
+      - V(present) - tags should exist.
+    choices: ['absent', 'present']
     default: 'present'
   tags:
     type: list
     elements: dict
     description:
-      - C(tags) - list of dictionaries, each includes C(name) and c(category) keys.
-      - Required if I(state) is C(present) or C(absent).
+      - V(tags) - list of dictionaries, each includes C(name) and C(category) keys.
+      - Required if O(state) is V(present) or V(absent).
   resource_type:
     type: str
     description:
@@ -58,11 +54,11 @@ options:
     type: str
     description:
       - The name of the resource at which tags will be controlled.
-      - Must be specified if I(resource_id) is not set. Both options are mutually exclusive.
+      - Must be specified if O(resource_id) is not set. Both options are mutually exclusive.
   resource_id:
     description:
       - The ID of the resource at which tags will be controlled.
-      - Must be specified if I(resource_name) is not set. Both options are mutually exclusive.
+      - Must be specified if O(resource_name) is not set. Both options are mutually exclusive.
     type: int
     version_added: 2.2.0
 '''
@@ -81,7 +77,7 @@ EXAMPLES = '''
       url: 'http://127.0.0.1:3000'
       username: 'admin'
       password: 'smartvm'
-      validate_certs: false
+      validate_certs: false  # only do this when connecting to localhost!
 
 - name: Create new tags for a provider in ManageIQ.
   community.general.manageiq_tags:
@@ -96,7 +92,7 @@ EXAMPLES = '''
       url: 'http://127.0.0.1:3000'
       username: 'admin'
       password: 'smartvm'
-      validate_certs: false
+      validate_certs: false  # only do this when connecting to localhost!
 
 - name: Remove tags for a provider in ManageIQ.
   community.general.manageiq_tags:
@@ -112,7 +108,7 @@ EXAMPLES = '''
       url: 'http://127.0.0.1:3000'
       username: 'admin'
       password: 'smartvm'
-      validate_certs: false
+      validate_certs: false  # only do this when connecting to localhost!
 '''
 
 RETURN = '''
@@ -125,7 +121,7 @@ from ansible_collections.community.general.plugins.module_utils.manageiq import 
 
 
 def main():
-    actions = {'present': 'assign', 'absent': 'unassign', 'list': 'list'}
+    actions = {'present': 'assign', 'absent': 'unassign'}
     argument_spec = dict(
         tags=dict(type='list', elements='dict'),
         resource_id=dict(type='int'),
@@ -133,7 +129,7 @@ def main():
         resource_type=dict(required=True, type='str',
                            choices=list(manageiq_entities().keys())),
         state=dict(required=False, type='str',
-                   choices=['present', 'absent', 'list'], default='present'),
+                   choices=['present', 'absent'], default='present'),
     )
     # add the manageiq connection arguments to the arguments
     argument_spec.update(manageiq_argument_spec())
@@ -154,13 +150,6 @@ def main():
     resource_name = module.params['resource_name']
     state = module.params['state']
 
-    if state == "list":
-        module.deprecate(
-            'The value "list" for "state" is deprecated. Please use community.general.manageiq_tags_info instead.',
-            version='8.0.0',
-            collection_name='community.general'
-        )
-
     # get the action and resource type
     action = actions[state]
     resource_type = manageiq_entities()[resource_type_key]
@@ -173,13 +162,8 @@ def main():
 
     manageiq_tags = ManageIQTags(manageiq, resource_type, resource_id)
 
-    if action == 'list':
-        # return a list of current tags for this object
-        current_tags = manageiq_tags.query_resource_tags()
-        res_args = dict(changed=False, tags=current_tags)
-    else:
-        # assign or unassign the tags
-        res_args = manageiq_tags.assign_or_unassign_tags(tags, action)
+    # assign or unassign the tags
+    res_args = manageiq_tags.assign_or_unassign_tags(tags, action)
 
     module.exit_json(**res_args)
 

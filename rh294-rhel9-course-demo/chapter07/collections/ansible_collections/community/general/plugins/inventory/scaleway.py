@@ -20,6 +20,7 @@ DOCUMENTATION = r'''
         plugin:
             description: Token that ensures this is a source file for the 'scaleway' plugin.
             required: true
+            type: string
             choices: ['scaleway', 'community.general.scaleway']
         regions:
             description: Filter results on a specific Scaleway region.
@@ -37,7 +38,7 @@ DOCUMENTATION = r'''
         scw_profile:
             description:
             - The config profile to use in config file.
-            - By default uses the one specified as C(active_profile) in the config file, or falls back to C(default) if that is not defined.
+            - By default uses the one specified as C(active_profile) in the config file, or falls back to V(default) if that is not defined.
             type: string
             version_added: 4.4.0
         oauth_token:
@@ -46,6 +47,7 @@ DOCUMENTATION = r'''
             - If not explicitly defined or in environment variables, it will try to lookup in the scaleway-cli configuration file
               (C($SCW_CONFIG_PATH), C($XDG_CONFIG_HOME/scw/config.yaml), or C(~/.config/scw/config.yaml)).
             - More details on L(how to generate token, https://www.scaleway.com/en/docs/generate-api-keys/).
+            type: string
             env:
                 # in order of precedence
                 - name: SCW_TOKEN
@@ -121,6 +123,7 @@ else:
 from ansible.errors import AnsibleError
 from ansible.plugins.inventory import BaseInventoryPlugin, Constructable
 from ansible_collections.community.general.plugins.module_utils.scaleway import SCALEWAY_LOCATION, parse_pagination_link
+from ansible_collections.community.general.plugins.plugin_utils.unsafe import make_unsafe
 from ansible.module_utils.urls import open_url
 from ansible.module_utils.common.text.converters import to_native, to_text
 from ansible.module_utils.six import raise_from
@@ -279,7 +282,7 @@ class InventoryModule(BaseInventoryPlugin, Constructable):
         zone_info = SCALEWAY_LOCATION[zone]
 
         url = _build_server_url(zone_info["api_endpoint"])
-        raw_zone_hosts_infos = _fetch_information(url=url, token=token)
+        raw_zone_hosts_infos = make_unsafe(_fetch_information(url=url, token=token))
 
         for host_infos in raw_zone_hosts_infos:
 
@@ -341,4 +344,4 @@ class InventoryModule(BaseInventoryPlugin, Constructable):
         hostname_preference = self.get_option("hostnames")
 
         for zone in self._get_zones(config_zones):
-            self.do_zone_inventory(zone=zone, token=token, tags=tags, hostname_preferences=hostname_preference)
+            self.do_zone_inventory(zone=make_unsafe(zone), token=token, tags=tags, hostname_preferences=hostname_preference)

@@ -14,13 +14,15 @@ module: proxmox_kvm
 short_description: Management of Qemu(KVM) Virtual Machines in Proxmox VE cluster
 description:
   - Allows you to create/delete/stop Qemu(KVM) Virtual Machines in Proxmox VE cluster.
-  - Since community.general 4.0.0 on, there are no more default values, see I(proxmox_default_behavior).
+  - Since community.general 4.0.0 on, there are no more default values, see O(proxmox_default_behavior).
 author: "Abdoul Bah (@helldorado) <bahabdoul at gmail.com>"
 attributes:
   check_mode:
     support: none
   diff_mode:
     support: none
+  action_group:
+    version_added: 9.0.0
 options:
   archive:
     description:
@@ -30,31 +32,31 @@ options:
   acpi:
     description:
       - Specify if ACPI should be enabled/disabled.
-      - This option has no default unless I(proxmox_default_behavior) is set to C(compatiblity); then the default is C(true).
+      - This option has no default unless O(proxmox_default_behavior) is set to V(compatibility); then the default is V(true).
     type: bool
   agent:
     description:
       - Specify if the QEMU Guest Agent should be enabled/disabled.
       - Since community.general 5.5.0, this can also be a string instead of a boolean.
-        This allows to specify values such as C(enabled=1,fstrim_cloned_disks=1).
+        This allows to specify values such as V(enabled=1,fstrim_cloned_disks=1).
     type: str
   args:
     description:
       - Pass arbitrary arguments to kvm.
       - This option is for experts only!
-      - If I(proxmox_default_behavior) is set to C(compatiblity), this option has a default of
-        C(-serial unix:/var/run/qemu-server/<vmid>.serial,server,nowait).
+      - If O(proxmox_default_behavior) is set to V(compatibility), this option has a default of
+        V(-serial unix:/var/run/qemu-server/<vmid>.serial,server,nowait).
     type: str
   autostart:
     description:
       - Specify if the VM should be automatically restarted after crash (currently ignored in PVE API).
-      - This option has no default unless I(proxmox_default_behavior) is set to C(compatiblity); then the default is C(false).
+      - This option has no default unless O(proxmox_default_behavior) is set to V(compatibility); then the default is V(false).
     type: bool
   balloon:
     description:
       - Specify the amount of RAM for the VM in MB.
       - Using zero disables the balloon driver.
-      - This option has no default unless I(proxmox_default_behavior) is set to C(compatiblity); then the default is C(0).
+      - This option has no default unless O(proxmox_default_behavior) is set to V(compatibility); then the default is V(0).
     type: int
   bios:
     description:
@@ -63,13 +65,14 @@ options:
     choices: ['seabios', 'ovmf']
   boot:
     description:
-      - Specify the boot order -> boot on floppy C(a), hard disk C(c), CD-ROM C(d), or network C(n).
+      - Specify the boot order -> boot on floppy V(a), hard disk V(c), CD-ROM V(d), or network V(n).
+      - For newer versions of Proxmox VE, use a boot order like V(order=scsi0;net0;hostpci0).
       - You can combine to set order.
-      - This option has no default unless I(proxmox_default_behavior) is set to C(compatiblity); then the default is C(cnd).
+      - This option has no default unless O(proxmox_default_behavior) is set to V(compatibility); then the default is V(cnd).
     type: str
   bootdisk:
     description:
-      - Enable booting from specified disk. C((ide|sata|scsi|virtio)\d+)
+      - 'Enable booting from specified disk. Format V((ide|sata|scsi|virtio\)\\d+).'
     type: str
   cicustom:
     description:
@@ -84,8 +87,8 @@ options:
   citype:
     description:
       - 'cloud-init: Specifies the cloud-init configuration format.'
-      - The default depends on the configured operating system type (C(ostype)).
-      - We use the C(nocloud) format for Linux, and C(configdrive2) for Windows.
+      - The default depends on the configured operating system type (V(ostype)).
+      - We use the V(nocloud) format for Linux, and V(configdrive2) for Windows.
     type: str
     choices: ['nocloud', 'configdrive2']
     version_added: 1.3.0
@@ -96,17 +99,17 @@ options:
     version_added: 1.3.0
   clone:
     description:
-      - Name of VM to be cloned. If I(vmid) is set, I(clone) can take an arbitrary value but is required for initiating the clone.
+      - Name of VM to be cloned. If O(vmid) is set, O(clone) can take an arbitrary value but is required for initiating the clone.
     type: str
   cores:
     description:
       - Specify number of cores per socket.
-      - This option has no default unless I(proxmox_default_behavior) is set to C(compatiblity); then the default is C(1).
+      - This option has no default unless O(proxmox_default_behavior) is set to V(compatibility); then the default is V(1).
     type: int
   cpu:
     description:
       - Specify emulated CPU type.
-      - This option has no default unless I(proxmox_default_behavior) is set to C(compatiblity); then the default is C(kvm64).
+      - This option has no default unless O(proxmox_default_behavior) is set to V(compatibility); then the default is V(kvm64).
     type: str
   cpulimit:
     description:
@@ -117,7 +120,7 @@ options:
     description:
       - Specify CPU weight for a VM.
       - You can disable fair-scheduler configuration by setting this to 0
-      - This option has no default unless I(proxmox_default_behavior) is set to C(compatiblity); then the default is C(1000).
+      - This option has no default unless O(proxmox_default_behavior) is set to V(compatibility); then the default is V(1000).
     type: int
   delete:
     description:
@@ -136,24 +139,24 @@ options:
   efidisk0:
     description:
       - Specify a hash/dictionary of EFI disk options.
-      - Requires I(bios=ovmf) to be set to be able to use it.
+      - Requires O(bios=ovmf) to be set to be able to use it.
     type: dict
     suboptions:
       storage:
         description:
-          - C(storage) is the storage identifier where to create the disk.
+          - V(storage) is the storage identifier where to create the disk.
         type: str
       format:
         description:
-          - C(format) is the drive's backing file's data format. Please refer to the Proxmox VE Administrator Guide,
+          - V(format) is the drive's backing file's data format. Please refer to the Proxmox VE Administrator Guide,
            section Proxmox VE Storage (see U(https://pve.proxmox.com/pve-docs/chapter-pvesm.html) for the latest
            version, tables 3 to 14) to find out format supported by the provided storage backend.
         type: str
       efitype:
         description:
-          - C(efitype) indicates the size of the EFI disk.
-          - C(2m) will allow for a 2MB EFI disk, which will be enough to persist boot order and new boot entries.
-          - C(4m) will allow for a 4MB EFI disk, which will additionally allow to store EFI keys in order to enable
+          - V(efitype) indicates the size of the EFI disk.
+          - V(2m) will allow for a 2MB EFI disk, which will be enough to persist boot order and new boot entries.
+          - V(4m) will allow for a 4MB EFI disk, which will additionally allow to store EFI keys in order to enable
            Secure Boot
         type: str
         choices:
@@ -161,27 +164,28 @@ options:
           - 4m
       pre_enrolled_keys:
         description:
-          - C(pre_enrolled_keys) indicates whether EFI keys for Secure Boot should be enrolled C(1) in the VM firmware
+          - V(pre_enrolled_keys) indicates whether EFI keys for Secure Boot should be enrolled V(1) in the VM firmware
            upon creation or not (0).
-          - If set to C(1), Secure Boot will also be enabled by default when the VM is created.
+          - If set to V(1), Secure Boot will also be enabled by default when the VM is created.
         type: bool
     version_added: 4.5.0
   force:
     description:
       - Allow to force stop VM.
-      - Can be used with states C(stopped), C(restarted) and C(absent).
-      - This option has no default unless I(proxmox_default_behavior) is set to C(compatiblity); then the default is C(false).
+      - Can be used with states V(stopped), V(restarted), and V(absent).
+      - This option has no default unless O(proxmox_default_behavior) is set to V(compatibility); then the default is V(false).
+      - Requires parameter O(archive).
     type: bool
   format:
     description:
       - Target drive's backing file's data format.
       - Used only with clone
-      - Use I(format=unspecified) and I(full=false) for a linked clone.
+      - Use O(format=unspecified) and O(full=false) for a linked clone.
       - Please refer to the Proxmox VE Administrator Guide, section Proxmox VE Storage (see
         U(https://pve.proxmox.com/pve-docs/chapter-pvesm.html) for the latest version, tables 3 to 14) to find out format
         supported by the provided storage backend.
-      - This option has no default unless I(proxmox_default_behavior) is set to C(compatiblity); then the default is C(qcow2).
-        If I(proxmox_default_behavior) is set to C(no_defaults), not specifying this option is equivalent to setting it to C(unspecified).
+      - This option has no default unless O(proxmox_default_behavior) is set to V(compatibility); then the default is V(qcow2).
+        If O(proxmox_default_behavior) is set to V(no_defaults), not specifying this option is equivalent to setting it to V(unspecified).
     type: str
     choices: [ "cloop", "cow", "qcow", "qcow2", "qed", "raw", "vmdk", "unspecified" ]
   freeze:
@@ -195,22 +199,27 @@ options:
       - Used only with clone
     type: bool
     default: true
+  hookscript:
+    description:
+      - Script that will be executed during various steps in the containers lifetime.
+    type: str
+    version_added: 8.1.0
   hostpci:
     description:
-      - Specify a hash/dictionary of map host pci devices into guest. C(hostpci='{"key":"value", "key":"value"}').
+      - Specify a hash/dictionary of map host pci devices into guest. O(hostpci='{"key":"value", "key":"value"}').
       - Keys allowed are - C(hostpci[n]) where 0 ≤ n ≤ N.
       - Values allowed are -  C("host="HOSTPCIID[;HOSTPCIID2...]",pcie="1|0",rombar="1|0",x-vga="1|0"").
       - The C(host) parameter is Host PCI device pass through. HOSTPCIID syntax is C(bus:dev.func) (hexadecimal numbers).
-      - C(pcie=boolean) I(default=0) Choose the PCI-express bus (needs the q35 machine model).
-      - C(rombar=boolean) I(default=1) Specify whether or not the device's ROM will be visible in the guest's memory map.
-      - C(x-vga=boolean) I(default=0) Enable vfio-vga device support.
+      - C(pcie=boolean) C(default=0) Choose the PCI-express bus (needs the q35 machine model).
+      - C(rombar=boolean) C(default=1) Specify whether or not the device's ROM will be visible in the guest's memory map.
+      - C(x-vga=boolean) C(default=0) Enable vfio-vga device support.
       - /!\ This option allows direct access to host hardware. So it is no longer possible to migrate such machines - use with special care.
     type: dict
   hotplug:
     description:
       - Selectively enable hotplug features.
-      - This is a comma separated list of hotplug features C('network', 'disk', 'cpu', 'memory' and 'usb').
-      - Value 0 disables hotplug completely and value 1 is an alias for the default C('network,disk,usb').
+      - This is a comma separated list of hotplug features V(network), V(disk), V(cpu), V(memory), and V(usb).
+      - Value 0 disables hotplug completely and value 1 is an alias for the default V(network,disk,usb).
     type: str
   hugepages:
     description:
@@ -219,7 +228,7 @@ options:
     choices: ['any', '2', '1024']
   ide:
     description:
-      - A hash/dictionary of volume used as IDE hard disk or CD-ROM. C(ide='{"key":"value", "key":"value"}').
+      - A hash/dictionary of volume used as IDE hard disk or CD-ROM. O(ide='{"key":"value", "key":"value"}').
       - Keys allowed are - C(ide[n]) where 0 ≤ n ≤ 3.
       - Values allowed are - C("storage:size,format=value").
       - C(storage) is the storage identifier where to create the disk.
@@ -231,7 +240,7 @@ options:
   ipconfig:
     description:
       - 'cloud-init: Set the IP configuration.'
-      - A hash/dictionary of network ip configurations. C(ipconfig='{"key":"value", "key":"value"}').
+      - A hash/dictionary of network ip configurations. O(ipconfig='{"key":"value", "key":"value"}').
       - Keys allowed are - C(ipconfig[n]) where 0 ≤ n ≤ network interfaces.
       - Values allowed are -  C("[gw=<GatewayIPv4>] [,gw6=<GatewayIPv6>] [,ip=<IPv4Format/CIDR>] [,ip6=<IPv6Format/CIDR>]").
       - 'cloud-init: Specify IP addresses and gateways for the corresponding interface.'
@@ -248,7 +257,7 @@ options:
   kvm:
     description:
       - Enable/disable KVM hardware virtualization.
-      - This option has no default unless I(proxmox_default_behavior) is set to C(compatiblity); then the default is C(true).
+      - This option has no default unless O(proxmox_default_behavior) is set to V(compatibility); then the default is V(true).
     type: bool
   localtime:
     description:
@@ -263,16 +272,16 @@ options:
   machine:
     description:
       - Specifies the Qemu machine type.
-      - type => C((pc|pc(-i440fx)?-\d+\.\d+(\.pxe)?|q35|pc-q35-\d+\.\d+(\.pxe)?))
+      - 'Type => V((pc|pc(-i440fx\)?-\\d+\\.\\d+(\\.pxe\)?|q35|pc-q35-\\d+\\.\\d+(\\.pxe\)?\)).'
     type: str
   memory:
     description:
       - Memory size in MB for instance.
-      - This option has no default unless I(proxmox_default_behavior) is set to C(compatiblity); then the default is C(512).
+      - This option has no default unless O(proxmox_default_behavior) is set to V(compatibility); then the default is V(512).
     type: int
   migrate:
     description:
-      - Migrate the VM to I(node) if it is on another node.
+      - Migrate the VM to O(node) if it is on another node.
     type: bool
     default: false
     version_added: 7.0.0
@@ -287,8 +296,9 @@ options:
     type: int
   name:
     description:
-      - Specifies the VM name. Only used on the configuration web interface.
-      - Required only for C(state=present).
+      - Specifies the VM name. Name could be non-unique across the cluster.
+      - Required only for O(state=present).
+      - With O(state=present) if O(vmid) not provided and VM with name exists in the cluster then no changes will be made.
     type: str
   nameservers:
     description:
@@ -299,7 +309,7 @@ options:
     version_added: 1.3.0
   net:
     description:
-      - A hash/dictionary of network interfaces for the VM. C(net='{"key":"value", "key":"value"}').
+      - A hash/dictionary of network interfaces for the VM. O(net='{"key":"value", "key":"value"}').
       - Keys allowed are - C(net[n]) where 0 ≤ n ≤ N.
       - Values allowed are - C("model="XX:XX:XX:XX:XX:XX",bridge="value",rate="value",tag="value",firewall="1|0",trunks="vlanid"").
       - Model is one of C(e1000 e1000-82540em e1000-82544gc e1000-82545em i82551 i82557b i82559er ne2k_isa ne2k_pci pcnet rtl8139 virtio vmxnet3).
@@ -315,7 +325,7 @@ options:
     type: int
   numa:
     description:
-      - A hash/dictionaries of NUMA topology. C(numa='{"key":"value", "key":"value"}').
+      - A hash/dictionaries of NUMA topology. O(numa='{"key":"value", "key":"value"}').
       - Keys allowed are - C(numa[n]) where 0 ≤ n ≤ N.
       - Values allowed are - C("cpu="<id[-id];...>",hostnodes="<id[-id];...>",memory="number",policy="(bind|interleave|preferred)"").
       - C(cpus) CPUs accessing this NUMA node.
@@ -330,18 +340,18 @@ options:
   onboot:
     description:
       - Specifies whether a VM will be started during system bootup.
-      - This option has no default unless I(proxmox_default_behavior) is set to C(compatiblity); then the default is C(true).
+      - This option has no default unless O(proxmox_default_behavior) is set to V(compatibility); then the default is V(true).
     type: bool
   ostype:
     description:
       - Specifies guest operating system. This is used to enable special optimization/features for specific operating systems.
       - The l26 is Linux 2.6/3.X Kernel.
-      - This option has no default unless I(proxmox_default_behavior) is set to C(compatiblity); then the default is C(l26).
+      - This option has no default unless O(proxmox_default_behavior) is set to V(compatibility); then the default is V(l26).
     type: str
     choices: ['other', 'wxp', 'w2k', 'w2k3', 'w2k8', 'wvista', 'win7', 'win8', 'win10', 'win11', 'l24', 'l26', 'solaris']
   parallel:
     description:
-      - A hash/dictionary of map host parallel devices. C(parallel='{"key":"value", "key":"value"}').
+      - A hash/dictionary of map host parallel devices. O(parallel='{"key":"value", "key":"value"}').
       - Keys allowed are - (parallel[n]) where 0 ≤ n ≤ 2.
       - Values allowed are - C("/dev/parport\d+|/dev/usb/lp\d+").
     type: dict
@@ -351,7 +361,7 @@ options:
     type: bool
   reboot:
     description:
-      - Allow reboot. If set to C(true), the VM exit on reboot.
+      - Allow reboot. If set to V(true), the VM exit on reboot.
     type: bool
   revert:
     description:
@@ -359,7 +369,7 @@ options:
     type: str
   sata:
     description:
-      - A hash/dictionary of volume used as sata hard disk or CD-ROM. C(sata='{"key":"value", "key":"value"}').
+      - A hash/dictionary of volume used as sata hard disk or CD-ROM. O(sata='{"key":"value", "key":"value"}').
       - Keys allowed are - C(sata[n]) where 0 ≤ n ≤ 5.
       - Values allowed are -  C("storage:size,format=value").
       - C(storage) is the storage identifier where to create the disk.
@@ -370,8 +380,8 @@ options:
     type: dict
   scsi:
     description:
-      - A hash/dictionary of volume used as SCSI hard disk or CD-ROM. C(scsi='{"key":"value", "key":"value"}').
-      - Keys allowed are - C(sata[n]) where 0 ≤ n ≤ 13.
+      - A hash/dictionary of volume used as SCSI hard disk or CD-ROM. O(scsi='{"key":"value", "key":"value"}').
+      - Keys allowed are - C(scsi[n]) where 0 ≤ n ≤ 13.
       - Values allowed are -  C("storage:size,format=value").
       - C(storage) is the storage identifier where to create the disk.
       - C(size) is the size of the disk in GB.
@@ -393,9 +403,9 @@ options:
     version_added: 1.3.0
   serial:
     description:
-      - A hash/dictionary of serial device to create inside the VM. C('{"key":"value", "key":"value"}').
+      - A hash/dictionary of serial device to create inside the VM. V('{"key":"value", "key":"value"}').
       - Keys allowed are - serial[n](str; required) where 0 ≤ n ≤ 3.
-      - Values allowed are - C((/dev/.+|socket)).
+      - Values allowed are - V((/dev/.+|socket\)).
       - /!\ If you pass through a host serial device, it is no longer possible to migrate such machines - use with special care.
     type: dict
   shares:
@@ -413,6 +423,14 @@ options:
   smbios:
     description:
       - Specifies SMBIOS type 1 fields.
+      - "Comma separated, Base64 encoded (optional) SMBIOS properties:"
+      - V([base64=<1|0>] [,family=<Base64 encoded string>])
+      - V([,manufacturer=<Base64 encoded string>])
+      - V([,product=<Base64 encoded string>])
+      - V([,serial=<Base64 encoded string>])
+      - V([,sku=<Base64 encoded string>])
+      - V([,uuid=<UUID>])
+      - V([,version=<Base64 encoded string>])
     type: str
   snapname:
     description:
@@ -421,7 +439,7 @@ options:
   sockets:
     description:
       - Sets the number of CPU sockets. (1 - N).
-      - This option has no default unless I(proxmox_default_behavior) is set to C(compatiblity); then the default is C(1).
+      - This option has no default unless O(proxmox_default_behavior) is set to V(compatibility); then the default is V(1).
     type: int
   sshkeys:
     description:
@@ -431,20 +449,21 @@ options:
   startdate:
     description:
       - Sets the initial date of the real time clock.
-      - Valid format for date are C('now') or C('2016-09-25T16:01:21') or C('2016-09-25').
+      - Valid format for date are V('now') or V('2016-09-25T16:01:21') or V('2016-09-25').
     type: str
   startup:
     description:
-      - Startup and shutdown behavior. C([[order=]\d+] [,up=\d+] [,down=\d+]).
+      - Startup and shutdown behavior. V([[order=]\\d+] [,up=\\d+] [,down=\\d+]).
       - Order is a non-negative number defining the general startup order.
       - Shutdown in done with reverse ordering.
     type: str
   state:
     description:
       - Indicates desired state of the instance.
-      - If C(current), the current state of the VM will be fetched. You can access it with C(results.status)
+      - If V(current), the current state of the VM will be fetched. You can access it with C(results.status)
+      - V(template) was added in community.general 8.1.0.
     type: str
-    choices: ['present', 'started', 'absent', 'stopped', 'restarted','current']
+    choices: ['present', 'started', 'absent', 'stopped', 'restarted', 'current', 'template']
     default: present
   storage:
     description:
@@ -453,12 +472,12 @@ options:
   tablet:
     description:
       - Enables/disables the USB tablet device.
-      - This option has no default unless I(proxmox_default_behavior) is set to C(compatiblity); then the default is C(false).
+      - This option has no default unless O(proxmox_default_behavior) is set to V(compatibility); then the default is V(false).
     type: bool
   tags:
     description:
       - List of tags to apply to the VM instance.
-      - Tags must start with C([a-z0-9_]) followed by zero or more of the following characters C([a-z0-9_-+.]).
+      - Tags must start with V([a-z0-9_]) followed by zero or more of the following characters V([a-z0-9_-+.]).
       - Tags are only available in Proxmox 6+.
     type: list
     elements: str
@@ -475,21 +494,58 @@ options:
   template:
     description:
       - Enables/disables the template.
-      - This option has no default unless I(proxmox_default_behavior) is set to C(compatiblity); then the default is C(false).
+      - This option has no default unless O(proxmox_default_behavior) is set to V(compatibility); then the default is V(false).
     type: bool
   timeout:
     description:
       - Timeout for operations.
+      - When used with O(state=stopped) the option sets a graceful timeout for VM stop after which a VM will be forcefully stopped.
     type: int
     default: 30
+  tpmstate0:
+    description:
+      - A hash/dictionary of options for the Trusted Platform Module disk.
+      - A TPM state disk is required for Windows 11 installations.
+    suboptions:
+      storage:
+        description:
+          - O(tpmstate0.storage) is the storage identifier where to create the disk.
+        type: str
+        required: true
+      version:
+        description:
+          - The TPM version to use.
+        type: str
+        choices: ['1.2', '2.0']
+        default: '2.0'
+    type: dict
+    version_added: 7.1.0
+  usb:
+    description:
+      - A hash/dictionary of USB devices for the VM. O(usb='{"key":"value", "key":"value"}').
+      - Keys allowed are - C(usb[n]) where 0 ≤ n ≤ N.
+      - Values allowed are - C(host="value|spice",mapping="value",usb3="1|0").
+      - host is either C(spice) or the USB id/port.
+      - Option C(mapping) is the mapped USB device name.
+      - Option C(usb3) enables USB 3 support.
+    type: dict
+    version_added: 9.0.0
   update:
     description:
-      - If C(true), the VM will be updated with new value.
-      - Cause of the operations of the API and security reasons, I have disabled the update of the following parameters
-      - C(net, virtio, ide, sata, scsi). Per example updating C(net) update the MAC address and C(virtio) create always new disk...
-      - Update of C(pool) is disabled. It needs an additional API endpoint not covered by this module.
+      - If V(true), the VM will be updated with new value.
+      - Because of the operations of the API and security reasons, I have disabled the update of the following parameters
+        O(net), O(virtio), O(ide), O(sata), O(scsi). Per example updating O(net) update the MAC address and C(virtio) create always new disk...
+        This security feature can be disabled by setting the O(update_unsafe) to V(true).
+      - Update of O(pool) is disabled. It needs an additional API endpoint not covered by this module.
     type: bool
     default: false
+  update_unsafe:
+    description:
+      - If V(true), do not enforce limitations on parameters O(net), O(virtio), O(ide), O(sata), O(scsi), O(efidisk0), and O(tpmstate0).
+        Use this option with caution because an improper configuration might result in a permanent loss of data (e.g. disk recreated).
+    type: bool
+    default: false
+    version_added: 8.4.0
   vcpus:
     description:
       - Sets number of hotplugged vcpus.
@@ -497,13 +553,13 @@ options:
   vga:
     description:
       - Select VGA type. If you want to use high resolution modes (>= 1280x1024x16) then you should use option 'std' or 'vmware'.
-      - This option has no default unless I(proxmox_default_behavior) is set to C(compatiblity); then the default is C(std).
+      - This option has no default unless O(proxmox_default_behavior) is set to V(compatibility); then the default is V(std).
     type: str
     choices: ['std', 'cirrus', 'vmware', 'qxl', 'serial0', 'serial1', 'serial2', 'serial3', 'qxl2', 'qxl3', 'qxl4']
   virtio:
     description:
-      - A hash/dictionary of volume used as VIRTIO hard disk. C(virtio='{"key":"value", "key":"value"}').
-      - Keys allowed are - C(virto[n]) where 0 ≤ n ≤ 15.
+      - A hash/dictionary of volume used as VIRTIO hard disk. O(virtio='{"key":"value", "key":"value"}').
+      - Keys allowed are - C(virtio[n]) where 0 ≤ n ≤ 15.
       - Values allowed are -  C("storage:size,format=value").
       - C(storage) is the storage identifier where to create the disk.
       - C(size) is the size of the disk in GB.
@@ -520,19 +576,23 @@ options:
      - As of community.general 4.0.0, various options no longer have default values.
         These default values caused problems when users expected different behavior from Proxmox
         by default or filled options which caused problems when set.
-      - The value C(compatibility) (default before community.general 4.0.0) will ensure that the default values
-        are used when the values are not explicitly specified by the user. The new default is C(no_defaults),
+      - The value V(compatibility) (default before community.general 4.0.0) will ensure that the default values
+        are used when the values are not explicitly specified by the user. The new default is V(no_defaults),
         which makes sure these options have no defaults.
-      - This affects the I(acpi), I(autostart), I(balloon), I(boot), I(cores), I(cpu),
-        I(cpuunits), I(force), I(format), I(kvm), I(memory), I(onboot), I(ostype), I(sockets),
-        I(tablet), I(template), I(vga), options.
+      - This affects the O(acpi), O(autostart), O(balloon), O(boot), O(cores), O(cpu),
+        O(cpuunits), O(force), O(format), O(kvm), O(memory), O(onboot), O(ostype), O(sockets),
+        O(tablet), O(template), and O(vga) options.
+      - This option is deprecated and will be removed in community.general 10.0.0.
     type: str
     default: no_defaults
     choices:
       - compatibility
       - no_defaults
     version_added: "1.3.0"
+seealso:
+  - module: community.general.proxmox_vm_info
 extends_documentation_fragment:
+  - community.general.proxmox.actiongroup_proxmox
   - community.general.proxmox.documentation
   - community.general.proxmox.selection
   - community.general.attributes
@@ -760,6 +820,25 @@ EXAMPLES = '''
     node: sabrewulf
     state: restarted
 
+- name: Convert VM to template
+  community.general.proxmox_kvm:
+    api_user: root@pam
+    api_password: secret
+    api_host: helldorado
+    name: spynal
+    node: sabrewulf
+    state: template
+
+- name: Convert VM to template (stop VM if running)
+  community.general.proxmox_kvm:
+    api_user: root@pam
+    api_password: secret
+    api_host: helldorado
+    name: spynal
+    node: sabrewulf
+    state: template
+    force: true
+
 - name: Remove VM
   community.general.proxmox_kvm:
     api_user: root@pam
@@ -768,6 +847,15 @@ EXAMPLES = '''
     name: spynal
     node: sabrewulf
     state: absent
+
+- name: Get VM current state
+  community.general.proxmox_kvm:
+    api_user: root@pam
+    api_password: secret
+    api_host: helldorado
+    name: spynal
+    node: sabrewulf
+    state: current
 
 - name: Update VM configuration
   community.general.proxmox_kvm:
@@ -779,6 +867,20 @@ EXAMPLES = '''
     cores: 8
     memory: 16384
     update: true
+
+- name: Update VM configuration (incl. unsafe options)
+  community.general.proxmox_kvm:
+    api_user: root@pam
+    api_password: secret
+    api_host: helldorado
+    name: spynal
+    node: sabrewulf
+    cores: 8
+    memory: 16384
+    net:
+        net0: virtio,bridge=vmbr1
+    update: true
+    update_unsafe: true
 
 - name: Delete QEMU parameters
   community.general.proxmox_kvm:
@@ -806,6 +908,17 @@ EXAMPLES = '''
     name: spynal
     node: sabrewulf-2
     migrate: true
+
+- name: Add hookscript to existing VM
+  community.general.proxmox_kvm:
+    api_user: root@pam
+    api_password: secret
+    api_host: helldorado
+    vmid: 999
+    node: sabrewulf
+    hookscript: local:snippets/hookscript.pl
+    update: true
+
 '''
 
 RETURN = '''
@@ -857,7 +970,7 @@ class ProxmoxKvmAnsible(ProxmoxAnsible):
             self.module.fail_json(msg='Getting information for VM with vmid = %s failed with exception: %s' % (vmid, e))
 
         # Sanitize kwargs. Remove not defined args and ensure True and False converted to int.
-        kwargs = dict((k, v) for k, v in kwargs.items() if v is not None)
+        kwargs = {k: v for k, v in kwargs.items() if v is not None}
 
         # Convert all dict in kwargs to elements.
         # For hostpci[n], ide[n], net[n], numa[n], parallel[n], sata[n], scsi[n], serial[n], virtio[n]
@@ -883,12 +996,15 @@ class ProxmoxKvmAnsible(ProxmoxAnsible):
         proxmox_node = self.proxmox_api.nodes(node)
 
         # Sanitize kwargs. Remove not defined args and ensure True and False converted to int.
-        kwargs = dict((k, v) for k, v in kwargs.items() if v is not None)
+        kwargs = {k: v for k, v in kwargs.items() if v is not None}
 
         return proxmox_node.qemu(vmid).config.set(**kwargs) is None
 
     def wait_for_task(self, node, taskid):
         timeout = self.module.params['timeout']
+        if self.module.params['state'] == 'stopped':
+            # Increase task timeout in case of stopped state to be sure it waits longer than VM stop operation itself
+            timeout += 10
 
         while timeout:
             if self.api_task_ok(node, taskid):
@@ -901,12 +1017,12 @@ class ProxmoxKvmAnsible(ProxmoxAnsible):
             time.sleep(1)
         return False
 
-    def create_vm(self, vmid, newid, node, name, memory, cpu, cores, sockets, update, **kwargs):
+    def create_vm(self, vmid, newid, node, name, memory, cpu, cores, sockets, update, update_unsafe, **kwargs):
         # Available only in PVE 4
         only_v4 = ['force', 'protection', 'skiplock']
         only_v6 = ['ciuser', 'cipassword', 'sshkeys', 'ipconfig', 'tags']
 
-        # valide clone parameters
+        # valid clone parameters
         valid_clone_params = ['format', 'full', 'pool', 'snapname', 'storage', 'target']
         clone_params = {}
         # Default args for vm. Note: -args option is for experts only. It allows you to pass arbitrary arguments to kvm.
@@ -915,8 +1031,8 @@ class ProxmoxKvmAnsible(ProxmoxAnsible):
         proxmox_node = self.proxmox_api.nodes(node)
 
         # Sanitize kwargs. Remove not defined args and ensure True and False converted to int.
-        kwargs = dict((k, v) for k, v in kwargs.items() if v is not None)
-        kwargs.update(dict([k, int(v)] for k, v in kwargs.items() if isinstance(v, bool)))
+        kwargs = {k: v for k, v in kwargs.items() if v is not None}
+        kwargs.update({k: int(v) for k, v in kwargs.items() if isinstance(v, bool)})
 
         version = self.version()
         pve_major_version = 3 if version < LooseVersion('4.0') else version.version[0]
@@ -938,21 +1054,24 @@ class ProxmoxKvmAnsible(ProxmoxAnsible):
             urlencoded_ssh_keys = quote(kwargs['sshkeys'], safe='')
             kwargs['sshkeys'] = str(urlencoded_ssh_keys)
 
-        # If update, don't update disk (virtio, efidisk0, ide, sata, scsi) and network interface
+        # If update, don't update disk (virtio, efidisk0, tpmstate0, ide, sata, scsi) and network interface, unless update_unsafe=True
         # pool parameter not supported by qemu/<vmid>/config endpoint on "update" (PVE 6.2) - only with "create"
         if update:
-            if 'virtio' in kwargs:
-                del kwargs['virtio']
-            if 'sata' in kwargs:
-                del kwargs['sata']
-            if 'scsi' in kwargs:
-                del kwargs['scsi']
-            if 'ide' in kwargs:
-                del kwargs['ide']
-            if 'efidisk0' in kwargs:
-                del kwargs['efidisk0']
-            if 'net' in kwargs:
-                del kwargs['net']
+            if update_unsafe is False:
+                if 'virtio' in kwargs:
+                    del kwargs['virtio']
+                if 'sata' in kwargs:
+                    del kwargs['sata']
+                if 'scsi' in kwargs:
+                    del kwargs['scsi']
+                if 'ide' in kwargs:
+                    del kwargs['ide']
+                if 'efidisk0' in kwargs:
+                    del kwargs['efidisk0']
+                if 'tpmstate0' in kwargs:
+                    del kwargs['tpmstate0']
+                if 'net' in kwargs:
+                    del kwargs['net']
             if 'force' in kwargs:
                 del kwargs['force']
             if 'pool' in kwargs:
@@ -966,7 +1085,7 @@ class ProxmoxKvmAnsible(ProxmoxAnsible):
         # Flatten efidisk0 option to a string so that it's a string which is what Proxmoxer and the API expect
         if 'efidisk0' in kwargs:
             efidisk0_str = ''
-            # Regexp to catch underscores in keys name, to replace them after by hypens
+            # Regexp to catch underscores in keys name, to replace them after by hyphens
             hyphen_re = re.compile(r'_')
             # If present, the storage definition should be the first argument
             if 'storage' in kwargs['efidisk0']:
@@ -978,8 +1097,15 @@ class ProxmoxKvmAnsible(ProxmoxAnsible):
                                       if 'storage' != k])
             kwargs['efidisk0'] = efidisk0_str
 
+        # Flatten tpmstate0 option to a string so that it's a string which is what Proxmoxer and the API expect
+        if 'tpmstate0' in kwargs:
+            kwargs['tpmstate0'] = '{storage}:1,version=v{version}'.format(
+                storage=kwargs['tpmstate0'].get('storage'),
+                version=kwargs['tpmstate0'].get('version')
+            )
+
         # Convert all dict in kwargs to elements.
-        # For hostpci[n], ide[n], net[n], numa[n], parallel[n], sata[n], scsi[n], serial[n], virtio[n], ipconfig[n]
+        # For hostpci[n], ide[n], net[n], numa[n], parallel[n], sata[n], scsi[n], serial[n], virtio[n], ipconfig[n], usb[n]
         for k in list(kwargs.keys()):
             if isinstance(kwargs[k], dict):
                 kwargs.update(kwargs[k])
@@ -1037,7 +1163,7 @@ class ProxmoxKvmAnsible(ProxmoxAnsible):
             for param in valid_clone_params:
                 if self.module.params[param] is not None:
                     clone_params[param] = self.module.params[param]
-            clone_params.update(dict([k, int(v)] for k, v in clone_params.items() if isinstance(v, bool)))
+            clone_params.update({k: int(v) for k, v in clone_params.items() if isinstance(v, bool)})
             taskid = proxmox_node.qemu(vmid).clone.post(newid=newid, name=name, **clone_params)
         else:
             taskid = proxmox_node.qemu.create(vmid=vmid, name=name, memory=memory, cpu=cpu, cores=cores, sockets=sockets, **kwargs)
@@ -1058,15 +1184,42 @@ class ProxmoxKvmAnsible(ProxmoxAnsible):
             return False
         return True
 
-    def stop_vm(self, vm, force):
+    def stop_vm(self, vm, force, timeout):
         vmid = vm['vmid']
         proxmox_node = self.proxmox_api.nodes(vm['node'])
-        taskid = proxmox_node.qemu(vmid).status.shutdown.post(forceStop=(1 if force else 0))
+        taskid = proxmox_node.qemu(vmid).status.shutdown.post(forceStop=(1 if force else 0), timeout=timeout)
         if not self.wait_for_task(vm['node'], taskid):
             self.module.fail_json(msg='Reached timeout while waiting for stopping VM. Last line in task before timeout: %s' %
                                   proxmox_node.tasks(taskid).log.get()[:1])
             return False
         return True
+
+    def restart_vm(self, vm, force, **status):
+        vmid = vm['vmid']
+        try:
+            proxmox_node = self.proxmox_api.nodes(vm['node'])
+            taskid = proxmox_node.qemu(vmid).status.reset.post() if force else proxmox_node.qemu(vmid).status.reboot.post()
+            if not self.wait_for_task(vm['node'], taskid):
+                self.module.fail_json(msg='Reached timeout while waiting for rebooting VM. Last line in task before timeout: %s' %
+                                          proxmox_node.tasks(taskid).log.get()[:1])
+                return False
+            return True
+        except Exception as e:
+            self.module.fail_json(vmid=vmid, msg="restarting of VM %s failed with exception: %s" % (vmid, e))
+            return False
+
+    def convert_to_template(self, vm, timeout, force):
+        vmid = vm['vmid']
+        try:
+            proxmox_node = self.proxmox_api.nodes(vm['node'])
+            if proxmox_node.qemu(vmid).status.current.get()['status'] == 'running' and force:
+                self.stop_instance(vm, vmid, timeout, force)
+            # not sure why, but templating a container doesn't return a taskid
+            proxmox_node.qemu(vmid).template.post()
+            return True
+        except Exception as e:
+            self.module.fail_json(vmid=vmid, msg="conversion of VM %s to template failed with exception: %s" % (vmid, e))
+            return False
 
     def migrate_vm(self, vm, target_node):
         vmid = vm['vmid']
@@ -1114,6 +1267,7 @@ def main():
         format=dict(type='str', choices=['cloop', 'cow', 'qcow', 'qcow2', 'qed', 'raw', 'vmdk', 'unspecified']),
         freeze=dict(type='bool'),
         full=dict(type='bool', default=True),
+        hookscript=dict(type='str'),
         hostpci=dict(type='dict'),
         hotplug=dict(type='str'),
         hugepages=dict(choices=['any', '2', '1024']),
@@ -1155,7 +1309,7 @@ def main():
         sshkeys=dict(type='str', no_log=False),
         startdate=dict(type='str'),
         startup=dict(),
-        state=dict(default='present', choices=['present', 'absent', 'stopped', 'started', 'restarted', 'current']),
+        state=dict(default='present', choices=['present', 'absent', 'stopped', 'started', 'restarted', 'current', 'template']),
         storage=dict(type='str'),
         tablet=dict(type='bool'),
         tags=dict(type='list', elements='str'),
@@ -1163,13 +1317,24 @@ def main():
         tdf=dict(type='bool'),
         template=dict(type='bool'),
         timeout=dict(type='int', default=30),
+        tpmstate0=dict(type='dict',
+                       options=dict(
+                           storage=dict(type='str', required=True),
+                           version=dict(type='str', choices=['2.0', '1.2'], default='2.0')
+                       )),
+        usb=dict(type='dict'),
         update=dict(type='bool', default=False),
+        update_unsafe=dict(type='bool', default=False),
         vcpus=dict(type='int'),
         vga=dict(choices=['std', 'cirrus', 'vmware', 'qxl', 'serial0', 'serial1', 'serial2', 'serial3', 'qxl2', 'qxl3', 'qxl4']),
         virtio=dict(type='dict'),
         vmid=dict(type='int'),
         watchdog=dict(),
-        proxmox_default_behavior=dict(type='str', default='no_defaults', choices=['compatibility', 'no_defaults']),
+        proxmox_default_behavior=dict(type='str',
+                                      default='no_defaults',
+                                      choices=['compatibility', 'no_defaults'],
+                                      removed_from_collection='community.general',
+                                      removed_in_version='10.0.0'),
     )
     module_args.update(kvm_args)
 
@@ -1194,6 +1359,7 @@ def main():
     sockets = module.params['sockets']
     state = module.params['state']
     update = bool(module.params['update'])
+    update_unsafe = bool(module.params['update_unsafe'])
     vmid = module.params['vmid']
     validate_certs = module.params['validate_certs']
 
@@ -1228,10 +1394,14 @@ def main():
     # the cloned vm name or retrieve the next free VM id from ProxmoxAPI.
     if not vmid:
         if state == 'present' and not update and not clone and not delete and not revert and not migrate:
-            try:
-                vmid = proxmox.get_nextvmid()
-            except Exception:
-                module.fail_json(msg="Can't get the next vmid for VM {0} automatically. Ensure your cluster state is good".format(name))
+            existing_vmid = proxmox.get_vmid(name, ignore_missing=True)
+            if existing_vmid:
+                vmid = existing_vmid
+            else:
+                try:
+                    vmid = proxmox.get_nextvmid()
+                except Exception:
+                    module.fail_json(msg="Can't get the next vmid for VM {0} automatically. Ensure your cluster state is good".format(name))
         else:
             clone_target = clone or name
             vmid = proxmox.get_vmid(clone_target, ignore_missing=True)
@@ -1287,19 +1457,19 @@ def main():
             module.fail_json(vmid=vmid, msg='Unable to migrate VM {0} from {1} to {2}: {3}'.format(vmid, vm_node, node, e))
 
     if state == 'present':
-        try:
-            if proxmox.get_vm(vmid, ignore_missing=True) and not (update or clone):
-                module.exit_json(changed=False, vmid=vmid, msg="VM with vmid <%s> already exists" % vmid)
-            elif proxmox.get_vmid(name, ignore_missing=True) and not (update or clone):
-                module.exit_json(changed=False, vmid=proxmox.get_vmid(name), msg="VM with name <%s> already exists" % name)
-            elif not node:
-                module.fail.json(msg='node is mandatory for creating/updating VM')
-            elif update and not any([vmid, name]):
-                module.fail_json(msg='vmid or name is mandatory for updating VM')
-            elif not proxmox.get_node(node):
-                module.fail_json(msg="node '%s' does not exist in cluster" % node)
+        if not (update or clone) and proxmox.get_vm(vmid, ignore_missing=True):
+            module.exit_json(changed=False, vmid=vmid, msg="VM with vmid <%s> already exists" % vmid)
+        elif not (update or clone or vmid) and proxmox.get_vmid(name, ignore_missing=True):
+            module.exit_json(changed=False, vmid=proxmox.get_vmid(name), msg="VM with name <%s> already exists" % name)
+        elif not node:
+            module.fail_json(msg='node is mandatory for creating/updating VM')
+        elif update and not any([vmid, name]):
+            module.fail_json(msg='vmid or name is mandatory for updating VM')
+        elif not proxmox.get_node(node):
+            module.fail_json(msg="node '%s' does not exist in cluster" % node)
 
-            proxmox.create_vm(vmid, newid, node, name, memory, cpu, cores, sockets, update,
+        try:
+            proxmox.create_vm(vmid, newid, node, name, memory, cpu, cores, sockets, update, update_unsafe,
                               archive=module.params['archive'],
                               acpi=module.params['acpi'],
                               agent=module.params['agent'],
@@ -1319,6 +1489,7 @@ def main():
                               efidisk0=module.params['efidisk0'],
                               force=module.params['force'],
                               freeze=module.params['freeze'],
+                              hookscript=module.params['hookscript'],
                               hostpci=module.params['hostpci'],
                               hotplug=module.params['hotplug'],
                               hugepages=module.params['hugepages'],
@@ -1356,6 +1527,8 @@ def main():
                               target=module.params['target'],
                               tdf=module.params['tdf'],
                               template=module.params['template'],
+                              tpmstate0=module.params['tpmstate0'],
+                              usb=module.params['usb'],
                               vcpus=module.params['vcpus'],
                               vga=module.params['vga'],
                               virtio=module.params['virtio'],
@@ -1368,12 +1541,6 @@ def main():
                                    sata=module.params['sata'],
                                    scsi=module.params['scsi'],
                                    virtio=module.params['virtio'])
-            if update:
-                module.exit_json(changed=True, vmid=vmid, msg="VM %s with vmid %s updated" % (name, vmid))
-            elif clone is not None:
-                module.exit_json(changed=True, vmid=newid, msg="VM %s with newid %s cloned from vm with vmid %s" % (name, newid, vmid))
-            else:
-                module.exit_json(changed=True, msg="VM %s with vmid %s deployed" % (name, vmid), **results)
         except Exception as e:
             if update:
                 module.fail_json(vmid=vmid, msg="Unable to update vm {0} with vmid {1}=".format(name, vmid) + str(e))
@@ -1382,14 +1549,23 @@ def main():
             else:
                 module.fail_json(vmid=vmid, msg="creation of qemu VM %s with vmid %s failed with exception=%s" % (name, vmid, e))
 
+        if update:
+            module.exit_json(changed=True, vmid=vmid, msg="VM %s with vmid %s updated" % (name, vmid))
+        elif clone is not None:
+            module.exit_json(changed=True, vmid=newid, msg="VM %s with newid %s cloned from vm with vmid %s" % (name, newid, vmid))
+        else:
+            module.exit_json(changed=True, msg="VM %s with vmid %s deployed" % (name, vmid), **results)
+
     elif state == 'started':
+        if not vmid:
+            module.fail_json(msg='VM with name = %s does not exist in cluster' % name)
+
         status = {}
         try:
-            if not vmid:
-                module.fail_json(msg='VM with name = %s does not exist in cluster' % name)
             vm = proxmox.get_vm(vmid)
-            status['status'] = vm['status']
-            if vm['status'] == 'running':
+            current = proxmox.proxmox_api.nodes(vm['node']).qemu(vmid).status.current.get()['status']
+            status['status'] = current
+            if current == 'running':
                 module.exit_json(changed=False, vmid=vmid, msg="VM %s is already running" % vmid, **status)
 
             if proxmox.start_vm(vm):
@@ -1398,52 +1574,68 @@ def main():
             module.fail_json(vmid=vmid, msg="starting of VM %s failed with exception: %s" % (vmid, e), **status)
 
     elif state == 'stopped':
+        if not vmid:
+            module.fail_json(msg='VM with name = %s does not exist in cluster' % name)
+
         status = {}
         try:
-            if not vmid:
-                module.fail_json(msg='VM with name = %s does not exist in cluster' % name)
-
             vm = proxmox.get_vm(vmid)
-
-            status['status'] = vm['status']
-            if vm['status'] == 'stopped':
+            current = proxmox.proxmox_api.nodes(vm['node']).qemu(vmid).status.current.get()['status']
+            status['status'] = current
+            if current == 'stopped':
                 module.exit_json(changed=False, vmid=vmid, msg="VM %s is already stopped" % vmid, **status)
 
-            if proxmox.stop_vm(vm, force=module.params['force']):
-                module.exit_json(changed=True, vmid=vmid, msg="VM %s is shutting down" % vmid, **status)
+            proxmox.stop_vm(vm, force=module.params['force'], timeout=module.params['timeout'])
+            module.exit_json(changed=True, vmid=vmid, msg="VM %s is shutting down" % vmid, **status)
         except Exception as e:
             module.fail_json(vmid=vmid, msg="stopping of VM %s failed with exception: %s" % (vmid, e), **status)
 
-    elif state == 'restarted':
+    elif state == 'template':
+        if not vmid:
+            module.fail_json(msg='VM with name = %s does not exist in cluster' % name)
+
         status = {}
         try:
-            if not vmid:
-                module.fail_json(msg='VM with name = %s does not exist in cluster' % name)
-
             vm = proxmox.get_vm(vmid)
-            status['status'] = vm['status']
-            if vm['status'] == 'stopped':
-                module.exit_json(changed=False, vmid=vmid, msg="VM %s is not running" % vmid, **status)
 
-            if proxmox.stop_vm(vm, force=module.params['force']) and proxmox.start_vm(vm):
-                module.exit_json(changed=True, vmid=vmid, msg="VM %s is restarted" % vmid, **status)
+            if vm['template'] == 1:
+                module.exit_json(changed=False, vmid=vmid, msg="VM %s is already a template" % vmid, **status)
+
+            if proxmox.convert_to_template(vm, force=module.params['force'], timeout=module.params['timeout']):
+                module.exit_json(changed=True, vmid=vmid, msg="VM %s is converting to template" % vmid, **status)
         except Exception as e:
-            module.fail_json(vmid=vmid, msg="restarting of VM %s failed with exception: %s" % (vmid, e), **status)
+            module.fail_json(vmid=vmid, msg="conversion of VM %s to template failed with exception: %s" % (vmid, e), **status)
+
+    elif state == 'restarted':
+        if not vmid:
+            module.fail_json(msg='VM with name = %s does not exist in cluster' % name)
+
+        status = {}
+        vm = proxmox.get_vm(vmid)
+        current = proxmox.proxmox_api.nodes(vm['node']).qemu(vmid).status.current.get()['status']
+        status['status'] = current
+        if current == 'stopped':
+            module.exit_json(changed=False, vmid=vmid, msg="VM %s is not running" % vmid, **status)
+
+        if proxmox.restart_vm(vm, force=module.params['force']):
+            module.exit_json(changed=True, vmid=vmid, msg="VM %s is restarted" % vmid, **status)
 
     elif state == 'absent':
         status = {}
         if not vmid:
             module.exit_json(changed=False, msg='VM with name = %s is already absent' % name)
+
         try:
             vm = proxmox.get_vm(vmid, ignore_missing=True)
             if not vm:
                 module.exit_json(changed=False, vmid=vmid)
 
             proxmox_node = proxmox.proxmox_api.nodes(vm['node'])
-            status['status'] = vm['status']
-            if vm['status'] == 'running':
+            current = proxmox_node.qemu(vmid).status.current.get()['status']
+            status['status'] = current
+            if current == 'running':
                 if module.params['force']:
-                    proxmox.stop_vm(vm, True)
+                    proxmox.stop_vm(vm, True, timeout=module.params['timeout'])
                 else:
                     module.exit_json(changed=False, vmid=vmid, msg="VM %s is running. Stop it before deletion or use force=true." % vmid)
             taskid = proxmox_node.qemu.delete(vmid)

@@ -12,7 +12,6 @@ module: python_requirements_info
 short_description: Show python path and assert dependency versions
 description:
   - Get info about available Python requirements on the target host, including listing required libraries and gathering versions.
-  - This module was called C(python_requirements_facts) before Ansible 2.9. The usage did not change.
 extends_documentation_fragment:
   - community.general.attributes
   - community.general.attributes.info_module
@@ -23,8 +22,8 @@ options:
     description: >
       A list of version-likes or module names to check for installation.
       Supported operators: <, >, <=, >=, or ==. The bare module name like
-      I(ansible), the module with a specific version like I(boto3==1.6.1), or a
-      partial version like I(requests>2) are all valid specifications.
+      V(ansible), the module with a specific version like V(boto3==1.6.1), or a
+      partial version like V(requests>2) are all valid specifications.
     default: []
 author:
   - Will Thames (@willthames)
@@ -92,7 +91,7 @@ python_system_path:
     - /usr/local/opt/python@2/site-packages/
     - /usr/lib/python/site-packages/
 valid:
-  description: A dictionary of dependencies that matched their desired versions. If no version was specified, then I(desired) will be null
+  description: A dictionary of dependencies that matched their desired versions. If no version was specified, then RV(ignore:desired) will be null
   returned: always
   type: dict
   sample:

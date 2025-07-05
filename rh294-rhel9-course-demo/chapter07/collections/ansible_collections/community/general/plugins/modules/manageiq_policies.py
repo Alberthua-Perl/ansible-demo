@@ -32,20 +32,16 @@ options:
   state:
     type: str
     description:
-      - C(absent) - policy_profiles should not exist,
-      - C(present) - policy_profiles should exist,
-      - >
-        C(list) - list current policy_profiles and policies.
-        This state is deprecated and will be removed 8.0.0.
-        Please use the module M(community.general.manageiq_policies_info) instead.
-    choices: ['absent', 'present', 'list']
+      - V(absent) - policy_profiles should not exist,
+      - V(present) - policy_profiles should exist,
+    choices: ['absent', 'present']
     default: 'present'
   policy_profiles:
     type: list
     elements: dict
     description:
-      - List of dictionaries, each includes the policy_profile C(name) key.
-      - Required if I(state) is C(present) or C(absent).
+      - List of dictionaries, each includes the policy_profile V(name) key.
+      - Required if O(state) is V(present) or V(absent).
   resource_type:
     type: str
     description:
@@ -58,12 +54,12 @@ options:
     type: str
     description:
       - The name of the resource to which the profile should be [un]assigned.
-      - Must be specified if I(resource_id) is not set. Both options are mutually exclusive.
+      - Must be specified if O(resource_id) is not set. Both options are mutually exclusive.
   resource_id:
     type: int
     description:
       - The ID of the resource to which the profile should be [un]assigned.
-      - Must be specified if I(resource_name) is not set. Both options are mutually exclusive.
+      - Must be specified if O(resource_name) is not set. Both options are mutually exclusive.
     version_added: 2.2.0
 '''
 
@@ -78,7 +74,7 @@ EXAMPLES = '''
       url: 'http://127.0.0.1:3000'
       username: 'admin'
       password: 'smartvm'
-      validate_certs: false
+      validate_certs: false  # only do this when you trust the network!
 
 - name: Unassign a policy_profile for a provider in ManageIQ
   community.general.manageiq_policies:
@@ -91,7 +87,7 @@ EXAMPLES = '''
       url: 'http://127.0.0.1:3000'
       username: 'admin'
       password: 'smartvm'
-      validate_certs: false
+      validate_certs: false  # only do this when you trust the network!
 '''
 
 RETURN = '''
@@ -133,7 +129,7 @@ from ansible_collections.community.general.plugins.module_utils.manageiq import 
 
 
 def main():
-    actions = {'present': 'assign', 'absent': 'unassign', 'list': 'list'}
+    actions = {'present': 'assign', 'absent': 'unassign'}
     argument_spec = dict(
         policy_profiles=dict(type='list', elements='dict'),
         resource_id=dict(type='int'),
@@ -141,7 +137,7 @@ def main():
         resource_type=dict(required=True, type='str',
                            choices=list(manageiq_entities().keys())),
         state=dict(required=False, type='str',
-                   choices=['present', 'absent', 'list'], default='present'),
+                   choices=['present', 'absent'], default='present'),
     )
     # add the manageiq connection arguments to the arguments
     argument_spec.update(manageiq_argument_spec())
@@ -162,13 +158,6 @@ def main():
     resource_name = module.params['resource_name']
     state = module.params['state']
 
-    if state == "list":
-        module.deprecate(
-            'The value "list" for "state" is deprecated. Please use community.general.manageiq_policies_info instead.',
-            version='8.0.0',
-            collection_name='community.general'
-        )
-
     # get the action and resource type
     action = actions[state]
     resource_type = manageiq_entities()[resource_type_key]
@@ -176,13 +165,8 @@ def main():
     manageiq = ManageIQ(module)
     manageiq_policies = manageiq.policies(resource_id, resource_type, resource_name)
 
-    if action == 'list':
-        # return a list of current profiles for this object
-        current_profiles = manageiq_policies.query_resource_profiles()
-        res_args = dict(changed=False, profiles=current_profiles)
-    else:
-        # assign or unassign the profiles
-        res_args = manageiq_policies.assign_or_unassign_profiles(policy_profiles, action)
+    # assign or unassign the profiles
+    res_args = manageiq_policies.assign_or_unassign_profiles(policy_profiles, action)
 
     module.exit_json(**res_args)
 

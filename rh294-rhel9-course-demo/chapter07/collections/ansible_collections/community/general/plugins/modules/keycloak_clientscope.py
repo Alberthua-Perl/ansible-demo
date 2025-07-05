@@ -43,8 +43,8 @@ options:
     state:
         description:
             - State of the client_scope.
-            - On C(present), the client_scope will be created if it does not yet exist, or updated with the parameters you provide.
-            - On C(absent), the client_scope will be removed if it exists.
+            - On V(present), the client_scope will be created if it does not yet exist, or updated with the parameters you provide.
+            - On V(absent), the client_scope will be removed if it exists.
         default: 'present'
         type: str
         choices:
@@ -79,7 +79,8 @@ options:
     protocol:
         description:
             - Type of client.
-        choices: ['openid-connect', 'saml', 'wsfed']
+            - The V(docker-v2) value was added in community.general 8.6.0.
+        choices: ['openid-connect', 'saml', 'wsfed', 'docker-v2']
         type: str
 
     protocol_mappers:
@@ -95,7 +96,7 @@ options:
                 description:
                     - This specifies for which protocol this protocol mapper.
                     - is active.
-                choices: ['openid-connect', 'saml', 'wsfed']
+                choices: ['openid-connect', 'saml', 'wsfed', 'docker-v2']
                 type: str
 
             protocolMapper:
@@ -103,28 +104,28 @@ options:
                     - "The Keycloak-internal name of the type of this protocol-mapper. While an exhaustive list is
                       impossible to provide since this may be extended through SPIs by the user of Keycloak,
                       by default Keycloak as of 3.4 ships with at least:"
-                    - C(docker-v2-allow-all-mapper)
-                    - C(oidc-address-mapper)
-                    - C(oidc-full-name-mapper)
-                    - C(oidc-group-membership-mapper)
-                    - C(oidc-hardcoded-claim-mapper)
-                    - C(oidc-hardcoded-role-mapper)
-                    - C(oidc-role-name-mapper)
-                    - C(oidc-script-based-protocol-mapper)
-                    - C(oidc-sha256-pairwise-sub-mapper)
-                    - C(oidc-usermodel-attribute-mapper)
-                    - C(oidc-usermodel-client-role-mapper)
-                    - C(oidc-usermodel-property-mapper)
-                    - C(oidc-usermodel-realm-role-mapper)
-                    - C(oidc-usersessionmodel-note-mapper)
-                    - C(saml-group-membership-mapper)
-                    - C(saml-hardcode-attribute-mapper)
-                    - C(saml-hardcode-role-mapper)
-                    - C(saml-role-list-mapper)
-                    - C(saml-role-name-mapper)
-                    - C(saml-user-attribute-mapper)
-                    - C(saml-user-property-mapper)
-                    - C(saml-user-session-note-mapper)
+                    - V(docker-v2-allow-all-mapper)
+                    - V(oidc-address-mapper)
+                    - V(oidc-full-name-mapper)
+                    - V(oidc-group-membership-mapper)
+                    - V(oidc-hardcoded-claim-mapper)
+                    - V(oidc-hardcoded-role-mapper)
+                    - V(oidc-role-name-mapper)
+                    - V(oidc-script-based-protocol-mapper)
+                    - V(oidc-sha256-pairwise-sub-mapper)
+                    - V(oidc-usermodel-attribute-mapper)
+                    - V(oidc-usermodel-client-role-mapper)
+                    - V(oidc-usermodel-property-mapper)
+                    - V(oidc-usermodel-realm-role-mapper)
+                    - V(oidc-usersessionmodel-note-mapper)
+                    - V(saml-group-membership-mapper)
+                    - V(saml-hardcode-attribute-mapper)
+                    - V(saml-hardcode-role-mapper)
+                    - V(saml-role-list-mapper)
+                    - V(saml-role-name-mapper)
+                    - V(saml-user-attribute-mapper)
+                    - V(saml-user-property-mapper)
+                    - V(saml-user-session-note-mapper)
                     - An exhaustive list of available mappers on your installation can be obtained on
                       the admin console by going to Server Info -> Providers and looking under
                       'protocol-mapper'.
@@ -143,10 +144,10 @@ options:
             config:
                 description:
                     - Dict specifying the configuration options for the protocol mapper; the
-                      contents differ depending on the value of I(protocolMapper) and are not documented
+                      contents differ depending on the value of O(protocol_mappers[].protocolMapper) and are not documented
                       other than by the source of the mappers and its parent class(es). An example is given
                       below. It is easiest to obtain valid config values by dumping an already-existing
-                      protocol mapper configuration through check-mode in the C(existing) return value.
+                      protocol mapper configuration through check-mode in the RV(existing) return value.
                 type: dict
 
     attributes:
@@ -300,8 +301,32 @@ end_state:
 '''
 
 from ansible_collections.community.general.plugins.module_utils.identity.keycloak.keycloak import KeycloakAPI, camel, \
-    keycloak_argument_spec, get_token, KeycloakError
+    keycloak_argument_spec, get_token, KeycloakError, is_struct_included
 from ansible.module_utils.basic import AnsibleModule
+
+
+def normalise_cr(clientscoperep, remove_ids=False):
+    """ Re-sorts any properties where the order so that diff's is minimised, and adds default values where appropriate so that the
+    the change detection is more effective.
+
+    :param clientscoperep: the clientscoperep dict to be sanitized
+    :param remove_ids: If set to true, then the unique ID's of objects is removed to make the diff and checks for changed
+                       not alert when the ID's of objects are not usually known, (e.g. for protocol_mappers)
+    :return: normalised clientscoperep dict
+    """
+    # Avoid the dict passed in to be modified
+    clientscoperep = clientscoperep.copy()
+
+    if 'protocolMappers' in clientscoperep:
+        clientscoperep['protocolMappers'] = sorted(clientscoperep['protocolMappers'], key=lambda x: (x.get('name'), x.get('protocol'), x.get('protocolMapper')))
+        for mapper in clientscoperep['protocolMappers']:
+            if remove_ids:
+                mapper.pop('id', None)
+
+            # Set to a default value.
+            mapper['consentRequired'] = mapper.get('consentRequired', False)
+
+    return clientscoperep
 
 
 def sanitize_cr(clientscoperep):
@@ -316,7 +341,7 @@ def sanitize_cr(clientscoperep):
     if 'attributes' in result:
         if 'saml.signing.private.key' in result['attributes']:
             result['attributes']['saml.signing.private.key'] = 'no_log'
-    return result
+    return normalise_cr(result)
 
 
 def main():
@@ -330,7 +355,7 @@ def main():
     protmapper_spec = dict(
         id=dict(type='str'),
         name=dict(type='str'),
-        protocol=dict(type='str', choices=['openid-connect', 'saml', 'wsfed']),
+        protocol=dict(type='str', choices=['openid-connect', 'saml', 'wsfed', 'docker-v2']),
         protocolMapper=dict(type='str'),
         config=dict(type='dict'),
     )
@@ -341,7 +366,7 @@ def main():
         id=dict(type='str'),
         name=dict(type='str'),
         description=dict(type='str'),
-        protocol=dict(type='str', choices=['openid-connect', 'saml', 'wsfed']),
+        protocol=dict(type='str', choices=['openid-connect', 'saml', 'wsfed', 'docker-v2']),
         attributes=dict(type='dict'),
         protocol_mappers=dict(type='list', elements='dict', options=protmapper_spec, aliases=['protocolMappers']),
     )
@@ -390,17 +415,10 @@ def main():
     for clientscope_param in clientscope_params:
         new_param_value = module.params.get(clientscope_param)
 
-        # some lists in the Keycloak API are sorted, some are not.
-        if isinstance(new_param_value, list):
-            if clientscope_param in ['attributes']:
-                try:
-                    new_param_value = sorted(new_param_value)
-                except TypeError:
-                    pass
         # Unfortunately, the ansible argument spec checker introduces variables with null values when
         # they are not specified
         if clientscope_param == 'protocol_mappers':
-            new_param_value = [dict((k, v) for k, v in x.items() if x[k] is not None) for x in new_param_value]
+            new_param_value = [{k: v for k, v in x.items() if v is not None} for x in new_param_value]
         changeset[camel(clientscope_param)] = new_param_value
 
     # Prepare the desired values using the existing values (non-existence results in a dict that is save to use as a basis)
@@ -444,7 +462,9 @@ def main():
             # Process an update
 
             # no changes
-            if desired_clientscope == before_clientscope:
+            # remove ids for compare, problematic if desired has no ids set (not required),
+            # normalize for consentRequired in protocolMappers
+            if normalise_cr(desired_clientscope, remove_ids=True) == normalise_cr(before_clientscope, remove_ids=True):
                 result['changed'] = False
                 result['end_state'] = sanitize_cr(desired_clientscope)
                 result['msg'] = "No changes required to clientscope {name}.".format(name=before_clientscope['name'])
@@ -457,6 +477,13 @@ def main():
                 result['diff'] = dict(before=sanitize_cr(before_clientscope), after=sanitize_cr(desired_clientscope))
 
             if module.check_mode:
+                # We can only compare the current clientscope with the proposed updates we have
+                before_norm = normalise_cr(before_clientscope, remove_ids=True)
+                desired_norm = normalise_cr(desired_clientscope, remove_ids=True)
+                if module._diff:
+                    result['diff'] = dict(before=sanitize_cr(before_norm),
+                                          after=sanitize_cr(desired_norm))
+                result['changed'] = not is_struct_included(desired_norm, before_norm)
                 module.exit_json(**result)
 
             # do the update

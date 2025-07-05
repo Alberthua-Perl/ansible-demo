@@ -30,7 +30,7 @@ options:
   port:
     description:
     - Port number to be used for REST connection.
-    - The default value depends on parameter C(use_ssl).
+    - The default value depends on parameter O(use_ssl).
     type: int
   username:
     description:
@@ -43,13 +43,13 @@ options:
     type: str
   use_ssl:
     description:
-    - If C(false), an HTTP connection will be used instead of the default HTTPS connection.
+    - If V(false), an HTTP connection will be used instead of the default HTTPS connection.
     type: bool
     default: true
   validate_certs:
     description:
-    - If C(false), SSL certificates will not be validated.
-    - This should only set to C(false) when used on personally controlled sites using self-signed certificates.
+    - If V(false), SSL certificates will not be validated.
+    - This should only set to V(false) when used on personally controlled sites using self-signed certificates.
     type: bool
     default: true
   name:
@@ -144,21 +144,24 @@ EXAMPLES = r'''
 RETURN = r'''
 systems:
   description: List of systems
-  returned: I(state=query) and I(name) is not provided
+  returned: O(state=query) and O(name) is not provided
   type: list
 system:
   description: (Resulting) information about the system we are working with
-  returned: when I(name) is provided
+  returned: when O(name) is provided
   type: dict
 '''
 
-import datetime
 import ssl
 
 from ansible.module_utils.basic import AnsibleModule
 from ansible.module_utils.six import iteritems
 from ansible.module_utils.six.moves import xmlrpc_client
 from ansible.module_utils.common.text.converters import to_text
+
+from ansible_collections.community.general.plugins.module_utils.datetime import (
+    now,
+)
 
 IFPROPS_MAPPING = dict(
     bondingopts='bonding_opts',
@@ -232,7 +235,7 @@ def main():
         changed=False,
     )
 
-    start = datetime.datetime.utcnow()
+    start = now()
 
     ssl_context = None
     if not validate_certs:
@@ -340,7 +343,7 @@ def main():
         if module._diff:
             result['diff'] = dict(before=system, after=result['system'])
 
-    elapsed = datetime.datetime.utcnow() - start
+    elapsed = now() - start
     module.exit_json(elapsed=elapsed.seconds, **result)
 
 

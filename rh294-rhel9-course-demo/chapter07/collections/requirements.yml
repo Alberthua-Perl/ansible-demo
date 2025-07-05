@@ -1,12 +1,5 @@
 ---
-# Note:
-#   $ ansible-galaxy collection install -p collections/ -r collections/requirements.yml
-#   # install collections according to requirements.yml
-
 collections:
-  - name: http://content.example.com/redhat-rhel_system_roles-1.21.1.tar.gz
-    # download from internal webserver and install collection tarball
-    # Note: please store redhat-rhel_system_roles-1.21.1.tar.gz tarball in foundation0 /content directory
-  - name: community.general
-    version: 7.0.0
-    # download and install from https://galaxy.ansible.com/community/general
+  - http://content.example.com/jenkins-ci-plt/collections/ansible-posix-1.5.2.tar.gz
+  - http://content.example.com/jenkins-ci-plt/collections/community-general-9.5.7.tar.gz
+  - http://content.example.com/jenkins-ci-plt/collections/community-mysql-3.12.0.tar.gz

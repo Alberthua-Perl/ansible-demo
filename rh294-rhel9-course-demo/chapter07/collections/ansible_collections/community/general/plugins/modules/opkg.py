@@ -46,6 +46,8 @@ options:
     force:
         description:
             - The C(opkg --force) parameter used.
+            - Passing V("") as value and not passing any value at all have both
+              the same effect of B(not) using any C(--force-) parameter.
         choices:
             - ""
             - "depends"
@@ -58,13 +60,17 @@ options:
             - "remove"
             - "checksum"
             - "removal-of-dependent-packages"
-        default: ""
         type: str
     update_cache:
         description:
             - Update the package DB first.
         default: false
         type: bool
+    executable:
+        description:
+            - The executable location for C(opkg).
+        type: path
+        version_added: 7.2.0
 requirements:
     - opkg
     - python
@@ -105,6 +111,7 @@ EXAMPLES = '''
     force: overwrite
 '''
 
+import os
 from ansible_collections.community.general.plugins.module_utils.cmd_runner import CmdRunner, cmd_runner_fmt
 from ansible_collections.community.general.plugins.module_utils.module_helper import StateModuleHelper
 
@@ -114,11 +121,13 @@ class Opkg(StateModuleHelper):
         argument_spec=dict(
             name=dict(aliases=["pkg"], required=True, type="list", elements="str"),
             state=dict(default="present", choices=["present", "installed", "absent", "removed"]),
-            force=dict(default="", choices=["", "depends", "maintainer", "reinstall", "overwrite", "downgrade", "space", "postinstall", "remove",
-                                            "checksum", "removal-of-dependent-packages"]),
+            force=dict(choices=["", "depends", "maintainer", "reinstall", "overwrite", "downgrade", "space",
+                                "postinstall", "remove", "checksum", "removal-of-dependent-packages"]),
             update_cache=dict(default=False, type='bool'),
+            executable=dict(type="path"),
         ),
     )
+    use_old_vardict = False
 
     def __init_module__(self):
         self.vars.set("install_c", 0, output=False, change=True)
@@ -137,15 +146,18 @@ class Opkg(StateModuleHelper):
                 value = None
             return cmd_runner_fmt.as_optval("--force-")(value, ctx_ignore_none=True)
 
+        dir, cmd = os.path.split(self.vars.executable) if self.vars.executable else (None, "opkg")
+
         self.runner = CmdRunner(
             self.module,
-            command="opkg",
+            command=cmd,
             arg_formats=dict(
                 package=cmd_runner_fmt.as_list(),
                 state=cmd_runner_fmt.as_map(state_map),
                 force=cmd_runner_fmt.as_func(_force),
-                update_cache=cmd_runner_fmt.as_bool("update")
+                update_cache=cmd_runner_fmt.as_bool("update"),
             ),
+            path_prefix=dir,
         )
 
         if self.vars.update_cache:

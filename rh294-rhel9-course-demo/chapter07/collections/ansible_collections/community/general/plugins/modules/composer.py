@@ -49,7 +49,7 @@ options:
         description:
             - Directory of your project (see --working-dir). This is required when
               the command is not run globally.
-            - Will be ignored if I(global_command=true).
+            - Will be ignored if O(global_command=true).
     global_command:
         description:
             - Runs the specified command globally.
@@ -107,11 +107,11 @@ options:
     composer_executable:
         type: path
         description:
-            - Path to composer executable on the remote host, if composer is not in C(PATH) or a custom composer is needed.
+            - Path to composer executable on the remote host, if composer is not in E(PATH) or a custom composer is needed.
         version_added: 3.2.0
 requirements:
     - php
-    - composer installed in bin path (recommended /usr/local/bin) or specified in I(composer_executable)
+    - composer installed in bin path (recommended /usr/local/bin) or specified in O(composer_executable)
 notes:
     - Default options that are always appended in each execution are --no-ansi, --no-interaction and --no-progress if available.
     - We received reports about issues on macOS if composer was installed by Homebrew. Please use the official install method to avoid issues.
@@ -170,9 +170,14 @@ def get_available_options(module, command='install'):
     return command_help_json['definition']['options']
 
 
-def composer_command(module, command, arguments="", options=None, global_command=False):
+def composer_command(module, command, arguments="", options=None):
     if options is None:
         options = []
+
+    global_command = module.params['global_command']
+
+    if not global_command:
+        options.extend(['--working-dir', "'%s'" % module.params['working_dir']])
 
     if module.params['executable'] is None:
         php_path = module.get_bin_path("php", True, ["/usr/local/bin"])
@@ -217,7 +222,6 @@ def main():
         module.fail_json(msg="Use the 'arguments' param for passing arguments with the 'command'")
 
     arguments = module.params['arguments']
-    global_command = module.params['global_command']
     available_options = get_available_options(module=module, command=command)
 
     options = []
@@ -233,9 +237,6 @@ def main():
         if option in available_options:
             option = "--%s" % option
             options.append(option)
-
-    if not global_command:
-        options.extend(['--working-dir', "'%s'" % module.params['working_dir']])
 
     option_params = {
         'prefer_source': 'prefer-source',
@@ -260,7 +261,7 @@ def main():
         else:
             module.exit_json(skipped=True, msg="command '%s' does not support check mode, skipping" % command)
 
-    rc, out, err = composer_command(module, command, arguments, options, global_command)
+    rc, out, err = composer_command(module, command, arguments, options)
 
     if rc != 0:
         output = parse_out(err)

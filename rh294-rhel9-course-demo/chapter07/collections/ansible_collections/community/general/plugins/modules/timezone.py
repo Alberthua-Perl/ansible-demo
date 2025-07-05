@@ -8,23 +8,18 @@
 from __future__ import absolute_import, division, print_function
 __metaclass__ = type
 
-DOCUMENTATION = r'''
----
+DOCUMENTATION = r"""
 module: timezone
 short_description: Configure timezone setting
 description:
-  - This module configures the timezone setting, both of the system clock and of the hardware clock.
-    If you want to set up the NTP, use M(ansible.builtin.service) module.
+  - This module configures the timezone setting, both of the system clock and of the hardware clock. If you want to set up the NTP, use
+    M(ansible.builtin.service) module.
   - It is recommended to restart C(crond) after changing the timezone, otherwise the jobs may run at the wrong time.
-  - Several different tools are used depending on the OS/Distribution involved.
-    For Linux it can use C(timedatectl) or edit C(/etc/sysconfig/clock) or C(/etc/timezone) and C(hwclock).
-    On SmartOS, C(sm-set-timezone), for macOS, C(systemsetup), for BSD, C(/etc/localtime) is modified.
-    On AIX, C(chtz) is used.
-  - Make sure that the zoneinfo files are installed with the appropriate OS package, like C(tzdata) (usually always installed,
-    when not using a minimal installation like Alpine Linux).
-  - As of Ansible 2.3 support was added for SmartOS and BSDs.
-  - As of Ansible 2.4 support was added for macOS.
-  - As of Ansible 2.9 support was added for AIX 6.1+
+  - Several different tools are used depending on the OS/Distribution involved. For Linux it can use C(timedatectl) or edit C(/etc/sysconfig/clock)
+    or C(/etc/timezone) and C(hwclock). On SmartOS, C(sm-set-timezone), for macOS, C(systemsetup), for BSD, C(/etc/localtime) is modified. On
+    AIX, C(chtz) is used.
+  - Make sure that the zoneinfo files are installed with the appropriate OS package, like C(tzdata) (usually always installed, when not using
+    a minimal installation like Alpine Linux).
   - Windows and HPUX are not supported, please let us know if you find any other OS/distro in which this fails.
 extends_documentation_fragment:
   - community.general.attributes
@@ -38,48 +33,49 @@ options:
     description:
       - Name of the timezone for the system clock.
       - Default is to keep current setting.
-      - B(At least one of name and hwclock are required.)
+      - B(At least one) of O(name) and O(hwclock) are required.
     type: str
   hwclock:
     description:
       - Whether the hardware clock is in UTC or in local timezone.
       - Default is to keep current setting.
-      - Note that this option is recommended not to change and may fail
-        to configure, especially on virtual environments such as AWS.
-      - B(At least one of name and hwclock are required.)
-      - I(Only used on Linux.)
+      - Note that this option is recommended not to change and may fail to configure, especially on virtual environments such as AWS.
+      - B(At least one) of O(name) and O(hwclock) are required.
+      - I(Only used on Linux).
     type: str
-    aliases: [ rtc ]
-    choices: [ local, UTC ]
+    aliases: [rtc]
+    choices: [local, UTC]
 notes:
-  - On SmartOS the C(sm-set-timezone) utility (part of the smtools package) is required to set the zone timezone
-  - On AIX only Olson/tz database timezones are useable (POSIX is not supported).
-    - An OS reboot is also required on AIX for the new timezone setting to take effect.
+  - On Ubuntu 24.04 the C(util-linux-extra) package is required to provide the C(hwclock) command.
+  - On SmartOS the C(sm-set-timezone) utility (part of the smtools package) is required to set the zone timezone.
+  - On AIX only Olson/tz database timezones are usable (POSIX is not supported). An OS reboot is also required on AIX for the new timezone setting
+    to take effect. Note that AIX 6.1+ is needed (OS level 61 or newer).
 author:
   - Shinichi TAMURA (@tmshn)
   - Jasper Lievisse Adriaanse (@jasperla)
   - Indrajit Raychaudhuri (@indrajitr)
-'''
+"""
 
-RETURN = r'''
+RETURN = r"""
 diff:
   description: The differences about the given arguments.
   returned: success
   type: complex
   contains:
     before:
-      description: The values before change
+      description: The values before change.
       type: dict
     after:
-      description: The values after change
+      description: The values after change.
       type: dict
-'''
+"""
 
-EXAMPLES = r'''
+EXAMPLES = r"""
 - name: Set timezone to Asia/Tokyo
+  become: true
   community.general.timezone:
     name: Asia/Tokyo
-'''
+"""
 
 import errno
 import os
@@ -447,7 +443,7 @@ class NosystemdTimezone(Timezone):
             filename: The name of the file to edit.
             regexp:   The regular expression to search with.
             value:    The line which will be inserted.
-            key:      For what key the file is being editted.
+            key:      For what key the file is being edited.
         """
         # Read the file
         try:
@@ -725,7 +721,7 @@ class BSDTimezone(Timezone):
         localtime_file = '/etc/localtime'
 
         # Strategy 1:
-        #   If /etc/localtime does not exist, assum the timezone is UTC.
+        #   If /etc/localtime does not exist, assume the timezone is UTC.
         if not os.path.exists(localtime_file):
             self.module.warn('Could not read /etc/localtime. Assuming UTC.')
             return 'UTC'

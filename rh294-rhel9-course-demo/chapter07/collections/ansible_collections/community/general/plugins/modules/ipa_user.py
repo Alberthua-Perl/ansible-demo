@@ -30,7 +30,9 @@ options:
     default: 'always'
     choices: [ always, on_create ]
   givenname:
-    description: First name.
+    description:
+    - First name.
+    - If user does not exist and O(state=present), the usage of O(givenname) is required.
     type: str
   krbpasswordexpiration:
     description:
@@ -51,10 +53,12 @@ options:
   password:
     description:
     - Password for a user.
-    - Will not be set for an existing user unless I(update_password=always), which is the default.
+    - Will not be set for an existing user unless O(update_password=always), which is the default.
     type: str
   sn:
-    description: Surname.
+    description:
+    - Surname.
+    - If user does not exist and O(state=present), the usage of O(sn) is required.
     type: str
   sshpubkey:
     description:
@@ -99,7 +103,9 @@ options:
   userauthtype:
     description:
     - The authentication type to use for the user.
-    choices: ["password", "radius", "otp", "pkinit", "hardened"]
+    - To remove all authentication types from the user, use an empty list V([]).
+    - The choice V(idp) and V(passkey) has been added in community.general 8.1.0.
+    choices: ["password", "radius", "otp", "pkinit", "hardened", "idp", "passkey"]
     type: list
     elements: str
     version_added: '1.2.0'
@@ -374,7 +380,7 @@ def main():
                          title=dict(type='str'),
                          homedirectory=dict(type='str'),
                          userauthtype=dict(type='list', elements='str',
-                                           choices=['password', 'radius', 'otp', 'pkinit', 'hardened']))
+                                           choices=['password', 'radius', 'otp', 'pkinit', 'hardened', 'idp', 'passkey']))
 
     module = AnsibleModule(argument_spec=argument_spec,
                            supports_check_mode=True)

@@ -18,8 +18,8 @@ notes:
     happen every 15 minutes by default, however you can request an immediate reload if
     later tasks rely on the records being created. An API key generated via the
     Memset customer control panel is required with the following minimum scope -
-    I(dns.reload). If you wish to poll the job status to wait until the reload has
-    completed, then I(job.status) is also required.
+    C(dns.reload). If you wish to poll the job status to wait until the reload has
+    completed, then C(job.status) is also required.
 description:
   - Request a reload of Memset's DNS infrastructure, and optionally poll until it finishes.
 extends_documentation_fragment:
@@ -178,9 +178,7 @@ def main():
     )
 
     # populate the dict with the user-provided vars.
-    args = dict()
-    for key, arg in module.params.items():
-        args[key] = arg
+    args = dict(module.params)
 
     retvals = reload_dns(args)
 

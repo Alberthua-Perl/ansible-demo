@@ -12,7 +12,6 @@ DOCUMENTATION = r'''
       - Luke Murphy (@decentral1se)
     short_description: Ansible dynamic inventory plugin for Linode.
     requirements:
-        - python >= 2.7
         - linode_api4 >= 2.0.0
     description:
         - Reads inventories from the Linode API v4.
@@ -36,6 +35,7 @@ DOCUMENTATION = r'''
             version_added: 4.5.0
         plugin:
             description: Marks this as an instance of the 'linode' plugin.
+            type: string
             required: true
             choices: ['linode', 'community.general.linode']
         ip_style:
@@ -48,6 +48,7 @@ DOCUMENTATION = r'''
             version_added: 3.6.0
         access_token:
             description: The Linode account personal access token.
+            type: string
             required: true
             env:
                 - name: LINODE_ACCESS_TOKEN
@@ -124,6 +125,8 @@ compose:
 from ansible.errors import AnsibleError
 from ansible.plugins.inventory import BaseInventoryPlugin, Constructable, Cacheable
 
+from ansible_collections.community.general.plugins.plugin_utils.unsafe import make_unsafe
+
 
 try:
     from linode_api4 import LinodeClient
@@ -199,20 +202,21 @@ class InventoryModule(BaseInventoryPlugin, Constructable, Cacheable):
     def _add_instances_to_groups(self):
         """Add instance names to their dynamic inventory groups."""
         for instance in self.instances:
-            self.inventory.add_host(instance.label, group=instance.group)
+            self.inventory.add_host(make_unsafe(instance.label), group=instance.group)
 
     def _add_hostvars_for_instances(self):
         """Add hostvars for instances in the dynamic inventory."""
         ip_style = self.get_option('ip_style')
         for instance in self.instances:
             hostvars = instance._raw_json
+            hostname = make_unsafe(instance.label)
             for hostvar_key in hostvars:
                 if ip_style == 'api' and hostvar_key in ['ipv4', 'ipv6']:
                     continue
                 self.inventory.set_variable(
-                    instance.label,
+                    hostname,
                     hostvar_key,
-                    hostvars[hostvar_key]
+                    make_unsafe(hostvars[hostvar_key])
                 )
             if ip_style == 'api':
                 ips = instance.ips.ipv4.public + instance.ips.ipv4.private
@@ -221,9 +225,9 @@ class InventoryModule(BaseInventoryPlugin, Constructable, Cacheable):
 
                 for ip_type in set(ip.type for ip in ips):
                     self.inventory.set_variable(
-                        instance.label,
+                        hostname,
                         ip_type,
-                        self._ip_data([ip for ip in ips if ip.type == ip_type])
+                        make_unsafe(self._ip_data([ip for ip in ips if ip.type == ip_type]))
                     )
 
     def _ip_data(self, ip_list):
@@ -254,30 +258,44 @@ class InventoryModule(BaseInventoryPlugin, Constructable, Cacheable):
         self._add_instances_to_groups()
         self._add_hostvars_for_instances()
         for instance in self.instances:
-            variables = self.inventory.get_host(instance.label).get_vars()
+            hostname = make_unsafe(instance.label)
+            variables = self.inventory.get_host(hostname).get_vars()
             self._add_host_to_composed_groups(
                 self.get_option('groups'),
                 variables,
-                instance.label,
+                hostname,
                 strict=strict)
             self._add_host_to_keyed_groups(
                 self.get_option('keyed_groups'),
                 variables,
-                instance.label,
+                hostname,
                 strict=strict)
             self._set_composite_vars(
                 self.get_option('compose'),
                 variables,
-                instance.label,
+                hostname,
                 strict=strict)
 
     def verify_file(self, path):
-        """Verify the Linode configuration file."""
+        """Verify the Linode configuration file.
+
+        Return true/false if the config-file is valid for this plugin
+
+        Args:
+            str(path): path to the config
+        Kwargs:
+            None
+        Raises:
+            None
+        Returns:
+            bool(valid): is valid config file"""
+        valid = False
         if super(InventoryModule, self).verify_file(path):
-            endings = ('linode.yaml', 'linode.yml')
-            if any((path.endswith(ending) for ending in endings)):
-                return True
-        return False
+            if path.endswith(("linode.yaml", "linode.yml")):
+                valid = True
+            else:
+                self.display.vvv('Inventory source not ending in "linode.yaml" or "linode.yml"')
+        return valid
 
     def parse(self, inventory, loader, path, cache=True):
         """Dynamically parse Linode the cloud inventory."""

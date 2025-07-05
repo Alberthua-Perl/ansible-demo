@@ -8,15 +8,13 @@ from __future__ import absolute_import, division, print_function
 __metaclass__ = type
 
 
-DOCUMENTATION = r'''
----
+DOCUMENTATION = r"""
 module: influxdb_query
 short_description: Query data points from InfluxDB
 description:
   - Query data points from InfluxDB.
 author: "René Moser (@resmo)"
 requirements:
-  - "python >= 2.6"
   - "influxdb >= 0.9"
 attributes:
   check_mode:
@@ -37,10 +35,9 @@ options:
 extends_documentation_fragment:
   - community.general.influxdb
   - community.general.attributes
+"""
 
-'''
-
-EXAMPLES = r'''
+EXAMPLES = r"""
 - name: Query connections
   community.general.influxdb_query:
     hostname: "{{ influxdb_ip_address }}"
@@ -58,17 +55,17 @@ EXAMPLES = r'''
 - name: Print results from the query
   ansible.builtin.debug:
     var: connection.query_results
-'''
+"""
 
-RETURN = r'''
+RETURN = r"""
 query_results:
-  description: Result from the query
+  description: Result from the query.
   returned: success
   type: list
   sample:
     - mean: 1245.5333333333333
       time: "1970-01-01T00:00:00Z"
-'''
+"""
 
 from ansible.module_utils.basic import AnsibleModule
 from ansible.module_utils.common.text.converters import to_native

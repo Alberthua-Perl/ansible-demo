@@ -58,11 +58,17 @@ DOCUMENTATION = '''
         description:
           - Allows the override of the inventory name based on different attributes.
           - This allows for changing the way limits are used.
-          - The current default, C(address), is sometimes not unique or present. We recommend to use C(name) instead.
+          - The current default, V(address), is sometimes not unique or present. We recommend to use V(name) instead.
         type: string
         default: address
         choices: ['name', 'display_name', 'address']
         version_added: 4.2.0
+      group_by_hostgroups:
+        description:
+          - Uses Icinga2 hostgroups as groups.
+        type: boolean
+        default: true
+        version_added: 8.4.0
 '''
 
 EXAMPLES = r'''
@@ -72,7 +78,7 @@ url: http://localhost:5665
 user: ansible
 password: secure
 host_filter: \"linux-servers\" in host.groups
-validate_certs: false
+validate_certs: false  # only do this when connecting to localhost!
 inventory_attr: name
 groups:
   # simple name matching
@@ -97,6 +103,8 @@ from ansible.plugins.inventory import BaseInventoryPlugin, Constructable
 from ansible.module_utils.urls import open_url
 from ansible.module_utils.six.moves.urllib.error import HTTPError
 
+from ansible_collections.community.general.plugins.plugin_utils.unsafe import make_unsafe
+
 
 class InventoryModule(BaseInventoryPlugin, Constructable):
     ''' Host inventory parser for ansible using Icinga2 as source. '''
@@ -114,6 +122,7 @@ class InventoryModule(BaseInventoryPlugin, Constructable):
         self.ssl_verify = None
         self.host_filter = None
         self.inventory_attr = None
+        self.group_by_hostgroups = None
 
         self.cache_key = None
         self.use_cache = None
@@ -233,31 +242,32 @@ class InventoryModule(BaseInventoryPlugin, Constructable):
         """Convert Icinga2 API data to JSON format for Ansible"""
         groups_dict = {"_meta": {"hostvars": {}}}
         for entry in json_data:
-            host_attrs = entry['attrs']
+            host_attrs = make_unsafe(entry['attrs'])
             if self.inventory_attr == "name":
-                host_name = entry.get('name')
+                host_name = make_unsafe(entry.get('name'))
             if self.inventory_attr == "address":
                 # When looking for address for inventory, if missing fallback to object name
                 if host_attrs.get('address', '') != '':
-                    host_name = host_attrs.get('address')
+                    host_name = make_unsafe(host_attrs.get('address'))
                 else:
-                    host_name = entry.get('name')
+                    host_name = make_unsafe(entry.get('name'))
             if self.inventory_attr == "display_name":
                 host_name = host_attrs.get('display_name')
             if host_attrs['state'] == 0:
                 host_attrs['state'] = 'on'
             else:
                 host_attrs['state'] = 'off'
-            host_groups = host_attrs.get('groups')
             self.inventory.add_host(host_name)
-            for group in host_groups:
-                if group not in self.inventory.groups.keys():
-                    self.inventory.add_group(group)
-                self.inventory.add_child(group, host_name)
+            if self.group_by_hostgroups:
+                host_groups = host_attrs.get('groups')
+                for group in host_groups:
+                    if group not in self.inventory.groups.keys():
+                        self.inventory.add_group(group)
+                    self.inventory.add_child(group, host_name)
             # If the address attribute is populated, override ansible_host with the value
             if host_attrs.get('address') != '':
                 self.inventory.set_variable(host_name, 'ansible_host', host_attrs.get('address'))
-            self.inventory.set_variable(host_name, 'hostname', entry.get('name'))
+            self.inventory.set_variable(host_name, 'hostname', make_unsafe(entry.get('name')))
             self.inventory.set_variable(host_name, 'display_name', host_attrs.get('display_name'))
             self.inventory.set_variable(host_name, 'state',
                                         host_attrs['state'])
@@ -277,12 +287,23 @@ class InventoryModule(BaseInventoryPlugin, Constructable):
         self._read_config_data(path)
 
         # Store the options from the YAML file
-        self.icinga2_url = self.get_option('url').rstrip('/') + '/v1'
+        self.icinga2_url = self.get_option('url')
         self.icinga2_user = self.get_option('user')
         self.icinga2_password = self.get_option('password')
         self.ssl_verify = self.get_option('validate_certs')
         self.host_filter = self.get_option('host_filter')
         self.inventory_attr = self.get_option('inventory_attr')
+        self.group_by_hostgroups = self.get_option('group_by_hostgroups')
+
+        if self.templar.is_template(self.icinga2_url):
+            self.icinga2_url = self.templar.template(variable=self.icinga2_url, disable_lookups=False)
+        if self.templar.is_template(self.icinga2_user):
+            self.icinga2_user = self.templar.template(variable=self.icinga2_user, disable_lookups=False)
+        if self.templar.is_template(self.icinga2_password):
+            self.icinga2_password = self.templar.template(variable=self.icinga2_password, disable_lookups=False)
+
+        self.icinga2_url = self.icinga2_url.rstrip('/') + '/v1'
+
         # Not currently enabled
         # self.cache_key = self.get_cache_key(path)
         # self.use_cache = cache and self.get_option('cache')

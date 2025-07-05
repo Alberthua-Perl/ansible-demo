@@ -44,25 +44,25 @@ options:
     choices: [ attach, comment, create, edit, fetch, link, search, transition, update, worklog ]
     description:
       - The operation to perform.
-      - C(worklog) was added in community.genereal 6.5.0.
+      - V(worklog) was added in community.general 6.5.0.
 
   username:
     type: str
     description:
       - The username to log-in with.
-      - Must be used with I(password). Mutually exclusive with I(token).
+      - Must be used with O(password). Mutually exclusive with O(token).
 
   password:
     type: str
     description:
       - The password to log-in with.
-      - Must be used with I(username).  Mutually exclusive with I(token).
+      - Must be used with O(username).  Mutually exclusive with O(token).
 
   token:
     type: str
     description:
       - The personal access token to log-in with.
-      - Mutually exclusive with I(username) and I(password).
+      - Mutually exclusive with O(username) and O(password).
     version_added: 4.2.0
 
   project:
@@ -128,20 +128,20 @@ options:
     type: str
     required: false
     description:
-     - Only used when I(operation) is C(transition), and a bit of a misnomer, it actually refers to the transition name.
+     - Only used when O(operation) is V(transition), and a bit of a misnomer, it actually refers to the transition name.
 
   assignee:
     type: str
     required: false
     description:
-     - Sets the the assignee when I(operation) is C(create), C(transition) or C(edit).
-     - Recent versions of JIRA no longer accept a user name as a user identifier. In that case, use I(account_id) instead.
+     - Sets the the assignee when O(operation) is V(create), V(transition), or V(edit).
+     - Recent versions of JIRA no longer accept a user name as a user identifier. In that case, use O(account_id) instead.
      - Note that JIRA may not allow changing field values on specific transitions or states.
 
   account_id:
     type: str
     description:
-     - Sets the account identifier for the assignee when I(operation) is C(create), C(transition) or C(edit).
+     - Sets the account identifier for the assignee when O(operation) is V(create), V(transition), or V(edit).
      - Note that JIRA may not allow changing field values on specific transitions or states.
     version_added: 2.5.0
 
@@ -183,8 +183,8 @@ options:
   maxresults:
     required: false
     description:
-     - Limit the result of I(operation=search). If no value is specified, the default jira limit will be used.
-     - Used when I(operation=search) only, ignored otherwise.
+     - Limit the result of O(operation=search). If no value is specified, the default jira limit will be used.
+     - Used when O(operation=search) only, ignored otherwise.
     type: int
     version_added: '0.2.0'
 
@@ -198,7 +198,7 @@ options:
   validate_certs:
     required: false
     description:
-      - Require valid SSL certificates (set to C(false) if you'd like to use self-signed certificates)
+      - Require valid SSL certificates (set to V(false) if you would like to use self-signed certificates)
     default: true
     type: bool
 
@@ -212,12 +212,12 @@ options:
         required: true
         type: path
         description:
-          - The path to the file to upload (from the remote node) or, if I(content) is specified,
+          - The path to the file to upload (from the remote node) or, if O(attachment.content) is specified,
             the filename to use for the attachment.
       content:
         type: str
         description:
-          - The Base64 encoded contents of the file to attach. If not specified, the contents of I(filename) will be
+          - The Base64 encoded contents of the file to attach. If not specified, the contents of O(attachment.filename) will be
             used instead.
       mimetype:
         type: str
@@ -227,7 +227,7 @@ options:
 
 notes:
   - "Currently this only works with basic-auth, or tokens."
-  - "To use with JIRA Cloud, pass the login e-mail as the I(username) and the API token as I(password)."
+  - "To use with JIRA Cloud, pass the login e-mail as the O(username) and the API token as O(password)."
 
 author:
 - "Steve Smith (@tarka)"
@@ -531,7 +531,7 @@ class JIRA(StateModuleHelper):
         ),
         supports_check_mode=False
     )
-
+    use_old_vardict = False
     state_param = 'operation'
 
     def __init_module__(self):
@@ -544,7 +544,7 @@ class JIRA(StateModuleHelper):
         self.vars.uri = self.vars.uri.strip('/')
         self.vars.set('restbase', self.vars.uri + '/rest/api/2')
 
-    @cause_changes(on_success=True)
+    @cause_changes(when="success")
     def operation_create(self):
         createfields = {
             'project': {'key': self.vars.project},
@@ -562,7 +562,7 @@ class JIRA(StateModuleHelper):
         url = self.vars.restbase + '/issue/'
         self.vars.meta = self.post(url, data)
 
-    @cause_changes(on_success=True)
+    @cause_changes(when="success")
     def operation_comment(self):
         data = {
             'body': self.vars.comment
@@ -578,7 +578,7 @@ class JIRA(StateModuleHelper):
         url = self.vars.restbase + '/issue/' + self.vars.issue + '/comment'
         self.vars.meta = self.post(url, data)
 
-    @cause_changes(on_success=True)
+    @cause_changes(when="success")
     def operation_worklog(self):
         data = {
             'comment': self.vars.comment
@@ -594,7 +594,7 @@ class JIRA(StateModuleHelper):
         url = self.vars.restbase + '/issue/' + self.vars.issue + '/worklog'
         self.vars.meta = self.post(url, data)
 
-    @cause_changes(on_success=True)
+    @cause_changes(when="success")
     def operation_edit(self):
         data = {
             'fields': self.vars.fields
@@ -602,7 +602,7 @@ class JIRA(StateModuleHelper):
         url = self.vars.restbase + '/issue/' + self.vars.issue
         self.vars.meta = self.put(url, data)
 
-    @cause_changes(on_success=True)
+    @cause_changes(when="success")
     def operation_update(self):
         data = {
             "update": self.vars.fields,
@@ -624,7 +624,7 @@ class JIRA(StateModuleHelper):
 
         self.vars.meta = self.get(url)
 
-    @cause_changes(on_success=True)
+    @cause_changes(when="success")
     def operation_transition(self):
         # Find the transition id
         turl = self.vars.restbase + '/issue/' + self.vars.issue + "/transitions"
@@ -657,7 +657,7 @@ class JIRA(StateModuleHelper):
         url = self.vars.restbase + '/issue/' + self.vars.issue + "/transitions"
         self.vars.meta = self.post(url, data)
 
-    @cause_changes(on_success=True)
+    @cause_changes(when="success")
     def operation_link(self):
         data = {
             'type': {'name': self.vars.linktype},
@@ -667,7 +667,7 @@ class JIRA(StateModuleHelper):
         url = self.vars.restbase + '/issueLink/'
         self.vars.meta = self.post(url, data)
 
-    @cause_changes(on_success=True)
+    @cause_changes(when="success")
     def operation_attach(self):
         v = self.vars
         filename = v.attachment.get('filename')
@@ -799,7 +799,7 @@ class JIRA(StateModuleHelper):
                 if msg:
                     self.module.fail_json(msg=', '.join(msg))
                 self.module.fail_json(msg=to_native(error))
-            # Fallback print body, if it cant be decoded
+            # Fallback print body, if it can't be decoded
             self.module.fail_json(msg=to_native(info['body']))
 
         body = response.read()

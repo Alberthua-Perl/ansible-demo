@@ -35,8 +35,8 @@ options:
     state:
       description:
       - State of the overlay package.
-      - C(present) simply ensures that a desired package is installed.
-      - C(absent) removes the specified package.
+      - V(present) simply ensures that a desired package is installed.
+      - V(absent) removes the specified package.
       choices: [ 'absent', 'present' ]
       default: 'present'
       type: str
@@ -55,6 +55,17 @@ EXAMPLES = r'''
   community.general.rpm_ostree_pkg:
     name: nfs-utils
     state: absent
+
+# In case a different transaction is currently running the module would fail.
+# Adding a delay can help mitigate this problem:
+- name: Install overlay package
+  community.general.rpm_ostree_pkg:
+    name: nfs-utils
+    state: present
+  register: rpm_ostree_pkg
+  until: rpm_ostree_pkg is not failed
+  retries: 10
+  dealy: 30
 '''
 
 RETURN = r'''

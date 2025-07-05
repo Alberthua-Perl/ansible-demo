@@ -10,8 +10,7 @@ from __future__ import absolute_import, division, print_function
 __metaclass__ = type
 
 
-DOCUMENTATION = '''
----
+DOCUMENTATION = r"""
 module: sudoers
 short_description: Manage sudoers files
 version_added: "4.3.0"
@@ -31,13 +30,13 @@ options:
     description:
       - The commands allowed by the sudoers rule.
       - Multiple can be added by passing a list of commands.
-      - Use C(ALL) for all commands.
+      - Use V(ALL) for all commands.
     type: list
     elements: str
   group:
     description:
       - The name of the group for the sudoers rule.
-      - This option cannot be used in conjunction with I(user).
+      - This option cannot be used in conjunction with O(user).
     type: str
   name:
     required: true
@@ -45,6 +44,12 @@ options:
       - The name of the sudoers rule.
       - This will be used for the filename for the sudoers file managed by this rule.
     type: str
+  noexec:
+    description:
+      - Whether a command is prevented to run further commands itself.
+    default: false
+    type: bool
+    version_added: 8.4.0
   nopassword:
     description:
       - Whether a password will be required to run the sudo'd command.
@@ -83,20 +88,20 @@ options:
   user:
     description:
       - The name of the user for the sudoers rule.
-      - This option cannot be used in conjunction with I(group).
+      - This option cannot be used in conjunction with O(group).
     type: str
   validation:
     description:
-      - If C(absent), the sudoers rule will be added without validation.
-      - If C(detect) and visudo is available, then the sudoers rule will be validated by visudo.
-      - If C(required), visudo must be available to validate the sudoers rule.
+      - If V(absent), the sudoers rule will be added without validation.
+      - If V(detect) and visudo is available, then the sudoers rule will be validated by visudo.
+      - If V(required), visudo must be available to validate the sudoers rule.
     type: str
     default: detect
-    choices: [ absent, detect, required ]
+    choices: [absent, detect, required]
     version_added: 5.2.0
-'''
+"""
 
-EXAMPLES = '''
+EXAMPLES = r"""
 - name: Allow the backup user to sudo /usr/local/bin/backup
   community.general.sudoers:
     name: allow-backup
@@ -143,7 +148,16 @@ EXAMPLES = '''
     user: alice
     commands: /usr/local/bin/upload
     setenv: true
-'''
+
+- name: >-
+    Allow alice to sudo /usr/bin/less but prevent less from
+    running further commands itself
+  community.general.sudoers:
+    name: allow-alice-restricted-less
+    user: alice
+    commands: /usr/bin/less
+    noexec: true
+"""
 
 import os
 from ansible.module_utils.basic import AnsibleModule
@@ -162,6 +176,7 @@ class Sudoers(object):
         self.user = module.params['user']
         self.group = module.params['group']
         self.state = module.params['state']
+        self.noexec = module.params['noexec']
         self.nopassword = module.params['nopassword']
         self.setenv = module.params['setenv']
         self.host = module.params['host']
@@ -205,13 +220,15 @@ class Sudoers(object):
             owner = '%{group}'.format(group=self.group)
 
         commands_str = ', '.join(self.commands)
+        noexec_str = 'NOEXEC:' if self.noexec else ''
         nopasswd_str = 'NOPASSWD:' if self.nopassword else ''
         setenv_str = 'SETENV:' if self.setenv else ''
         runas_str = '({runas})'.format(runas=self.runas) if self.runas is not None else ''
-        return "{owner} {host}={runas}{nopasswd}{setenv} {commands}\n".format(
+        return "{owner} {host}={runas}{noexec}{nopasswd}{setenv} {commands}\n".format(
             owner=owner,
             host=self.host,
             runas=runas_str,
+            noexec=noexec_str,
             nopasswd=nopasswd_str,
             setenv=setenv_str,
             commands=commands_str
@@ -229,7 +246,7 @@ class Sudoers(object):
         rc, stdout, stderr = self.module.run_command(check_command, data=self.content())
 
         if rc != 0:
-            raise Exception('Failed to validate sudoers rule:\n{stdout}'.format(stdout=stdout))
+            self.module.fail_json(msg='Failed to validate sudoers rule:\n{stdout}'.format(stdout=stdout or stderr), stdout=stdout, stderr=stderr)
 
     def run(self):
         if self.state == 'absent':
@@ -257,6 +274,10 @@ def main():
         'group': {},
         'name': {
             'required': True,
+        },
+        'noexec': {
+            'type': 'bool',
+            'default': False,
         },
         'nopassword': {
             'type': 'bool',

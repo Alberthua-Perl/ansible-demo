@@ -7,7 +7,7 @@
 from __future__ import absolute_import, division, print_function
 __metaclass__ = type
 
-DOCUMENTATION = '''
+DOCUMENTATION = r"""
 module: gitlab_branch
 short_description: Create or delete a branch
 version_added: 4.2.0
@@ -16,7 +16,6 @@ description:
 author:
   - paytroff (@paytroff)
 requirements:
-  - python >= 2.7
   - python-gitlab >= 2.3.0
 extends_documentation_fragment:
   - community.general.auth_basic
@@ -49,12 +48,12 @@ options:
   ref_branch:
     description:
       - Reference branch to create from.
-      - This must be specified if I(state=present).
+      - This must be specified if O(state=present).
     type: str
-'''
+"""
 
 
-EXAMPLES = '''
+EXAMPLES = r"""
 - name: Create branch branch2 from main
   community.general.gitlab_branch:
     api_url: https://gitlab.com
@@ -71,11 +70,10 @@ EXAMPLES = '''
     project: "group1/project1"
     branch: branch2
     state: absent
+"""
 
-'''
-
-RETURN = '''
-'''
+RETURN = r"""
+"""
 
 import traceback
 
@@ -84,7 +82,7 @@ from ansible.module_utils.api import basic_auth_argument_spec
 
 from ansible_collections.community.general.plugins.module_utils.version import LooseVersion
 from ansible_collections.community.general.plugins.module_utils.gitlab import (
-    auth_argument_spec, gitlab_authentication, gitlab, ensure_gitlab_package
+    auth_argument_spec, gitlab_authentication, gitlab
 )
 
 
@@ -144,7 +142,9 @@ def main():
         ],
         supports_check_mode=False
     )
-    ensure_gitlab_package(module)
+
+    # check prerequisites and connect to gitlab server
+    gitlab_instance = gitlab_authentication(module)
 
     project = module.params['project']
     branch = module.params['branch']
@@ -156,7 +156,6 @@ def main():
         module.fail_json(msg="community.general.gitlab_proteched_branch requires python-gitlab Python module >= 2.3.0 (installed version: [%s])."
                              " Please upgrade python-gitlab to version 2.3.0 or above." % gitlab_version)
 
-    gitlab_instance = gitlab_authentication(module)
     this_gitlab = GitlabBranch(module=module, project=project, gitlab_instance=gitlab_instance)
 
     this_branch = this_gitlab.get_branch(branch)

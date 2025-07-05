@@ -10,16 +10,17 @@ DOCUMENTATION = """
     author:
       - Roy Lenferink (@rlenferink)
       - Mark Ettema (@m-a-r-k-e)
+      - Alexander Petrenz (@alpex8)
     name: merge_variables
-    short_description: merge variables with a certain suffix
+    short_description: merge variables whose names match a given pattern
     description:
         - This lookup returns the merged result of all variables in scope that match the given prefixes, suffixes, or
-         regular expressions, optionally.
+          regular expressions, optionally.
     version_added: 6.5.0
     options:
       _terms:
         description:
-          - Depending on the value of I(pattern_type), this is a list of prefixes, suffixes, or regular expressions
+          - Depending on the value of O(pattern_type), this is a list of prefixes, suffixes, or regular expressions
             that will be used to match all variables that should be merged.
         required: true
         type: list
@@ -45,11 +46,11 @@ DOCUMENTATION = """
       override:
         description:
           - Return an error, print a warning or ignore it when a key will be overwritten.
-          - The default behavior C(error) makes the plugin fail when a key would be overwritten.
-          - When C(warn) and C(ignore) are used, note that it is important to know that the variables
+          - The default behavior V(error) makes the plugin fail when a key would be overwritten.
+          - When V(warn) and V(ignore) are used, note that it is important to know that the variables
             are sorted by name before being merged. Keys for later variables in this order will overwrite
             keys of the same name for variables earlier in this order. To avoid potential confusion,
-            better use I(override=error) whenever possible.
+            better use O(override=error) whenever possible.
         type: str
         default: 'error'
         choices:
@@ -61,6 +62,13 @@ DOCUMENTATION = """
         ini:
           - section: merge_variables_lookup
             key: override
+      groups:
+        description:
+          - Search for variables accross hosts that belong to the given groups. This allows to collect configuration pieces
+            accross different hosts (for example a service on a host with its database on another host).
+        type: list
+        elements: str
+        version_added: 8.5.0
 """
 
 EXAMPLES = """
@@ -131,21 +139,40 @@ def _verify_and_get_type(variable):
 
 
 class LookupModule(LookupBase):
-
     def run(self, terms, variables=None, **kwargs):
         self.set_options(direct=kwargs)
         initial_value = self.get_option("initial_value", None)
         self._override = self.get_option('override', 'error')
         self._pattern_type = self.get_option('pattern_type', 'regex')
+        self._groups = self.get_option('groups', None)
 
         ret = []
         for term in terms:
             if not isinstance(term, str):
                 raise AnsibleError("Non-string type '{0}' passed, only 'str' types are allowed!".format(type(term)))
 
-            ret.append(self._merge_vars(term, initial_value, variables))
+            if not self._groups:  # consider only own variables
+                ret.append(self._merge_vars(term, initial_value, variables))
+            else:  # consider variables of hosts in given groups
+                cross_host_merge_result = initial_value
+                for host in variables["hostvars"]:
+                    if self._is_host_in_allowed_groups(variables["hostvars"][host]["group_names"]):
+                        host_variables = dict(variables["hostvars"].raw_get(host))
+                        host_variables["hostvars"] = variables["hostvars"]  # re-add hostvars
+                        cross_host_merge_result = self._merge_vars(term, cross_host_merge_result, host_variables)
+                ret.append(cross_host_merge_result)
 
         return ret
+
+    def _is_host_in_allowed_groups(self, host_groups):
+        if 'all' in self._groups:
+            return True
+
+        group_intersection = [host_group_name for host_group_name in host_groups if host_group_name in self._groups]
+        if group_intersection:
+            return True
+
+        return False
 
     def _var_matches(self, key, search_pattern):
         if self._pattern_type == "prefix":
@@ -162,7 +189,6 @@ class LookupModule(LookupBase):
         display.vvv("Merge variables with {0}: {1}".format(self._pattern_type, search_pattern))
         var_merge_names = sorted([key for key in variables.keys() if self._var_matches(key, search_pattern)])
         display.vvv("The following variables will be merged: {0}".format(var_merge_names))
-
         prev_var_type = None
         result = None
 
@@ -171,7 +197,8 @@ class LookupModule(LookupBase):
             result = initial_value
 
         for var_name in var_merge_names:
-            var_value = self._templar.template(variables[var_name])  # Render jinja2 templates
+            with self._templar.set_temporary_context(available_variables=variables):  # tmp. switch renderer to context of current variables
+                var_value = self._templar.template(variables[var_name])  # Render jinja2 templates
             var_type = _verify_and_get_type(var_value)
 
             if prev_var_type is None:

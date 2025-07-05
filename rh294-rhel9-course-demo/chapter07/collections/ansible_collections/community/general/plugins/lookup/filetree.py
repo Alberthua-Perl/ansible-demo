@@ -17,8 +17,10 @@ description:
   This enables merging different trees in order of importance, or add role_vars to specific paths to influence different instances of the same role.
 options:
   _terms:
-    description: path(s) of files to read
+    description: Path(s) of files to read.
     required: true
+    type: list
+    elements: string
 '''
 
 EXAMPLES = r"""
@@ -65,7 +67,7 @@ RETURN = r"""
         src:
           description:
           - Full path to file.
-          - Not returned when I(item.state) is set to C(directory).
+          - Not returned when RV(_raw[].state) is set to V(directory).
           type: path
         root:
           description: Allows filtering by original location.

@@ -9,17 +9,16 @@ from __future__ import absolute_import, division, print_function
 __metaclass__ = type
 
 
-DOCUMENTATION = '''
----
+DOCUMENTATION = r"""
 module: interfaces_file
-short_description: Tweak settings in /etc/network/interfaces files
+short_description: Tweak settings in C(/etc/network/interfaces) files
 extends_documentation_fragment:
   - ansible.builtin.files
   - community.general.attributes
 description:
-  - Manage (add, remove, change) individual interface options in an interfaces-style file without having
-    to manage the file as a whole with, say, M(ansible.builtin.template) or M(ansible.builtin.assemble). Interface has to be presented in a file.
-  - Read information about interfaces from interfaces-styled files
+  - Manage (add, remove, change) individual interface options in an interfaces-style file without having to manage the file
+    as a whole with, say, M(ansible.builtin.template) or M(ansible.builtin.assemble). Interface has to be presented in a file.
+  - Read information about interfaces from interfaces-styled files.
 attributes:
   check_mode:
     support: full
@@ -29,114 +28,117 @@ options:
   dest:
     type: path
     description:
-      - Path to the interfaces file
+      - Path to the interfaces file.
     default: /etc/network/interfaces
   iface:
     type: str
     description:
-      - Name of the interface, required for value changes or option remove
+      - Name of the interface, required for value changes or option remove.
   address_family:
     type: str
     description:
-      - Address family of the interface, useful if same interface name is used for both inet and inet6
+      - Address family of the interface, useful if same interface name is used for both V(inet) and V(inet6).
   option:
     type: str
     description:
-      - Name of the option, required for value changes or option remove
+      - Name of the option, required for value changes or option remove.
   value:
     type: str
     description:
-      - If I(option) is not presented for the I(interface) and I(state) is C(present) option will be added.
-        If I(option) already exists and is not C(pre-up), C(up), C(post-up) or C(down), it's value will be updated.
-        C(pre-up), C(up), C(post-up) and C(down) options can't be updated, only adding new options, removing existing
-        ones or cleaning the whole option set are supported
+      - If O(option) is not presented for the O(iface) and O(state) is V(present) option will be added. If O(option) already
+        exists and is not V(pre-up), V(up), V(post-up) or V(down), it's value will be updated. V(pre-up), V(up), V(post-up)
+        and V(down) options cannot be updated, only adding new options, removing existing ones or cleaning the whole option
+        set are supported.
   backup:
     description:
-      - Create a backup file including the timestamp information so you can get
-        the original file back if you somehow clobbered it incorrectly.
+      - Create a backup file including the timestamp information so you can get the original file back if you somehow clobbered
+        it incorrectly.
     type: bool
     default: false
   state:
     type: str
     description:
-      - If set to C(absent) the option or section will be removed if present instead of created.
+      - If set to V(absent) the option or section will be removed if present instead of created.
     default: "present"
-    choices: [ "present", "absent" ]
+    choices: ["present", "absent"]
 
 notes:
-   - If option is defined multiple times last one will be updated but all will be deleted in case of an absent state
+  - If option is defined multiple times last one will be updated but all will be deleted in case of an absent state.
 requirements: []
 author: "Roman Belyakovsky (@hryamzik)"
-'''
+"""
 
-RETURN = '''
+RETURN = r"""
 dest:
-    description: destination file/path
-    returned: success
-    type: str
-    sample: "/etc/network/interfaces"
+  description: Destination file/path.
+  returned: success
+  type: str
+  sample: "/etc/network/interfaces"
 ifaces:
-    description: interfaces dictionary
-    returned: success
-    type: complex
-    contains:
-      ifaces:
-        description: interface dictionary
-        returned: success
-        type: dict
-        contains:
-          eth0:
-            description: Name of the interface
-            returned: success
-            type: dict
-            contains:
-              address_family:
-                description: interface address family
-                returned: success
-                type: str
-                sample: "inet"
-              method:
-                description: interface method
-                returned: success
-                type: str
-                sample: "manual"
-              mtu:
-                description: other options, all values returned as strings
-                returned: success
-                type: str
-                sample: "1500"
-              pre-up:
-                description: list of C(pre-up) scripts
-                returned: success
-                type: list
-                sample:
-                  - "route add -net 10.10.10.0/24 gw 10.10.10.1 dev eth1"
-                  - "route add -net 10.10.11.0/24 gw 10.10.11.1 dev eth2"
-              up:
-                description: list of C(up) scripts
-                returned: success
-                type: list
-                sample:
-                  - "route add -net 10.10.10.0/24 gw 10.10.10.1 dev eth1"
-                  - "route add -net 10.10.11.0/24 gw 10.10.11.1 dev eth2"
-              post-up:
-                description: list of C(post-up) scripts
-                returned: success
-                type: list
-                sample:
-                  - "route add -net 10.10.10.0/24 gw 10.10.10.1 dev eth1"
-                  - "route add -net 10.10.11.0/24 gw 10.10.11.1 dev eth2"
-              down:
-                description: list of C(down) scripts
-                returned: success
-                type: list
-                sample:
-                  - "route del -net 10.10.10.0/24 gw 10.10.10.1 dev eth1"
-                  - "route del -net 10.10.11.0/24 gw 10.10.11.1 dev eth2"
-...
-'''
+  description: Interfaces dictionary.
+  returned: success
+  type: dict
+  contains:
+    ifaces:
+      description: Interface dictionary.
+      returned: success
+      type: dict
+      contains:
+        eth0:
+          description: Name of the interface.
+          returned: success
+          type: dict
+          contains:
+            address_family:
+              description: Interface address family.
+              returned: success
+              type: str
+              sample: "inet"
+            method:
+              description: Interface method.
+              returned: success
+              type: str
+              sample: "manual"
+            mtu:
+              description: Other options, all values returned as strings.
+              returned: success
+              type: str
+              sample: "1500"
+            pre-up:
+              description: List of C(pre-up) scripts.
+              returned: success
+              type: list
+              elements: str
+              sample:
+                - "route add -net 10.10.10.0/24 gw 10.10.10.1 dev eth1"
+                - "route add -net 10.10.11.0/24 gw 10.10.11.1 dev eth2"
+            up:
+              description: List of C(up) scripts.
+              returned: success
+              type: list
+              elements: str
+              sample:
+                - "route add -net 10.10.10.0/24 gw 10.10.10.1 dev eth1"
+                - "route add -net 10.10.11.0/24 gw 10.10.11.1 dev eth2"
+            post-up:
+              description: List of C(post-up) scripts.
+              returned: success
+              type: list
+              elements: str
+              sample:
+                - "route add -net 10.10.10.0/24 gw 10.10.10.1 dev eth1"
+                - "route add -net 10.10.11.0/24 gw 10.10.11.1 dev eth2"
+            down:
+              description: List of C(down) scripts.
+              returned: success
+              type: list
+              elements: str
+              sample:
+                - "route del -net 10.10.10.0/24 gw 10.10.10.1 dev eth1"
+                - "route del -net 10.10.11.0/24 gw 10.10.11.1 dev eth2"
+"""
 
-EXAMPLES = '''
+EXAMPLES = r"""
 - name: Set eth1 mtu configuration value to 8000
   community.general.interfaces_file:
     dest: /etc/network/interfaces.d/eth1.cfg
@@ -146,7 +148,7 @@ EXAMPLES = '''
     backup: true
     state: present
   register: eth1_cfg
-'''
+"""
 
 import os
 import re
@@ -336,6 +338,8 @@ def addOptionAfterLine(option, value, iface, lines, last_line_dict, iface_option
         changed = False
         for ln in lines:
             if ln.get('line_type', '') == 'iface' and ln.get('iface', '') == iface and value != ln.get('params', {}).get('method', ''):
+                if address_family is not None and ln.get('address_family') != address_family:
+                    continue
                 changed = True
                 ln['line'] = re.sub(ln.get('params', {}).get('method', '') + '$', value, ln.get('line'))
                 ln['params']['method'] = value

@@ -13,7 +13,7 @@ DOCUMENTATION = r'''
 module: puppet
 short_description: Runs puppet
 description:
-  - Runs I(puppet) agent or apply in a reliable manner.
+  - Runs C(puppet) agent or apply in a reliable manner.
 extends_documentation_fragment:
   - community.general.attributes
 attributes:
@@ -24,7 +24,7 @@ attributes:
 options:
   timeout:
     description:
-      - How long to wait for I(puppet) to finish.
+      - How long to wait for C(puppet) to finish.
     type: str
     default: 30m
   puppetmaster:
@@ -42,8 +42,8 @@ options:
   noop:
     description:
       - Override puppet.conf noop mode.
-      - When C(true), run Puppet agent with C(--noop) switch set.
-      - When C(false), run Puppet agent with C(--no-noop) switch set.
+      - When V(true), run Puppet agent with C(--noop) switch set.
+      - When V(false), run Puppet agent with C(--no-noop) switch set.
       - When unset (default), use default or puppet.conf value if defined.
     type: bool
   facts:
@@ -67,8 +67,8 @@ options:
   logdest:
     description:
     - Where the puppet logs should go, if puppet apply is being used.
-    - C(all) will go to both C(console) and C(syslog).
-    - C(stdout) will be deprecated and replaced by C(console).
+    - V(all) will go to both C(console) and C(syslog).
+    - V(stdout) will be deprecated and replaced by C(console).
     type: str
     choices: [ all, stdout, syslog ]
     default: stdout
@@ -101,6 +101,12 @@ options:
       - Whether to print a transaction summary.
     type: bool
     default: false
+  waitforlock:
+    description:
+     - The maximum amount of time C(puppet) should wait for an already running C(puppet) agent to finish before starting.
+     - If a number without unit is provided, it is assumed to be a number of seconds. Allowed units are V(m) for minutes and V(h) for hours.
+    type: str
+    version_added: 9.0.0
   verbose:
     description:
       - Print extra information.
@@ -116,6 +122,17 @@ options:
       - Whether to print file changes details
     type: bool
     default: false
+  environment_lang:
+    description:
+      - The lang environment to use when running the puppet agent.
+      - The default value, V(C), is supported on every system, but can lead to encoding errors if UTF-8 is used in the output
+      - Use V(C.UTF-8) or V(en_US.UTF-8) or similar UTF-8 supporting locales in case of problems. You need to make sure
+        the selected locale is supported on the system the puppet agent runs on.
+      - Starting with community.general 9.1.0, you can use the value V(auto) and the module will
+        try and determine the best parseable locale to use.
+    type: str
+    default: C
+    version_added: 8.6.0
 requirements:
 - puppet
 author:
@@ -149,6 +166,14 @@ EXAMPLES = r'''
     - nginx
     skip_tags:
     - service
+
+- name: Wait 30 seconds for any current puppet runs to finish
+  community.general.puppet:
+    waitforlock: 30
+
+- name: Wait 5 minutes for any current puppet runs to finish
+  community.general.puppet:
+    waitforlock: 5m
 
 - name: Run puppet agent in noop mode
   community.general.puppet:
@@ -205,9 +230,11 @@ def main():
             skip_tags=dict(type='list', elements='str'),
             execute=dict(type='str'),
             summarize=dict(type='bool', default=False),
+            waitforlock=dict(type='str'),
             debug=dict(type='bool', default=False),
             verbose=dict(type='bool', default=False),
             use_srv_records=dict(type='bool'),
+            environment_lang=dict(type='str', default='C'),
         ),
         supports_check_mode=True,
         mutually_exclusive=[
@@ -237,11 +264,11 @@ def main():
     runner = puppet_utils.puppet_runner(module)
 
     if not p['manifest'] and not p['execute']:
-        args_order = "_agent_fixed puppetmaster show_diff confdir environment tags skip_tags certname noop use_srv_records"
+        args_order = "_agent_fixed puppetmaster show_diff confdir environment tags skip_tags certname noop use_srv_records waitforlock"
         with runner(args_order) as ctx:
             rc, stdout, stderr = ctx.run()
     else:
-        args_order = "_apply_fixed logdest modulepath environment certname tags skip_tags noop _execute summarize debug verbose"
+        args_order = "_apply_fixed logdest modulepath environment certname tags skip_tags noop _execute summarize debug verbose waitforlock"
         with runner(args_order) as ctx:
             rc, stdout, stderr = ctx.run(_execute=[p['execute'], p['manifest']])
 

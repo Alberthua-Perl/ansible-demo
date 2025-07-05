@@ -16,40 +16,43 @@ description:
    cluster. These sessions can then be used in conjunction with key value pairs
    to implement distributed locks. In depth documentation for working with
    sessions can be found at http://www.consul.io/docs/internals/sessions.html
-requirements:
-  - python-consul
-  - requests
 author:
   - Steve Gargan (@sgargan)
+  - Håkon Lerring (@Hakon)
 extends_documentation_fragment:
+  - community.general.consul
+  - community.general.consul.actiongroup_consul
+  - community.general.consul.token
   - community.general.attributes
 attributes:
     check_mode:
         support: none
     diff_mode:
         support: none
+    action_group:
+        version_added: 8.3.0
 options:
     id:
         description:
-          - ID of the session, required when I(state) is either C(info) or
-            C(remove).
+          - ID of the session, required when O(state) is either V(info) or
+            V(remove).
         type: str
     state:
         description:
           - Whether the session should be present i.e. created if it doesn't
-            exist, or absent, removed if present. If created, the I(id) for the
-            session is returned in the output. If C(absent), I(id) is
+            exist, or absent, removed if present. If created, the O(id) for the
+            session is returned in the output. If V(absent), O(id) is
             required to remove the session. Info for a single session, all the
             sessions for a node or all available sessions can be retrieved by
-            specifying C(info), C(node) or C(list) for the I(state); for C(node)
-            or C(info), the node I(name) or session I(id) is required as parameter.
+            specifying V(info), V(node) or V(list) for the O(state); for V(node)
+            or V(info), the node O(name) or session O(id) is required as parameter.
         choices: [ absent, info, list, node, present ]
         type: str
         default: present
     name:
         description:
           - The name that should be associated with the session. Required when
-            I(state=node) is used.
+            O(state=node) is used.
         type: str
     delay:
         description:
@@ -76,26 +79,6 @@ options:
             the associated lock delay has expired.
         type: list
         elements: str
-    host:
-        description:
-          - The host of the consul agent defaults to localhost.
-        type: str
-        default: localhost
-    port:
-        description:
-          - The port on which the consul agent is running.
-        type: int
-        default: 8500
-    scheme:
-        description:
-          - The protocol scheme on which the consul agent is running.
-        type: str
-        default: http
-    validate_certs:
-        description:
-          - Whether to verify the TLS certificate of the consul agent.
-        type: bool
-        default: true
     behavior:
         description:
           - The optional behavior that can be attached to the session when it
@@ -109,10 +92,6 @@ options:
         type: int
         version_added: 5.4.0
     token:
-        description:
-          - The token key identifying an ACL rule set that controls access to
-            the key value pair.
-        type: str
         version_added: 5.6.0
 '''
 
@@ -147,37 +126,50 @@ EXAMPLES = '''
     ttl: 600  # sec
 '''
 
-try:
-    import consul
-    from requests.exceptions import ConnectionError
-    python_consul_installed = True
-except ImportError:
-    python_consul_installed = False
-
 from ansible.module_utils.basic import AnsibleModule
+from ansible_collections.community.general.plugins.module_utils.consul import (
+    AUTH_ARGUMENTS_SPEC, _ConsulModule
+)
 
 
-def execute(module):
+def execute(module, consul_module):
 
     state = module.params.get('state')
 
     if state in ['info', 'list', 'node']:
-        lookup_sessions(module)
+        lookup_sessions(module, consul_module)
     elif state == 'present':
-        update_session(module)
+        update_session(module, consul_module)
     else:
-        remove_session(module)
+        remove_session(module, consul_module)
 
 
-def lookup_sessions(module):
+def list_sessions(consul_module, datacenter):
+    return consul_module.get(
+        'session/list',
+        params={'dc': datacenter})
+
+
+def list_sessions_for_node(consul_module, node, datacenter):
+    return consul_module.get(
+        ('session', 'node', node),
+        params={'dc': datacenter})
+
+
+def get_session_info(consul_module, session_id, datacenter):
+    return consul_module.get(
+        ('session', 'info', session_id),
+        params={'dc': datacenter})
+
+
+def lookup_sessions(module, consul_module):
 
     datacenter = module.params.get('datacenter')
 
     state = module.params.get('state')
-    consul_client = get_consul_api(module)
     try:
         if state == 'list':
-            sessions_list = consul_client.session.list(dc=datacenter)
+            sessions_list = list_sessions(consul_module, datacenter)
             # Ditch the index, this can be grabbed from the results
             if sessions_list and len(sessions_list) >= 2:
                 sessions_list = sessions_list[1]
@@ -185,14 +177,14 @@ def lookup_sessions(module):
                              sessions=sessions_list)
         elif state == 'node':
             node = module.params.get('node')
-            sessions = consul_client.session.node(node, dc=datacenter)
+            sessions = list_sessions_for_node(consul_module, node, datacenter)
             module.exit_json(changed=True,
                              node=node,
                              sessions=sessions)
         elif state == 'info':
             session_id = module.params.get('id')
 
-            session_by_id = consul_client.session.info(session_id, dc=datacenter)
+            session_by_id = get_session_info(consul_module, session_id, datacenter)
             module.exit_json(changed=True,
                              session_id=session_id,
                              sessions=session_by_id)
@@ -201,7 +193,26 @@ def lookup_sessions(module):
         module.fail_json(msg="Could not retrieve session info %s" % e)
 
 
-def update_session(module):
+def create_session(consul_module, name, behavior, ttl, node,
+                   lock_delay, datacenter, checks):
+    create_data = {
+        "LockDelay": lock_delay,
+        "Node": node,
+        "Name": name,
+        "Checks": checks,
+        "Behavior": behavior,
+    }
+    if ttl is not None:
+        create_data["TTL"] = "%ss" % str(ttl)  # TTL is in seconds
+    create_session_response_dict = consul_module.put(
+        'session/create',
+        params={
+            'dc': datacenter},
+        data=create_data)
+    return create_session_response_dict["ID"]
+
+
+def update_session(module, consul_module):
 
     name = module.params.get('name')
     delay = module.params.get('delay')
@@ -211,18 +222,16 @@ def update_session(module):
     behavior = module.params.get('behavior')
     ttl = module.params.get('ttl')
 
-    consul_client = get_consul_api(module)
-
     try:
-        session = consul_client.session.create(
-            name=name,
-            behavior=behavior,
-            ttl=ttl,
-            node=node,
-            lock_delay=delay,
-            dc=datacenter,
-            checks=checks
-        )
+        session = create_session(consul_module,
+                                 name=name,
+                                 behavior=behavior,
+                                 ttl=ttl,
+                                 node=node,
+                                 lock_delay=delay,
+                                 datacenter=datacenter,
+                                 checks=checks
+                                 )
         module.exit_json(changed=True,
                          session_id=session,
                          name=name,
@@ -235,13 +244,15 @@ def update_session(module):
         module.fail_json(msg="Could not create/update session %s" % e)
 
 
-def remove_session(module):
+def destroy_session(consul_module, session_id):
+    return consul_module.put(('session', 'destroy', session_id))
+
+
+def remove_session(module, consul_module):
     session_id = module.params.get('id')
 
-    consul_client = get_consul_api(module)
-
     try:
-        consul_client.session.destroy(session_id)
+        destroy_session(consul_module, session_id)
 
         module.exit_json(changed=True,
                          session_id=session_id)
@@ -250,36 +261,31 @@ def remove_session(module):
                          session_id, e))
 
 
-def get_consul_api(module):
-    return consul.Consul(host=module.params.get('host'),
-                         port=module.params.get('port'),
-                         scheme=module.params.get('scheme'),
-                         verify=module.params.get('validate_certs'),
-                         token=module.params.get('token'))
-
-
-def test_dependencies(module):
-    if not python_consul_installed:
-        module.fail_json(msg="python-consul required for this module. "
-                             "see https://python-consul.readthedocs.io/en/latest/#installation")
-
-
 def main():
     argument_spec = dict(
         checks=dict(type='list', elements='str'),
         delay=dict(type='int', default='15'),
-        behavior=dict(type='str', default='release', choices=['release', 'delete']),
+        behavior=dict(
+            type='str',
+            default='release',
+            choices=[
+                'release',
+                'delete']),
         ttl=dict(type='int'),
-        host=dict(type='str', default='localhost'),
-        port=dict(type='int', default=8500),
-        scheme=dict(type='str', default='http'),
-        validate_certs=dict(type='bool', default=True),
         id=dict(type='str'),
         name=dict(type='str'),
         node=dict(type='str'),
-        state=dict(type='str', default='present', choices=['absent', 'info', 'list', 'node', 'present']),
+        state=dict(
+            type='str',
+            default='present',
+            choices=[
+                'absent',
+                'info',
+                'list',
+                'node',
+                'present']),
         datacenter=dict(type='str'),
-        token=dict(type='str', no_log=True),
+        **AUTH_ARGUMENTS_SPEC
     )
 
     module = AnsibleModule(
@@ -291,14 +297,10 @@ def main():
         ],
         supports_check_mode=False
     )
-
-    test_dependencies(module)
+    consul_module = _ConsulModule(module)
 
     try:
-        execute(module)
-    except ConnectionError as e:
-        module.fail_json(msg='Could not connect to consul agent at %s:%s, error was %s' % (
-            module.params.get('host'), module.params.get('port'), e))
+        execute(module, consul_module)
     except Exception as e:
         module.fail_json(msg=str(e))
 

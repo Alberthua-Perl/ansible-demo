@@ -72,10 +72,10 @@ options:
     description:
       - Base URL of the API server.
     required: false
-    default: https://api.bigpanda.io
+    default: "https://api.bigpanda.io"
   validate_certs:
     description:
-      - If C(false), SSL certificates for the target url will not be validated. This should only be used
+      - If V(false), SSL certificates for the target url will not be validated. This should only be used
         on personally controlled sites using self-signed certificates.
     required: false
     default: true

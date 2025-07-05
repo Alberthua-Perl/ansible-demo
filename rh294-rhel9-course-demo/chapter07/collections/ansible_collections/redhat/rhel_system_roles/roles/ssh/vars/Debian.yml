@@ -1,9 +1,0 @@
----
-__ssh_packages: ['openssh-client']
-
-__ssh_defaults:
-  Host:
-    - Condition: "*"
-      SendEnv: LANG LC_*
-      HashKnownHosts: true
-      GSSAPIAuthentication: true

@@ -7,12 +7,20 @@ from __future__ import (absolute_import, division, print_function)
 __metaclass__ = type
 
 import json
+import sys
+
 import pytest
 
-from ansible_collections.community.general.tests.unit.compat.mock import MagicMock, patch
+proxmoxer = pytest.importorskip('proxmoxer')
+mandatory_py_version = pytest.mark.skipif(
+    sys.version_info < (2, 7),
+    reason='The proxmoxer dependency requires python2.7 or higher'
+)
+
+from ansible_collections.community.internal_test_tools.tests.unit.compat.mock import MagicMock, patch
 from ansible_collections.community.general.plugins.modules import proxmox_snap
 import ansible_collections.community.general.plugins.module_utils.proxmox as proxmox_utils
-from ansible_collections.community.general.tests.unit.plugins.modules.utils import set_module_args
+from ansible_collections.community.internal_test_tools.tests.unit.plugins.modules.utils import set_module_args
 
 
 def get_resources(type):
@@ -43,9 +51,9 @@ def fake_api(mocker):
 
 
 def test_proxmox_snap_without_argument(capfd):
-    set_module_args({})
-    with pytest.raises(SystemExit) as results:
-        proxmox_snap.main()
+    with set_module_args({}):
+        with pytest.raises(SystemExit) as results:
+            proxmox_snap.main()
 
     out, err = capfd.readouterr()
     assert not err
@@ -54,19 +62,21 @@ def test_proxmox_snap_without_argument(capfd):
 
 @patch('ansible_collections.community.general.plugins.module_utils.proxmox.ProxmoxAnsible._connect')
 def test_create_snapshot_check_mode(connect_mock, capfd, mocker):
-    set_module_args({"hostname": "test-lxc",
-                     "api_user": "root@pam",
-                     "api_password": "secret",
-                     "api_host": "127.0.0.1",
-                     "state": "present",
-                     "snapname": "test",
-                     "timeout": "1",
-                     "force": True,
-                     "_ansible_check_mode": True})
-    proxmox_utils.HAS_PROXMOXER = True
-    connect_mock.side_effect = lambda: fake_api(mocker)
-    with pytest.raises(SystemExit) as results:
-        proxmox_snap.main()
+    with set_module_args({
+        "hostname": "test-lxc",
+        "api_user": "root@pam",
+        "api_password": "secret",
+        "api_host": "127.0.0.1",
+        "state": "present",
+        "snapname": "test",
+        "timeout": "1",
+        "force": True,
+        "_ansible_check_mode": True
+    }):
+        proxmox_utils.HAS_PROXMOXER = True
+        connect_mock.side_effect = lambda: fake_api(mocker)
+        with pytest.raises(SystemExit) as results:
+            proxmox_snap.main()
 
     out, err = capfd.readouterr()
     assert not err
@@ -75,19 +85,21 @@ def test_create_snapshot_check_mode(connect_mock, capfd, mocker):
 
 @patch('ansible_collections.community.general.plugins.module_utils.proxmox.ProxmoxAnsible._connect')
 def test_remove_snapshot_check_mode(connect_mock, capfd, mocker):
-    set_module_args({"hostname": "test-lxc",
-                     "api_user": "root@pam",
-                     "api_password": "secret",
-                     "api_host": "127.0.0.1",
-                     "state": "absent",
-                     "snapname": "test",
-                     "timeout": "1",
-                     "force": True,
-                     "_ansible_check_mode": True})
-    proxmox_utils.HAS_PROXMOXER = True
-    connect_mock.side_effect = lambda: fake_api(mocker)
-    with pytest.raises(SystemExit) as results:
-        proxmox_snap.main()
+    with set_module_args({
+        "hostname": "test-lxc",
+        "api_user": "root@pam",
+        "api_password": "secret",
+        "api_host": "127.0.0.1",
+        "state": "absent",
+        "snapname": "test",
+        "timeout": "1",
+        "force": True,
+        "_ansible_check_mode": True
+    }):
+        proxmox_utils.HAS_PROXMOXER = True
+        connect_mock.side_effect = lambda: fake_api(mocker)
+        with pytest.raises(SystemExit) as results:
+            proxmox_snap.main()
 
     out, err = capfd.readouterr()
     assert not err
@@ -96,19 +108,21 @@ def test_remove_snapshot_check_mode(connect_mock, capfd, mocker):
 
 @patch('ansible_collections.community.general.plugins.module_utils.proxmox.ProxmoxAnsible._connect')
 def test_rollback_snapshot_check_mode(connect_mock, capfd, mocker):
-    set_module_args({"hostname": "test-lxc",
-                     "api_user": "root@pam",
-                     "api_password": "secret",
-                     "api_host": "127.0.0.1",
-                     "state": "rollback",
-                     "snapname": "test",
-                     "timeout": "1",
-                     "force": True,
-                     "_ansible_check_mode": True})
-    proxmox_utils.HAS_PROXMOXER = True
-    connect_mock.side_effect = lambda: fake_api(mocker)
-    with pytest.raises(SystemExit) as results:
-        proxmox_snap.main()
+    with set_module_args({
+        "hostname": "test-lxc",
+        "api_user": "root@pam",
+        "api_password": "secret",
+        "api_host": "127.0.0.1",
+        "state": "rollback",
+        "snapname": "test",
+        "timeout": "1",
+        "force": True,
+        "_ansible_check_mode": True
+    }):
+        proxmox_utils.HAS_PROXMOXER = True
+        connect_mock.side_effect = lambda: fake_api(mocker)
+        with pytest.raises(SystemExit) as results:
+            proxmox_snap.main()
 
     out, err = capfd.readouterr()
     assert not err

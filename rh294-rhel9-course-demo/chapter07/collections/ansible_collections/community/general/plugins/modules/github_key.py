@@ -9,7 +9,7 @@ from __future__ import absolute_import, division, print_function
 __metaclass__ = type
 
 
-DOCUMENTATION = '''
+DOCUMENTATION = r"""
 module: github_key
 short_description: Manage GitHub access keys
 description:
@@ -29,12 +29,12 @@ options:
     type: str
   name:
     description:
-      - SSH key name
+      - SSH key name.
     required: true
     type: str
   pubkey:
     description:
-      - SSH public key value. Required when I(state=present).
+      - SSH public key value. Required when O(state=present).
     type: str
   state:
     description:
@@ -44,34 +44,36 @@ options:
     type: str
   force:
     description:
-      - The default is C(true), which will replace the existing remote key
-        if it's different than C(pubkey). If C(false), the key will only be
-        set if no key with the given I(name) exists.
+      - The default is V(true), which will replace the existing remote key if it is different than O(pubkey). If V(false),
+        the key will only be set if no key with the given O(name) exists.
     type: bool
     default: true
 
 author: Robert Estelle (@erydo)
-'''
+"""
 
-RETURN = '''
+RETURN = r"""
 deleted_keys:
-    description: An array of key objects that were deleted. Only present on state=absent
-    type: list
-    returned: When state=absent
-    sample: [{'id': 0, 'key': 'BASE64 encoded key', 'url': 'http://example.com/github key', 'created_at': 'YYYY-MM-DDTHH:MM:SZ', 'read_only': false}]
+  description: An array of key objects that were deleted. Only present on state=absent.
+  type: list
+  returned: When state=absent
+  sample: [{'id': 0, 'key': 'BASE64 encoded key', 'url': 'http://example.com/github key', 'created_at': 'YYYY-MM-DDTHH:MM:SZ',
+        'read_only': false}]
 matching_keys:
-    description: An array of keys matching the specified name. Only present on state=present
-    type: list
-    returned: When state=present
-    sample: [{'id': 0, 'key': 'BASE64 encoded key', 'url': 'http://example.com/github key', 'created_at': 'YYYY-MM-DDTHH:MM:SZ', 'read_only': false}]
+  description: An array of keys matching the specified name. Only present on state=present.
+  type: list
+  returned: When state=present
+  sample: [{'id': 0, 'key': 'BASE64 encoded key', 'url': 'http://example.com/github key', 'created_at': 'YYYY-MM-DDTHH:MM:SZ',
+        'read_only': false}]
 key:
-    description: Metadata about the key just created. Only present on state=present
-    type: dict
-    returned: success
-    sample: {'id': 0, 'key': 'BASE64 encoded key', 'url': 'http://example.com/github key', 'created_at': 'YYYY-MM-DDTHH:MM:SZ', 'read_only': false}
-'''
+  description: Metadata about the key just created. Only present on state=present.
+  type: dict
+  returned: success
+  sample: {'id': 0, 'key': 'BASE64 encoded key', 'url': 'http://example.com/github key', 'created_at': 'YYYY-MM-DDTHH:MM:SZ',
+    'read_only': false}
+"""
 
-EXAMPLES = '''
+EXAMPLES = r"""
 - name: Read SSH public key to authorize
   ansible.builtin.shell: cat /home/foo/.ssh/id_rsa.pub
   register: ssh_pub_key
@@ -82,14 +84,25 @@ EXAMPLES = '''
     name: Access Key for Some Machine
     token: '{{ github_access_token }}'
     pubkey: '{{ ssh_pub_key.stdout }}'
-'''
 
+# Alternatively, a single task can be used reading a key from a file on the controller
+- name: Authorize key with GitHub
+  community.general.github_key:
+    name: Access Key for Some Machine
+    token: '{{ github_access_token }}'
+    pubkey: "{{ lookup('ansible.builtin.file', '/home/foo/.ssh/id_rsa.pub') }}"
+"""
 
+import datetime
 import json
 import re
 
 from ansible.module_utils.basic import AnsibleModule
 from ansible.module_utils.urls import fetch_url
+
+from ansible_collections.community.general.plugins.module_utils.datetime import (
+    now,
+)
 
 
 API_BASE = 'https://api.github.com'
@@ -145,14 +158,13 @@ def get_all_keys(session):
 
 def create_key(session, name, pubkey, check_mode):
     if check_mode:
-        from datetime import datetime
-        now = datetime.utcnow()
+        now_t = now()
         return {
             'id': 0,
             'key': pubkey,
             'title': name,
             'url': 'http://example.com/CHECK_MODE_GITHUB_KEY',
-            'created_at': datetime.strftime(now, '%Y-%m-%dT%H:%M:%SZ'),
+            'created_at': datetime.datetime.strftime(now_t, '%Y-%m-%dT%H:%M:%SZ'),
             'read_only': False,
             'verified': False
         }

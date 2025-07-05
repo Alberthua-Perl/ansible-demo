@@ -8,15 +8,14 @@
 from __future__ import absolute_import, division, print_function
 __metaclass__ = type
 
-DOCUMENTATION = r'''
----
+DOCUMENTATION = r"""
 module: pam_limits
 author:
-- "Sebastien Rohaut (@usawa)"
+  - "Sebastien Rohaut (@usawa)"
 short_description: Modify Linux PAM limits
 description:
-  - The C(pam_limits) module modifies PAM limits.
-  - The default file is C(/etc/security/limits.conf).
+  - The M(community.general.pam_limits) module modifies PAM limits.
+  - The default file is V(/etc/security/limits.conf).
   - For the full documentation, see C(man 5 limits.conf).
 extends_documentation_fragment:
   - community.general.attributes
@@ -38,60 +37,57 @@ options:
     description:
       - Limit type, see C(man 5 limits.conf) for an explanation.
     required: true
-    choices: [ "hard", "soft", "-" ]
+    choices: ["hard", "soft", "-"]
   limit_item:
     type: str
     description:
       - The limit to be set.
     required: true
     choices:
-        - "core"
-        - "data"
-        - "fsize"
-        - "memlock"
-        - "nofile"
-        - "rss"
-        - "stack"
-        - "cpu"
-        - "nproc"
-        - "as"
-        - "maxlogins"
-        - "maxsyslogins"
-        - "priority"
-        - "locks"
-        - "sigpending"
-        - "msgqueue"
-        - "nice"
-        - "rtprio"
-        - "chroot"
+      - "core"
+      - "data"
+      - "fsize"
+      - "memlock"
+      - "nofile"
+      - "rss"
+      - "stack"
+      - "cpu"
+      - "nproc"
+      - "as"
+      - "maxlogins"
+      - "maxsyslogins"
+      - "priority"
+      - "locks"
+      - "sigpending"
+      - "msgqueue"
+      - "nice"
+      - "rtprio"
+      - "chroot"
   value:
     type: str
     description:
       - The value of the limit.
-      - Value must either be C(unlimited), C(infinity) or C(-1), all of which indicate no limit, or a limit of 0 or larger.
-      - Value must be a number in the range -20 to 19 inclusive, if I(limit_item) is set to C(nice) or C(priority).
+      - Value must either be V(unlimited), V(infinity) or V(-1), all of which indicate no limit, or a limit of 0 or larger.
+      - Value must be a number in the range -20 to 19 inclusive, if O(limit_item) is set to V(nice) or V(priority).
       - Refer to the C(man 5 limits.conf) manual pages for more details.
     required: true
   backup:
     description:
-      - Create a backup file including the timestamp information so you can get
-        the original file back if you somehow clobbered it incorrectly.
+      - Create a backup file including the timestamp information so you can get the original file back if you somehow clobbered it incorrectly.
     required: false
     type: bool
     default: false
   use_min:
     description:
-      - If set to C(true), the minimal value will be used or conserved.
-      - If the specified value is inferior to the value in the file,
-        file content is replaced with the new value, else content is not modified.
+      - If set to V(true), the minimal value will be used or conserved.
+      - If the specified value is inferior to the value in the file, file content is replaced with the new value, else content is not modified.
     required: false
     type: bool
     default: false
   use_max:
     description:
-      - If set to C(true), the maximal value will be used or conserved.
-      - If the specified value is superior to the value in the file,
-        file content is replaced with the new value, else content is not modified.
+      - If set to V(true), the maximal value will be used or conserved.
+      - If the specified value is superior to the value in the file, file content is replaced with the new value, else content is not modified.
     required: false
     type: bool
     default: false
@@ -108,10 +104,10 @@ options:
     required: false
     default: ''
 notes:
-  - If I(dest) file does not exist, it is created.
-'''
+  - If O(dest) file does not exist, it is created.
+"""
 
-EXAMPLES = r'''
+EXAMPLES = r"""
 - name: Add or modify nofile soft limit for the user joe
   community.general.pam_limits:
     domain: joe
@@ -141,7 +137,7 @@ EXAMPLES = r'''
     limit_type: hard
     limit_item: nofile
     value: 39693561
-'''
+"""
 
 import os
 import re
@@ -175,7 +171,6 @@ def main():
     limits_conf = '/etc/security/limits.conf'
 
     module = AnsibleModule(
-        # not checking because of daisy chain to file module
         argument_spec=dict(
             domain=dict(required=True, type='str'),
             limit_type=dict(required=True, type='str', choices=pam_types),
@@ -201,6 +196,7 @@ def main():
     new_comment = module.params['comment']
 
     changed = False
+    does_not_exist = False
 
     if os.path.isfile(limits_conf):
         if not os.access(limits_conf, os.W_OK):
@@ -208,7 +204,7 @@ def main():
     else:
         limits_conf_dir = os.path.dirname(limits_conf)
         if os.path.isdir(limits_conf_dir) and os.access(limits_conf_dir, os.W_OK):
-            open(limits_conf, 'a').close()
+            does_not_exist = True
             changed = True
         else:
             module.fail_json(msg="directory %s is not writable (check presence, access rights, use sudo)" % limits_conf_dir)
@@ -224,15 +220,20 @@ def main():
 
     space_pattern = re.compile(r'\s+')
 
+    if does_not_exist:
+        lines = []
+    else:
+        with open(limits_conf, 'rb') as f:
+            lines = list(f)
+
     message = ''
-    f = open(limits_conf, 'rb')
     # Tempfile
     nf = tempfile.NamedTemporaryFile(mode='w+')
 
     found = False
     new_value = value
 
-    for line in f:
+    for line in lines:
         line = to_native(line, errors='surrogate_or_strict')
         if line.startswith('#'):
             nf.write(line)
@@ -323,18 +324,18 @@ def main():
         message = new_limit
         nf.write(new_limit)
 
-    f.close()
     nf.flush()
-
-    with open(limits_conf, 'r') as content:
-        content_current = content.read()
 
     with open(nf.name, 'r') as content:
         content_new = content.read()
 
     if not module.check_mode:
-        # Copy tempfile to newfile
-        module.atomic_move(nf.name, limits_conf)
+        if does_not_exist:
+            with open(limits_conf, 'a'):
+                pass
+
+        # Move tempfile to newfile
+        module.atomic_move(os.path.abspath(nf.name), os.path.abspath(limits_conf))
 
     try:
         nf.close()
@@ -344,7 +345,7 @@ def main():
     res_args = dict(
         changed=changed,
         msg=message,
-        diff=dict(before=content_current, after=content_new),
+        diff=dict(before=b''.join(lines), after=content_new),
     )
 
     if backup:

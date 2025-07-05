@@ -42,16 +42,28 @@ options:
         type: str
     state:
         description:
-            - Whether to set this project as C(enabled), C(disabled) or C(absent).
+            - Whether to set this project as V(enabled), V(disabled), or V(absent).
         default: enabled
         type: str
         choices: [absent, enabled, disabled]
     chroot:
         description:
             - The name of the chroot that you want to enable/disable/remove in the project,
-              for example C(epel-7-x86_64). Default chroot is determined by the operating system,
+              for example V(epel-7-x86_64). Default chroot is determined by the operating system,
               version of the operating system, and architecture on which the module is run.
         type: str
+    includepkgs:
+        description: List of packages to include.
+        required: false
+        type: list
+        elements: str
+        version_added: 9.4.0
+    excludepkgs:
+        description: List of packages to exclude.
+        required: false
+        type: list
+        elements: str
+        version_added: 9.4.0
 """
 
 EXAMPLES = r"""
@@ -66,6 +78,13 @@ EXAMPLES = r"""
   community.general.copr:
     state: absent
     name: '@copr/integration_tests'
+
+- name: Install Caddy
+  community.general.copr:
+    name: '@caddy/caddy'
+    chroot: fedora-rawhide-{{ ansible_facts.architecture }}
+    includepkgs:
+      - caddy
 """
 
 RETURN = r"""
@@ -97,11 +116,26 @@ except ImportError:
     DNF_IMP_ERR = traceback.format_exc()
     HAS_DNF_PACKAGES = False
 
+from ansible.module_utils.common import respawn
 from ansible.module_utils.six.moves.urllib.error import HTTPError
 from ansible.module_utils.basic import missing_required_lib
-from ansible.module_utils import distro  # pylint: disable=import-error
-from ansible.module_utils.basic import AnsibleModule  # pylint: disable=import-error
-from ansible.module_utils.urls import open_url  # pylint: disable=import-error
+from ansible.module_utils import distro
+from ansible.module_utils.basic import AnsibleModule
+from ansible.module_utils.urls import open_url
+
+
+def _respawn_dnf():
+    if respawn.has_respawned():
+        return
+    system_interpreters = (
+        "/usr/libexec/platform-python",
+        "/usr/bin/python3",
+        "/usr/bin/python2",
+        "/usr/bin/python",
+    )
+    interpreter = respawn.probe_interpreters_for_module(system_interpreters, "dnf")
+    if interpreter:
+        respawn.respawn_module(interpreter)
 
 
 class CoprModule(object):
@@ -240,6 +274,12 @@ class CoprModule(object):
         """
         if not repo_content:
             repo_content = self._download_repo_info()
+        if self.ansible_module.params["includepkgs"]:
+            includepkgs_value = ','.join(self.ansible_module.params['includepkgs'])
+            repo_content = repo_content.rstrip('\n') + '\nincludepkgs={0}\n'.format(includepkgs_value)
+        if self.ansible_module.params["excludepkgs"]:
+            excludepkgs_value = ','.join(self.ansible_module.params['excludepkgs'])
+            repo_content = repo_content.rstrip('\n') + '\nexcludepkgs={0}\n'.format(excludepkgs_value)
         if self._compare_repo_content(repo_filename_path, repo_content):
             return False
         if not self.check_mode:
@@ -455,11 +495,14 @@ def run_module():
         name=dict(type="str", required=True),
         state=dict(type="str", choices=["enabled", "disabled", "absent"], default="enabled"),
         chroot=dict(type="str"),
+        includepkgs=dict(type='list', elements="str", required=False),
+        excludepkgs=dict(type='list', elements="str", required=False),
     )
     module = AnsibleModule(argument_spec=module_args, supports_check_mode=True)
     params = module.params
 
     if not HAS_DNF_PACKAGES:
+        _respawn_dnf()
         module.fail_json(msg=missing_required_lib("dnf"), exception=DNF_IMP_ERR)
 
     CoprModule.ansible_module = module

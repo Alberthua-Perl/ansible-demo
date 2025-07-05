@@ -5,7 +5,7 @@
 from __future__ import (absolute_import, division, print_function)
 __metaclass__ = type
 
-from ansible_collections.community.general.tests.unit.compat import unittest
+from ansible_collections.community.internal_test_tools.tests.unit.compat import unittest
 from ansible_collections.community.general.plugins.modules import pagerduty
 
 import json
@@ -20,9 +20,9 @@ class PagerDutyTest(unittest.TestCase):
         return object(), {'status': 200}
 
     def _assert_ongoing_window_with_v1_compatible_header(self, module, url, headers, data=None, method=None):
-        self.assertDictContainsSubset(
-            {'Accept': 'application/vnd.pagerduty+json;version=2'},
-            headers,
+        self.assertEqual(
+            'application/vnd.pagerduty+json;version=2',
+            headers.get('Accept'),
             'Accept:application/vnd.pagerduty+json;version=2 HTTP header not found'
         )
         return object(), {'status': 200}
@@ -36,17 +36,17 @@ class PagerDutyTest(unittest.TestCase):
         return object(), {'status': 201}
 
     def _assert_create_a_maintenance_window_from_header(self, module, url, headers, data=None, method=None):
-        self.assertDictContainsSubset(
-            {'From': 'requester_id'},
-            headers,
+        self.assertEqual(
+            'requester_id',
+            headers.get('From'),
             'From:requester_id HTTP header not found'
         )
         return object(), {'status': 201}
 
     def _assert_create_window_with_v1_compatible_header(self, module, url, headers, data=None, method=None):
-        self.assertDictContainsSubset(
-            {'Accept': 'application/vnd.pagerduty+json;version=2'},
-            headers,
+        self.assertEqual(
+            'application/vnd.pagerduty+json;version=2',
+            headers.get('Accept'),
             'Accept:application/vnd.pagerduty+json;version=2 HTTP header not found'
         )
         return object(), {'status': 201}
@@ -54,9 +54,9 @@ class PagerDutyTest(unittest.TestCase):
     def _assert_create_window_payload(self, module, url, headers, data=None, method=None):
         payload = json.loads(data)
         window_data = payload['maintenance_window']
-        self.assertTrue('start_time' in window_data, '"start_time" is requiered attribute')
-        self.assertTrue('end_time' in window_data, '"end_time" is requiered attribute')
-        self.assertTrue('services' in window_data, '"services" is requiered attribute')
+        self.assertTrue('start_time' in window_data, '"start_time" is required attribute')
+        self.assertTrue('end_time' in window_data, '"end_time" is required attribute')
+        self.assertTrue('services' in window_data, '"services" is required attribute')
         return object(), {'status': 201}
 
     def _assert_create_window_single_service(self, module, url, headers, data=None, method=None):
@@ -89,9 +89,9 @@ class PagerDutyTest(unittest.TestCase):
         return object(), {'status': 204}
 
     def _assert_absent_window_with_v1_compatible_header(self, module, url, headers, method=None):
-        self.assertDictContainsSubset(
-            {'Accept': 'application/vnd.pagerduty+json;version=2'},
-            headers,
+        self.assertEqual(
+            'application/vnd.pagerduty+json;version=2',
+            headers.get('Accept'),
             'Accept:application/vnd.pagerduty+json;version=2 HTTP header not found'
         )
         return object(), {'status': 204}

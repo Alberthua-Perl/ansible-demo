@@ -9,8 +9,8 @@ from __future__ import absolute_import, division, print_function
 __metaclass__ = type
 
 from ansible_collections.community.general.plugins.modules import dnsimple as dnsimple_module
-from ansible_collections.community.general.tests.unit.plugins.modules.utils import AnsibleFailJson, ModuleTestCase, set_module_args
-from ansible_collections.community.general.tests.unit.compat.mock import patch
+from ansible_collections.community.internal_test_tools.tests.unit.plugins.modules.utils import AnsibleFailJson, ModuleTestCase, set_module_args
+from ansible_collections.community.internal_test_tools.tests.unit.compat.mock import patch
 import pytest
 import sys
 
@@ -38,14 +38,14 @@ class TestDNSimple(ModuleTestCase):
     def test_without_required_parameters(self):
         """Failure must occurs when all parameters are missing"""
         with self.assertRaises(AnsibleFailJson):
-            set_module_args({})
-            self.module.main()
+            with set_module_args({}):
+                self.module.main()
 
     @patch('dnsimple.service.Identity.whoami')
     def test_account_token(self, mock_whoami):
         mock_whoami.return_value.data.account = 42
         ds = self.module.DNSimpleV2('fake', 'fake', True, self.module)
-        self.assertEquals(ds.account, 42)
+        self.assertEqual(ds.account, 42)
 
     @patch('dnsimple.service.Accounts.list_accounts')
     @patch('dnsimple.service.Identity.whoami')
@@ -61,4 +61,4 @@ class TestDNSimple(ModuleTestCase):
         mock_accounts.return_value.data = [42]
         mock_whoami.return_value.data.account = None
         ds = self.module.DNSimpleV2('fake', 'fake', True, self.module)
-        self.assertEquals(ds.account, 42)
+        self.assertEqual(ds.account, 42)

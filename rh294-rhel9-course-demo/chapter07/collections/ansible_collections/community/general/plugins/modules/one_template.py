@@ -1,7 +1,7 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 #
-# Copyright (c) 2021, Georg Gadinger <nilsding@nilsding.org>
+# Copyright (c) 2021, Jyrki Gadinger <nilsding@nilsding.org>
 # GNU General Public License v3.0+ (see LICENSES/GPL-3.0-or-later.txt or https://www.gnu.org/licenses/gpl-3.0.txt)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
@@ -34,12 +34,12 @@ attributes:
 options:
   id:
     description:
-      - A I(id) of the template you would like to manage.  If not set then a
-      - new template will be created with the given I(name).
+      - A O(id) of the template you would like to manage.  If not set then a
+      - new template will be created with the given O(name).
     type: int
   name:
     description:
-      - A I(name) of the template you would like to manage.  If a template with
+      - A O(name) of the template you would like to manage.  If a template with
       - the given name does not exist it will be created, otherwise it will be
       - managed by this module.
     type: str
@@ -49,8 +49,8 @@ options:
     type: str
   state:
     description:
-      - C(present) - state that is used to manage the template.
-      - C(absent) - delete the template.
+      - V(present) - state that is used to manage the template.
+      - V(absent) - delete the template.
     choices: ["present", "absent"]
     default: present
     type: str
@@ -60,7 +60,7 @@ extends_documentation_fragment:
   - community.general.attributes
 
 author:
-  - "Georg Gadinger (@nilsding)"
+  - "Jyrki Gadinger (@nilsding)"
 '''
 
 EXAMPLES = '''
@@ -116,36 +116,36 @@ RETURN = '''
 id:
     description: template id
     type: int
-    returned: when I(state=present)
+    returned: when O(state=present)
     sample: 153
 name:
     description: template name
     type: str
-    returned: when I(state=present)
+    returned: when O(state=present)
     sample: app1
 template:
     description: the parsed template
     type: dict
-    returned: when I(state=present)
+    returned: when O(state=present)
 group_id:
     description: template's group id
     type: int
-    returned: when I(state=present)
+    returned: when O(state=present)
     sample: 1
 group_name:
     description: template's group name
     type: str
-    returned: when I(state=present)
+    returned: when O(state=present)
     sample: one-users
 owner_id:
     description: template's owner id
     type: int
-    returned: when I(state=present)
+    returned: when O(state=present)
     sample: 143
 owner_name:
     description: template's owner name
     type: str
-    returned: when I(state=present)
+    returned: when O(state=present)
     sample: ansible-test
 '''
 

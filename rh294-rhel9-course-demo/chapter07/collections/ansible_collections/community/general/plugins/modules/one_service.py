@@ -26,15 +26,15 @@ options:
     description:
       - URL of the OpenNebula OneFlow API server.
       - It is recommended to use HTTPS so that the username/password are not transferred over the network unencrypted.
-      - If not set then the value of the ONEFLOW_URL environment variable is used.
+      - If not set then the value of the E(ONEFLOW_URL) environment variable is used.
     type: str
   api_username:
     description:
-      - Name of the user to login into the OpenNebula OneFlow API server. If not set then the value of the C(ONEFLOW_USERNAME) environment variable is used.
+      - Name of the user to login into the OpenNebula OneFlow API server. If not set then the value of the E(ONEFLOW_USERNAME) environment variable is used.
     type: str
   api_password:
     description:
-      - Password of the user to login into OpenNebula OneFlow API server. If not set then the value of the C(ONEFLOW_PASSWORD) environment variable is used.
+      - Password of the user to login into OpenNebula OneFlow API server. If not set then the value of the E(ONEFLOW_PASSWORD) environment variable is used.
     type: str
   template_name:
     description:
@@ -54,20 +54,20 @@ options:
     type: str
   unique:
     description:
-      - Setting I(unique=true) will make sure that there is only one service instance running with a name set with C(service_name) when
-        instantiating a service from a template specified with I(template_id) or I(template_name). Check examples below.
+      - Setting O(unique=true) will make sure that there is only one service instance running with a name set with O(service_name) when
+        instantiating a service from a template specified with O(template_id) or O(template_name). Check examples below.
     type: bool
     default: false
   state:
     description:
-      - C(present) - instantiate a service from a template specified with I(template_id) or I(template_name).
-      - C(absent) - terminate an instance of a service specified with I(template_id) or I(template_name).
+      - V(present) - instantiate a service from a template specified with O(template_id) or O(template_name).
+      - V(absent) - terminate an instance of a service specified with O(template_id) or O(template_name).
     choices: ["present", "absent"]
     default: present
     type: str
   mode:
     description:
-      - Set permission mode of a service instance in octet format, e.g. C(600) to give owner C(use) and C(manage) and nothing to group and others.
+      - Set permission mode of a service instance in octet format, for example V(0600) to give owner C(use) and C(manage) and nothing to group and others.
     type: str
   owner_id:
     description:
@@ -339,7 +339,7 @@ def get_service_info(module, auth, service):
 
 def create_service(module, auth, template_id, service_name, custom_attrs, unique, wait, wait_timeout):
     # make sure that the values in custom_attrs dict are strings
-    custom_attrs_with_str = dict((k, str(v)) for k, v in custom_attrs.items())
+    custom_attrs_with_str = {k: str(v) for k, v in custom_attrs.items()}
 
     data = {
         "action": {
@@ -522,7 +522,7 @@ def create_service_and_operation(module, auth, template_id, service_name, owner_
     if unique:
         service = get_service_by_name(module, auth, service_name)
 
-    if not service:
+    if not service or service["TEMPLATE"]["BODY"]["state"] == "DONE":
         if not module.check_mode:
             service = create_service(module, auth, template_id, service_name, custom_attrs, unique, wait, wait_timeout)
         changed = True
@@ -637,7 +637,6 @@ def get_service_id_by_name(module, auth, service_name):
 
 
 def get_connection_info(module):
-
     url = module.params.get('api_url')
     username = module.params.get('api_username')
     password = module.params.get('api_password')

@@ -21,12 +21,13 @@ options:
   clients:
     description:
       - A list of the pip executables that will be used to get the packages.
-        They can be supplied with the full path or just the executable name, for example C(pip3.7).
+        They can be supplied with the full path or just the executable name, for example V(pip3.7).
     default: ['pip']
     required: false
     type: list
     elements: path
 requirements:
+  - pip >= 20.3b1 (necessary for the C(--format) option)
   - The requested pip executables must be installed on the target.
 author:
   - Matthew Jones (@matburt)

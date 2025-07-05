@@ -37,7 +37,7 @@ options:
      description:
          - Identifier of the module as listed by C(apache2ctl -M).
            This is optional and usually determined automatically by the common convention of
-           appending C(_module) to I(name) as well as custom exception for popular modules.
+           appending V(_module) to O(name) as well as custom exception for popular modules.
      required: false
    force:
      description:
@@ -154,7 +154,7 @@ def _get_ctl_binary(module):
         if ctl_binary is not None:
             return ctl_binary
 
-    module.fail_json(msg="Neither of apache2ctl nor apachctl found. At least one apache control binary is necessary.")
+    module.fail_json(msg="Neither of apache2ctl nor apachectl found. At least one apache control binary is necessary.")
 
 
 def _module_is_enabled(module):
@@ -196,6 +196,7 @@ def create_apache_identifier(name):
 
     # re expressions to extract subparts of names
     re_workarounds = [
+        ('php8', re.compile(r'^(php)[\d\.]+')),
         ('php', re.compile(r'^(php\d)\.')),
     ]
 

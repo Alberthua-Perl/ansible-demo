@@ -46,14 +46,17 @@ options:
     type: str
   record:
     description:
-      - Record to add or delete, supports wildcard (*). Default is C(@) (e.g. the zone name).
+      - Record to add or delete, supports wildcard (V(*)). Default is V(@) (that is, the zone name).
     default: "@"
     aliases: [ name ]
     type: str
   type:
     description:
       - Record type.
-    choices: ['A', 'AAAA', 'MX', 'CNAME', 'CAA', 'SRV', 'TXT', 'TLSA', 'NS', 'DS']
+      - Support for V(OPENPGPKEY), V(SMIMEA) and V(SSHFP) was added in community.general 8.1.0.
+      - Record types V(OPENPGPKEY) and V(SMIMEA) require nc-dnsapi >= 0.1.5.
+      - Record type V(SSHFP) requires nc-dnsapi >= 0.1.6.
+    choices: ['A', 'AAAA', 'MX', 'CNAME', 'CAA', 'SRV', 'TXT', 'TLSA', 'NS', 'DS', 'OPENPGPKEY', 'SMIMEA', 'SSHFP']
     required: true
     type: str
   value:
@@ -65,11 +68,11 @@ options:
     type: bool
     default: false
     description:
-      - Whether the record should be the only one for that record type and record name. Only use with I(state=present).
+      - Whether the record should be the only one for that record type and record name. Only use with O(state=present).
       - This will delete all other records with the same record name and type.
   priority:
     description:
-      - Record priority. Required for I(type=MX).
+      - Record priority. Required for O(type=MX).
     required: false
     type: int
   state:
@@ -169,7 +172,7 @@ records:
             sample: fancy-hostname
         type:
             description: the record type
-            returned: succcess
+            returned: success
             type: str
             sample: A
         value:
@@ -213,7 +216,9 @@ def main():
 
             domain=dict(required=True),
             record=dict(required=False, default='@', aliases=['name']),
-            type=dict(required=True, choices=['A', 'AAAA', 'MX', 'CNAME', 'CAA', 'SRV', 'TXT', 'TLSA', 'NS', 'DS']),
+            type=dict(required=True, choices=['A', 'AAAA', 'MX', 'CNAME', 'CAA', 'SRV', 'TXT',
+                                              'TLSA', 'NS', 'DS', 'OPENPGPKEY', 'SMIMEA',
+                                              'SSHFP']),
             value=dict(required=True),
             priority=dict(required=False, type='int'),
             solo=dict(required=False, type='bool', default=False),

@@ -9,7 +9,7 @@ import copy
 import pytest
 
 from ansible_collections.community.general.plugins.modules import gem
-from ansible_collections.community.general.tests.unit.plugins.modules.utils import AnsibleExitJson, AnsibleFailJson, ModuleTestCase, set_module_args
+from ansible_collections.community.internal_test_tools.tests.unit.plugins.modules.utils import AnsibleExitJson, AnsibleFailJson, ModuleTestCase, set_module_args
 
 
 def get_command(run_command):
@@ -55,38 +55,36 @@ class TestGem(ModuleTestCase):
         return self.mocker.patch(target)
 
     def test_fails_when_user_install_and_install_dir_are_combined(self):
-        set_module_args({
+        with set_module_args({
             'name': 'dummy',
             'user_install': True,
             'install_dir': '/opt/dummy',
-        })
-
-        with pytest.raises(AnsibleFailJson) as exc:
-            gem.main()
+        }):
+            with pytest.raises(AnsibleFailJson) as exc:
+                gem.main()
 
         result = exc.value.args[0]
         assert result['failed']
         assert result['msg'] == "install_dir requires user_install=false"
 
     def test_passes_install_dir_to_gem(self):
-        # XXX: This test is extremely fragile, and makes assuptions about the module code, and how
+        # XXX: This test is extremely fragile, and makes assumptions about the module code, and how
         #      functions are run.
         #      If you start modifying the code of the module, you might need to modify what this
         #      test mocks. The only thing that matters is the assertion that this 'gem install' is
         #      invoked with '--install-dir'.
 
-        set_module_args({
+        with set_module_args({
             'name': 'dummy',
             'user_install': False,
             'install_dir': '/opt/dummy',
-        })
+        }):
+            self.patch_rubygems_version()
+            self.patch_installed_versions([])
+            run_command = self.patch_run_command()
 
-        self.patch_rubygems_version()
-        self.patch_installed_versions([])
-        run_command = self.patch_run_command()
-
-        with pytest.raises(AnsibleExitJson) as exc:
-            gem.main()
+            with pytest.raises(AnsibleExitJson) as exc:
+                gem.main()
 
         result = exc.value.args[0]
         assert result['changed']
@@ -98,20 +96,19 @@ class TestGem(ModuleTestCase):
         # XXX: This test is also extremely fragile because of mocking.
         #      If this breaks, the only that matters is to check whether '--install-dir' is
         #      in the run command, and that GEM_HOME is passed to the command.
-        set_module_args({
+        with set_module_args({
             'name': 'dummy',
             'user_install': False,
             'install_dir': '/opt/dummy',
             'state': 'absent',
-        })
+        }):
+            self.patch_rubygems_version()
+            self.patch_installed_versions(['1.0.0'])
 
-        self.patch_rubygems_version()
-        self.patch_installed_versions(['1.0.0'])
+            run_command = self.patch_run_command()
 
-        run_command = self.patch_run_command()
-
-        with pytest.raises(AnsibleExitJson) as exc:
-            gem.main()
+            with pytest.raises(AnsibleExitJson) as exc:
+                gem.main()
 
         result = exc.value.args[0]
 
@@ -124,17 +121,16 @@ class TestGem(ModuleTestCase):
         assert update_environ.get('GEM_HOME') == '/opt/dummy'
 
     def test_passes_add_force_option(self):
-        set_module_args({
+        with set_module_args({
             'name': 'dummy',
             'force': True,
-        })
+        }):
+            self.patch_rubygems_version()
+            self.patch_installed_versions([])
+            run_command = self.patch_run_command()
 
-        self.patch_rubygems_version()
-        self.patch_installed_versions([])
-        run_command = self.patch_run_command()
-
-        with pytest.raises(AnsibleExitJson) as exc:
-            gem.main()
+            with pytest.raises(AnsibleExitJson) as exc:
+                gem.main()
 
         result = exc.value.args[0]
         assert result['changed']
