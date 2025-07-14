@@ -1,10 +1,10 @@
 ---
 # tasks file for motd
 
-- name: deliver motd file
-  template:
-    src: motd.j2
-    dest: /etc/motd
+- name: Deliver motd file
+  ansible.builtin.template:
+    src: motd.j2  #search from templates/ dir
+    dest: /etc/motd.d/rh294
     owner: root
     group: root
     mode: 0444

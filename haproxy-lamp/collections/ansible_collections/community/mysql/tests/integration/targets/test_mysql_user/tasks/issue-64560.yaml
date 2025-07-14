@@ -1,0 +1,52 @@
+---
+- vars:
+    mysql_parameters: &mysql_params
+      login_user: '{{ mysql_user }}'
+      login_password: '{{ mysql_password }}'
+      login_host: '{{ mysql_host }}'
+      login_port: '{{ mysql_primary_port }}'
+
+  block:
+
+    - name: Issue-64560 | Set root password
+      mysql_user:
+        <<: *mysql_params
+        name: root
+        host: '%'
+        password: '{{ root_password }}'
+        check_implicit_admin: yes
+      register: result
+
+    - name: Issue-64560 | Assert root password is changed
+      assert:
+        that:
+          - result is changed
+
+    - name: Issue-64560 | Set root password again
+      mysql_user:
+        login_user: '{{ mysql_user }}'
+        login_password: '{{ root_password }}'
+        login_host: '{{ mysql_host }}'
+        login_port: '{{ mysql_primary_port }}'
+        name: root
+        host: '%'
+        password: '{{ root_password }}'
+        check_implicit_admin: yes
+      register: result
+
+    - name: Issue-64560 | Assert root password is not changed
+      assert:
+        that:
+          - result is not changed
+
+    - name: Issue-64560 | Set root password again
+      mysql_user:
+        login_user: '{{ mysql_user }}'
+        login_password: '{{ root_password }}'
+        login_host: '{{ mysql_host }}'
+        login_port: '{{ mysql_primary_port }}'
+        name: root
+        host: '%'
+        password: '{{ mysql_password }}'
+        check_implicit_admin: yes
+      register: result

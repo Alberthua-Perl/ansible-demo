@@ -1,0 +1,54 @@
+---
+- vars:
+    mysql_parameters: &mysql_params
+      login_user: '{{ mysql_user }}'
+      login_password: '{{ mysql_password }}'
+      login_host: '{{ mysql_host }}'
+      login_port: '{{ mysql_primary_port }}'
+  block:
+    - include_tasks: utils/remove_user.yml
+      vars:
+        user_name: "{{ user_name_1 }}"
+
+    - name: Revoke only grants | Create user with two grants
+      mysql_user:
+        <<: *mysql_params
+        name: "{{ user_name_1 }}"
+        password: "{{ user_password_1 }}"
+        update_password: on_create
+        priv: '*.*:SELECT,GRANT'
+
+    - name: Revoke only grants | Revoke grant priv from db_user1
+      register: result
+      mysql_user:
+        <<: *mysql_params
+        name: "{{ user_name_1 }}"
+        password: "{{ user_password_1 }}"
+        update_password: on_create
+        priv: '*.*:SELECT'
+
+    - name: Revoke only grants | Assert that db_user1 only have one priv left
+      assert:
+        that:
+          - result is not failed
+          - result is changed
+
+    - name: Revoke only grants | Update db_user1 again to test idempotence
+      register: result
+      mysql_user:
+        <<: *mysql_params
+        name: "{{ user_name_1 }}"
+        password: "{{ user_password_1 }}"
+        update_password: on_create
+        priv: '*.*:SELECT'
+
+    - name: Revoke only grants | Assert that task is idempotent
+      assert:
+        that:
+          - result is succeeded
+          - result is not changed
+
+  always:
+    - include_tasks: utils/remove_user.yml
+      vars:
+        user_name: "{{ user_name_1 }}"

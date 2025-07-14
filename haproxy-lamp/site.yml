@@ -1,0 +1,30 @@
+---
+#使用两种角色调用方法引用自定义角色
+- name: Init base environment for all hosts
+  hosts: all
+
+  tasks:
+    - name: Use role to deploy base materials
+      ansible.builtin.import_role:
+        name: base
+
+- name: Deploy HAProxy server
+  hosts: balancer
+  
+  tasks:
+    - name: Use role to deploy haproxy
+      ansible.builtin.import_role:
+        name: haproxy
+
+- name: Deploy Apache HTTPD Server and PHP
+  hosts: webservers
+
+  tasks:
+    - name: Use role to deploy httpd server
+      ansible.builtin.import_role:
+        name: apache-php
+
+- name: Deploy MariaDB Server
+  hosts: database
+  roles:
+    - mariadb

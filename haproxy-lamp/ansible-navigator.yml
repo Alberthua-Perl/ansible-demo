@@ -1,0 +1,20 @@
+---
+ansible-navigator:
+  ansible:
+    config:
+      path: ./ansible.cfg  #可将 ansible-navigator.yml 与 ansible.cfg 存放于同一项目目录中
+  execution-environment:
+    container-engine: podman
+    enabled: true
+    environment-variables:
+      set:
+        ANSIBLE_CONFIG: ansible.cfg
+    image: utility.lab.example.com/ee-supported-rhel8:latest
+    pull:
+      policy: missing
+  logging:
+    level: critical
+  mode: stdout  #指定 ansible-navigator 的运行返回模式为标准输出，不进入交互模式。
+  playbook-artifact:
+    enable: false
+

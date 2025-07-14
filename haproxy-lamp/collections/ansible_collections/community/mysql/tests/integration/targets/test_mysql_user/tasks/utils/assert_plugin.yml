@@ -1,0 +1,11 @@
+---
+
+- name: Utils | Assert plugin | Query for user {{ user_name }}
+  ansible.builtin.command: "{{ mysql_command }} -e \"SELECT plugin FROM mysql.user where user='{{ user_name }}'\""
+  register: result
+  changed_when: False
+
+- name: Utils | Assert plugin | Assert plugin is correct
+  ansible.builtin.assert:
+    that:
+      - plugin_type in result.stdout

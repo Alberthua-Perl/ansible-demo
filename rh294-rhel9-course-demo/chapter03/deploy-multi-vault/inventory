@@ -1,5 +1,5 @@
 [workstation]
-workstation.lab.example.com
+workstation
 
 [intranetweb]
-servera.lab.example.com
+webserver1  ansible_host=servera

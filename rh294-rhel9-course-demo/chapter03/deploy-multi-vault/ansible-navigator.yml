@@ -9,12 +9,12 @@ ansible-navigator:
     environment-variables:
       set:
         ANSIBLE_CONFIG: ansible.cfg
-    image: utility.lab.example.com/ansible-automation-platform-22/ee-supported-rhel8:latest
+    image: utility.lab.example.com/ee-supported-rhel8:latest
     pull:
       policy: missing
   logging:
     level: critical
-  #mode: stdout
+  mode: stdout
   playbook-artifact:
     enable: false
 

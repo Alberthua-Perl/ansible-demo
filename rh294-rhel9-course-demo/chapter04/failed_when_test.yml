@@ -1,0 +1,18 @@
+---
+- name: Test failed_when keyword
+  hosts: webserver1
+
+  tasks:
+    - name: Capture command module return results
+      ansible.builtin.command: /bin/id devops
+      register: cmd_result
+      #failed_when: "'1000(devops)' in cmd_result.stdout"
+
+    - name: Print error message result
+      ansible.builtin.fail:
+        msg: ">>> devops exists ERROR <<<"
+      when: "'1000(devops)' in cmd_result.stdout"
+
+    - name: Verify cmd_result structure
+      ansible.builtin.debug:
+        var: cmd_result

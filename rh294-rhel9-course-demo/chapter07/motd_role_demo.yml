@@ -3,13 +3,13 @@
 #   This demo including motd role in current directory should be runned as following:
 #   $ ansible-navigator run -m stdout motd_role_demo.yml
 - name: use motd role playbook
-  hosts: serverb.lab.example.com
-  # vars:
-  #   system_owner: someone@host.example.com
+  hosts: webserver2
+  #vars:
+  #  system_owner: someone@host.example.com  #变量优先级测试1
 
   roles:
     - role: motd
-      # vars:
-      #  system_owner: someone@host.example.com
-      #system_owner: someone@host.example.com
+      #vars:
+      #  system_owner: someone@host.example.com  #变量优先级测试2
+      #system_owner: someone@host.example.com  #变量优先级测试3
 ...

@@ -1,0 +1,4 @@
+---
+- src: http://content.example.com/jenkins-ci-plt/collections/redhat-rhel_system_roles-1.16.2.tar.gz
+  name: redhat-rhel_system_roles
+  version: 1.16.2

@@ -1,0 +1,28 @@
+---
+- name: Test handler
+  hosts: webserver1
+
+  tasks:
+    - name: Install error package
+      ansible.builtin.yum:
+        name: nopkg
+        state: present
+      ignore_errors: true
+
+#    - name: Echo message
+#      ansible.builtin.command:
+#        cmd: echo "Test handler notify"
+#      notify:
+#        - send message
+
+    - name: Copy /etc/hosts
+      ansible.builtin.dnf:
+        name: pcp
+        state: present
+      notify:
+        - send message
+
+  handlers:
+    - name: send message
+      ansible.builtin.debug:
+        msg: Trigger handler successfully

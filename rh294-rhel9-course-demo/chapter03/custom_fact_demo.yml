@@ -1,28 +1,27 @@
 ---
 - name: Test custom fact variable
-  hosts: servera.lab.example.com
+  hosts: webserver1
+  remote_user: root
   gather_facts: false
 
   tasks:
-    - name: Create /etc/ansible/facts.d directory
-      ansible.builtin.file:
-        path: /etc/ansible/facts.d
-        state: directory
-        mode: '0755'
-
-    - name: Copy custom fact variable file
-      ansible.builtin.copy:
-        src: custom.fact
-        dest: /etc/ansible/facts.d
-        owner: root
-        group: root
-        mode: '0644'
-
     - name: Collect facts
       ansible.builtin.setup:
-      register: setup_results
+      #register: setup_results
+
+    - name: Setup temp variable
+      ansible.builtin.set_fact:
+        first_fact: redhat
+        second_fact: suse
+        third_fact: debian
+
+    - name: Assert fact variable
+      ansible.builtin.assert:
+        that:
+          - first_fact == 'redhat'  #断言判断变量的值是否正确
 
     - name: Verify setup_results
       ansible.builtin.debug:
-        msg: "Custome fact variable is: {{ ansible_local }}"
-...
+        msg: "Custome fact variable is: {{ ansible_local }}, and copied_var is {{ copied_var }}"
+      vars:
+        copied_var: "{{ second_fact }}"  #使用 set_fact 模块设置中间变量传递给其他变量   

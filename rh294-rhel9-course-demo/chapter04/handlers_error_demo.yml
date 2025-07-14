@@ -1,7 +1,7 @@
 ---
 - name: Sample of force handlers keyword
   hosts: all
-  force_handlers: true
+  #force_handlers: true
 
   tasks:
     - name: a task which always notifies its handler
@@ -20,7 +20,7 @@
       ansible.builtin.yum:
         name: notapkg
         state: latest
-      #ignore_errors: true  
+      ignore_errors: true  
 
   handlers:
     # Use notify list to trigger different handlers as samples,

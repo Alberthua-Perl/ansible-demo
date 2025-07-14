@@ -1,9 +1,9 @@
-[haproxy]
-haproxy.lab.example.com
+[balancer]
+haproxy  ansible_host=serverc
 
-[web]
-webapp1.lab.example.com
-webapp2.lab.example.com
+[webservers]
+webserver1  ansible_host=servera
+webserver2  ansible_host=serverb
 
-[mariadb]
-mysql-server.lab.example.com
+[database]
+mariadb-server  ansible_host=serverd

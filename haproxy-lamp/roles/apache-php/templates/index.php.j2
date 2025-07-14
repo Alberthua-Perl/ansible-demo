@@ -1,9 +1,17 @@
 <?php
-	echo "Show Databases List:\n ";
-	{% for host in groups['mariadb'] %}
-	$link = mysqli_connect('{{ hostvars[host].ansible_default_ipv4.address }}', '{{ hostvars[host].user }}', '{{ hostvars[host].password }}') or die(mysqli_connect_error($link));
+	echo "Current hostname: {{ ansible_facts.fqdn }}" . "<br>";
+
+	{% for host in groups['database'] %}
+	$link = mysqli_connect('{{ hostvars[host].ansible_facts.default_ipv4.address }}', '{{ hostvars[host].db_user }}', '{{ hostvars[host].db_password }}', '{{ hostvars[host].db_database }}') or die(mysqli_connect_error($link));
 	{% endfor %}
-	$res = mysqli_query($link, "show databases;");
+
+	if (!$link) {
+		die("Connect failed: " . mysqli_connect_error() . "\n");
+	}
+	echo "Database connect successfully" . "<br>";
+
+	echo "Show Databases List: " . "<br>";
+	$res = mysqli_query($link, "SHOW DATABASES;");
 	while ($row = mysqli_fetch_assoc($res)) {
 		echo " ".$row['Database'] . "\n";
 	}
