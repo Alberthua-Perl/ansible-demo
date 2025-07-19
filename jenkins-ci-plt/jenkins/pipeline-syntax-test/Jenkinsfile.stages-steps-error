@@ -1,0 +1,27 @@
+pipeline {
+	agent any
+
+	stages {
+		stage('Example') {
+			steps {
+				echo 'Example for building...
+
+				script {
+					try {
+						//def prefix = sh(script: 'echo \\>', returnStdout: true).trim()  //正确语法：">" 需要双重转义
+						def prefix = sh(script: 'echo >', returnStdout: true).trim()  //错误语法：此处将触发异常处理
+						def distributions = ['RedHat', 'SUSE']
+						for (int i = 0; i < distributions.size(); ++i) {
+							echo "${prefix} Testing the ${distributions[i]} system distribution"
+						}
+					} catch(error) {  //构建失败时抛出的异常实例，实例名称可自定义。
+						echo "捕获异常: ${error}"  //完整的异常处理实例，相当于 error.toString()。
+						echo "异常消息：${error.getMessage()} and ${error.toString()}"  //error.getMessage() 只返回 error.toString() 的部分内容
+						currentBuild.result = "UNSTABLE"  //此阶段将处于 FAILURE 状态（红色颜色块），但此处修改为 UNSTABLE 状态，颜色块将显示为黄色
+						//currentBuild.result = "FAILURE"
+					}
+				}
+			}
+		}
+	}
+}

@@ -1,0 +1,44 @@
+pipeline {
+  agent any
+
+  stages {
+    stage('Build') {
+      steps {
+        script {
+          //模拟构建失败
+          error('构建失败！')  //测试失败构建
+          //echo '构建完成！'  //测试成功构建
+        }
+      }
+    }
+  }
+
+  post {
+    always {
+      echo '无论成功或失败，我都会运行！'
+    }
+    changed {
+      echo '构建结果与上一次不同！'
+    }
+    success {
+      echo '构建成功！'
+    }
+    failure {
+      echo '构建失败！'
+      emailext subject: '构建失败', body: '请检查 Jenkins 日志', to: 'hualongfeiyyy@163.com'
+    }
+    unstable {
+      echo '构建不稳定！可能有测试失败。'
+    }
+    aborted {
+      echo '构建被中止！'
+    }
+    unsuccessful {
+      echo '构建未成功（失败/不稳定/中止）。'
+    }
+    cleanup {
+      echo '清理工作，比如删除临时文件。'
+      deleteDir()  //清理工作区
+    }
+  }
+}
