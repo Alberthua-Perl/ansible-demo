@@ -1,0 +1,75 @@
+pipeline {
+    agent any
+ 
+    stages {
+        stage('File and Directory Operations') {
+            steps {
+                //1. 创建文件
+                script {
+                    //使用 sh 命令创建一个测试文件
+                    sh 'touch testfile.txt'
+                }
+                //也可以使用 write 命令
+                writeFile file: 'testfile2.txt', text: 'Hello Jenkins!'
+ 
+                //2. 创建目录
+                script {
+                    sh 'mkdir mydir/'
+                }
+                
+                dir('mydir') {
+                    sh 'ls -alh'
+                    //进入目录
+                }
+                //使用 sh 命令创建目录
+                sh 'mkdir -p anotherdir'
+ 
+                //3. 复制文件
+                script {
+                    sh 'cp testfile.txt mydir/'
+                }
+ 
+                //4. 删除文件
+                script {
+                    sh 'rm testfile2.txt'
+                }
+                
+ 
+                //5. 判断文件是否存在
+                script {
+                    def fileExists = fileExists('testfile.txt')
+                    echo "5. testfile.txt exists: ${fileExists}"
+                }
+ 
+                //6. 删除目录及其内容（2种方法）
+								dir('anotherdir') {  //方法1
+										deleteDir()
+								}
+                //script {  //方法2
+                //    sh 'rm -rf anotherdir'
+                //}
+                
+                //7. 将文件内容写入
+                script {
+                    writeFile file: 'newfile.txt', text: 'This is new content.'
+                }
+ 
+                //8. 读取文件内容
+                script {
+                    def content = readFile('newfile.txt')
+                    echo "8. File content: ${content}"
+                }
+ 
+                //9. 使用归档功能（通常是发布阶段使用）
+                archiveArtifacts artifacts: 'testfile.txt', allowEmptyArchive: true
+            }
+        }
+    }
+ 
+    //post {
+    //    always {
+            //清理工作空间（需要 Workspace Cleanup Plugin 插件支持）
+    //        cleanWs()
+    //    }
+    //}
+}
