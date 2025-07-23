@@ -47,12 +47,12 @@
     ## loop not equal to with_items in list_in_list
     ## loop equal to with_list in the case.
     - name: Generage test files
-      command: bash prepare_test_files.sh
+      ansible.builtin.command: bash prepare_test_files.sh
       tags:
         - always
 
     - name: Remove build files through with_items
-      file:
+      ansible.builtin.file:
         path: "{{ item }}"
         state: absent
       with_items:
@@ -64,7 +64,7 @@
         - loop_with_items
 
     - name: Remove build files through loop
-      file:
+      ansible.builtin.file:
         path: "{{ item }}"
         state: absent
       loop: "{{ list_of_lists | flatten(levels=1) }}"
@@ -78,7 +78,7 @@
 
     ## loop + subelements filter equal to with_subelements
     - name: Test complex data structure through with_subelements
-      debug:
+      ansible.builtin.debug:
         msg: "{{ item.0.name }}'s hobby is {{ item.1 }}"
       with_subelements:
         - "{{ users_list }}"
@@ -87,7 +87,7 @@
         - loop_with_subelements
 
     - name: Test complex data structure through loop
-      debug:
+      ansible.builtin.debug:
         msg: "{{ item.0.name }}'s hobby is {{ item.1 }}"
       loop: "{{ users_list | subelements('hobby') }}"  
       tags:
@@ -95,7 +95,7 @@
 
     ## loop + dict2items filter equal to with_dict
     - name: Verify users key and value through with_dict
-      debug:
+      ansible.builtin.debug:
         msg: >
           Users dictionary's key is {{ item.key }} and 
           value is {{ item.value.name }} and 
@@ -105,7 +105,7 @@
         - loop_with_dict2items
 
     - name: Verify users key and value through loop
-      debug:
+      ansible.builtin.debug:
         msg: >
           Users dictionary's key is {{ item.key }} and
           value is {{ item.value.name }} and
@@ -116,23 +116,23 @@
     
     ## loop + query + fileglob plug-in equal to with_fileglob
     - name: Test fileglob lookup plugin through loop
-      debug:
+      ansible.builtin.debug:
         #msg: Bash file is {{ item }}  # DO447v2.8 course demo
-        msg: log file is {{ item }}  # DO374 RHAAP2.0 course demo
+        msg: log file is {{ item }}  # DO374 RHAAP2.x course demo
       #loop: "{{ query('fileglob', '~/.bash*') }}"  # DO447v2.8 course demo
-      loop: "{{ query('fileglob', '/var/log/*') }}"  # DO374 RHAAP2.0 course demo
+      loop: "{{ query('fileglob', '/var/log/*') }}"  # DO374 RHAAP2.x course demo
 
     - name: Test fileglob lookup plugin through with_fileglob
-      debug:
+      ansible.builtin.debug:
         #msg: Bash file is {{ item }}  # DO447v2.8 course demo
-        msg: log file is {{ item }}  # DO374 RHAAP2.0 course demo
+        msg: log file is {{ item }}  # DO374 RHAAP2.x course demo
       with_fileglob:
         #- "~/.bash*"  # DO447v2.8 course demo
-        - "/var/log/*"  # DO374 RHAAP2.0 course demo
+        - "/var/log/*"  # DO374 RHAAP2.x course demo
         
     # Note:
     #   In DO447v2.8 course run playbook on control node including necessary files.
-    #   But in DO374 RHAAP2.0 course run playbook in automation execution environment 
+    #   But in DO374 RHAAP2.x course run playbook in automation execution environment 
     #   which is a container, fileblob plug-in searchs files in container. If no files 
     #   in container, the task will return error.
 

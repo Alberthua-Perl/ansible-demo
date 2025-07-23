@@ -1,0 +1,25 @@
+---
+- name: use motd role playbook
+  hosts: serverb.lab.example.com
+  #gather_facts: yes
+
+  tasks:
+    - name: verify managed host cpu architecture
+      ansible.builtin.debug:
+        msg: Arch of managed host is {{ ansible_facts['architecture'] }}
+     
+    - name: test include_role module with when statement
+      ansible.builtin.include_role:
+      #ansible.builtin.import_role:
+        name: motd
+      vars:
+        system_owner: tommy@host.example.com
+      # Just vars directive can be under include_role module.
+      when: ansible_facts['architecture'] == "x86_64"
+      #when: ansible_facts['architecture'] == "amd"
+
+  #重要说明：
+  # 1. 如果使用 ansible.builtin.include_role 与 ansible.builtin.import_role 模块调用角色，
+  #    那么 tasks 中的任务都按照正常顺序执行，无需定义 pre_tasks 与 post_tasks 任务。
+  # 2. 如果使用 roles 指令调用角色，那么先执行角色，再执行 tasks 中的任务。pre_tasks 中的
+  #    任务先于角色运行，post_tasks 中的任务最后运行。

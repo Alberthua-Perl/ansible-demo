@@ -12,7 +12,7 @@
   
   tasks:
     - name: Use GitLab API to get user data
-      uri:
+      ansible.builtin.uri:
         url: http://gitlab.lab.example.com/api/v4/users/
         method: GET
         headers:
@@ -21,10 +21,11 @@
       register: gitlab_api_result
 
     - name: Print gitlab_api_result variable
-      debug:
+      ansible.builtin.debug:
         var: gitlab_api_result
 
     - name: Print user names
-      debug:
+      ansible.builtin.debug:
         msg: A valid username is "{{ item.username }}"
       loop: "{{ gitlab_api_result.json }}"
+

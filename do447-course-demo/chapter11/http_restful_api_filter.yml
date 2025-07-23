@@ -6,7 +6,8 @@
 
   tasks:
     - name: Output urlencode result
-      debug:
+      ansible.builtin.debug:
         msg: >
           Format url "http://example.com?name={{ entity_name | urlencode }}" or 
           "http://example.com?name={{ entity_name }}"
+

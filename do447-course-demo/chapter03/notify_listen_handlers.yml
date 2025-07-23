@@ -5,7 +5,7 @@
   become: false
 
   tasks:
-    - debug:
+    - ansible.builtin.debug:
         msg: Trigerring the handlers
       notify: My handlers
       changed_when: true
@@ -13,7 +13,7 @@
   handlers:
     # Listening to the "My handlers" event
     - name: Listening to a notification
-      debug:
+      ansible.builtin.debug:
         msg: First handler was notified
       listen: My handlers
 
@@ -21,10 +21,11 @@
     # its name matches the notification, but no two handlers
     # can have the same name.
     - name: My handlers
-      debug:
+      ansible.builtin.debug:
         msg: Second handler was notified
 
     - name: Subcribe a notification
-      debug:
+      ansible.builtin.debug:
         msg: Third handler was notified
       listen: My handlers
+

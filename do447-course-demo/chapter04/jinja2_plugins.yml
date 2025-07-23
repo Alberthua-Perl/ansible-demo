@@ -7,7 +7,7 @@
   tasks:
     ## file plug-in
     - name: lookup function calls file plug-in
-      debug:
+      ansible.builtin.debug:
         msg: "Variable hosts is: {{ hosts }}"
       vars:
         # hosts: "{{ lookup('file', '/etc/hosts', '/etc/issue') }}"
@@ -16,7 +16,7 @@
         - lookup_query_file
 
     - name: Transfer YAML file format
-      debug:
+      ansible.builtin.debug:
         msg: "Transformation format of file is: {{ my_yaml }}"
       vars:
         my_yaml: "{{ lookup('file', 'user_list.yml') | from_yaml }}"
@@ -26,7 +26,7 @@
 
     ## template plug-in
     - name: Print "Hello class"
-      debug:
+      ansible.builtin.debug:
         msg: "{{ lookup('template', 'mytemplate.j2') }}"
       vars:
         name: class
@@ -35,7 +35,7 @@
 
     ## pipe, lines plug-in
     - name: Prints the specfied line of some files
-      debug:
+      ansible.builtin.debug:
         msg: "{{ item[0] }}"
       loop:
         #- "{{ query('lines', 'cat /etc/services') }}"
@@ -46,13 +46,14 @@
         - query_lines_pipe
       
       # Note:
-      #   If use DO374 RHAAP2.0 course, please ensure files in automation
+      #   If use DO374 RHAAP2.x course, please ensure files in automation
       #   execution environment, or playbook returns error.
 
     - name: Verify lookup plugin file ERROR
-      debug:
+      ansible.builtin.debug:
         msg: Message is {{ message }}
       vars:
         message: "{{ lookup('file', 'myfile.txt', errors='strict') }}"
       tags:
         - lookup_errors
+

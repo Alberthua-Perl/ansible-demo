@@ -6,17 +6,19 @@
   tasks:
     ## mandatory filter
     - name: mandatory filter - install web server package
-      yum:
-        name: "{{ package | mandatory }}"
+      ansible.builtin.yum:
+        name: "{{ package | mandatory }}"  #mandatory 过滤器对未定义值的变量生效，依然无法处理未定义的变量。
         #name: "{{ package }}"
         state: present
       become: true  
       vars:
-        package: ~
+        package: ~  #未定义值的变量（不是未定义的变量）
+      tags:
+        - mandatory
 
     ## default filter
     - name: default filter - install web server package
-      yum:
+      ansible.builtin.yum:
         name: "{{ package | default(webserver, True) }}"
         state: present
       become: true
@@ -24,20 +26,23 @@
         package: ~
         # Undefined variable could be defined as null, ~
         webserver: httpd
+      tags:
+        - default
 
     - name: Ensure user jonfoo exists.
-      user:
+      ansible.builtin.user:
         name: jonfoo
         group: "{{ supplementary_groups['jonfoo'] | default(omit) }}"
       become: true
       vars:
         supplementary_groups:
           jonfoo: devops
-
+      tags:
+        - default
 
     ## capitalize, lower, upper, string, random, shuffle filter    
     - name: Output variable value of filter
-      debug:
+      ansible.builtin.debug:
         msg: >
           The capitalize myname is {{ myname | capitalize }}
           and lower myname is {{ myname | lower }}
@@ -48,25 +53,27 @@
       vars:    
         myname: albertHua
         mynumber: 447
+      tags:
+        - string_handler
 
       # shuffle filter could be used without list filter.
       # reverse filter should be used with list filter.
 
-
     ## int, round, sum filter
     - name: Operate number calculate
-      debug:
+      ansible.builtin.debug:
         msg: >
           The result is {{ ( ansible_facts['date_time']['hour'] | int ) + 1 }}
           and int result is {{ 46.892 | round | int }}
           and sum result is {{ [2, 4, 6, 8, 10, 12] | sum }}
-
+      tags:
+        - num_handler
 
     ## unique, sort, length, first, last, reverse, list, flatten filter
     ## difference, union, intersect filter
     # union, intersect and difference filter operate set object.           
     - name: Test multiple filters for list
-      assert:
+      ansible.builtin.assert:
         that:
           - "{{ [1, 4, 2, 2] | unique | sort }} is eq( [1, 2, 4] )"
           - "{{ [2, 4, 6, 8, 10, 12] | length }} is eq( 6 )"
@@ -78,11 +85,12 @@
           - "{{ [2, 4, 6, 8, 10] | difference([2, 4, 6, 16]) }} is eq( [8, 10] )"
           - "{{ [2, 4, 6] | union([10, 16]) }} is eq( [2, 4, 6, 10, 16] )"
           - "{{ [2, 4, 6] | intersect([4, 12, 19]) }} is eq( [4] )"
-
+      tags:
+        - list_handler
 
     ## combine, dict2items, items2dict filter
     - name: Test multiple filters for dictionary
-      assert:
+      ansible.builtin.assert:
         that:
           - "{{ {'A':1, 'B':2} | combine({'B':4, 'C':5}) }} is eq( expected )"
           - "{{ characters_dict | dict2items }} is eq( characters_items )"
@@ -103,30 +111,36 @@
             value: Robot
           - key: Arthur
             value: Human
-
+      tags:
+        - dict_handler
 
     ## quote, replace, regex_search, regex_replace filter
     - name: Put quotes around 'my_string'
-      shell: echo {{ my_string | quote }}
+      ansible.builtin.shell: echo {{ my_string | quote }}
       vars:
         my_string: "Hello DO447"
-      register: quote_result  
+      register: quote_result
+      tags:
+        - quote_handler
 
     - name: Output my_string variable    
-      debug:
+      ansible.builtin.debug:
         msg: Quote result is {{ quote_result.stdout }}
+      tags:
+        - quote_handler
 
     - name: Test results of regex search and search-and-replace
-      assert:
+      ansible.builtin.assert:
         that:
           - "'{{ 'marvin, arthur' | replace('ar', '**') }}' is eq( 'm**vin, **thur' )"
           - "'{{ 'marvin, arthur' | regex_search('ar\\S*r') }}' is eq( 'arthur' )"
           - "'{{ 'arthur up' | regex_replace('ar(\\S*)r','\\1mb') }}' is eq( 'thumb up' )"
-
+      tags:
+        - regex_handler
 
     ## json_query, to_json, to_yaml filter
     - name: Get the 'name' elements from the list of dictionaries in 'hosts'
-      assert:
+      ansible.builtin.assert:
         that:
           #- "{{ hosts | json_query('[*].name') }} is eq( ['bastion', 'classroom'] )"
           - "{{ hosts | community.general.json_query('[*].name') is eq( ['bastion', 'classroom'] ) }}"
@@ -140,9 +154,11 @@
           - name: classroom
             ip:
               - 172.25.252.254
+      tags:
+        - json_yaml_handler
 
     - name: Convert between JSON and YAML format
-      assert:
+      ansible.builtin.assert:
         that:
           - "'{{ hosts | to_json }}' is eq( hosts_json )"
       vars:
@@ -152,4 +168,6 @@
               - 172.25.250.254
               - 172.25.252.1
         hosts_json: '[{"name": "bastion", "ip": ["172.25.250.254", "172.25.252.1"]}]'
+      tags:
+        - json_yaml_handler
 

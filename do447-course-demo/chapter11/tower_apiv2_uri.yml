@@ -11,7 +11,7 @@
 
   tasks:
     - name: Launch a new Job
-      uri:
+      ansible.builtin.uri:
         url: https://{{ tower_host }}/api/v2/job_templates/{{ tower_job }}/launch/
         method: POST
         validate_certs: no
@@ -20,3 +20,4 @@
         password: "{{ tower_pass }}"
         force_basic_auth: yes
         status_code: 201
+

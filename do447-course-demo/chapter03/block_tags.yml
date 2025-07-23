@@ -5,12 +5,12 @@
 
   tasks:
     - name: Notify start of process
-      debug:
+      ansible.builtin.debug:
         msg: Beginning httpd setup
 
     - block:
         - name: Ensure httpd packages are installed
-          yum:
+          ansible.builtin.yum:
             name:
               - httpd
               - php
@@ -19,15 +19,16 @@
             state: present
 
         - name: Ensure SELinux allows httpd connection to a remote database
-          seboolean:
+          ansible.posix.seboolean:
             name: httpd_can_network_connect_db
             state: true
             persistent: true
 
         - name: Ensure httpd service is started and enabled
-          service:
+          ansible.builtin.service:
             name: httpd
             state: started
             enabled: true
       tags:
         - webserver
+

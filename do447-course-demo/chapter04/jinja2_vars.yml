@@ -12,26 +12,27 @@
       Douglas: Human
       Marvin: Robot
       Arthur: Human
-    #testvar: null  
-    testvar: ~
+    #testvar: null  #未定义值的变量（不是未定义的变量）
+    testvar: ~  #未定义值的变量
   
   tasks:
     - name: Confirm that the second list element is "Marvin"
-      assert:
+      ansible.builtin.assert:
         that:
           - my_list[1] == 'Marvin'
           #- my_list[1] == 'Albert'
 
     - name: Confirm "Marvin" vaule of hash
-      assert:
+      ansible.builtin.assert:
         that:
           - my_dict['Marvin'] == 'Robot'
 
     - name: Verify testvar variable is or not defined
-      command: echo "testvar variable is not defined"
+      ansible.builtin.command: echo "testvar variable is not defined"
       when: testvar is not defined"
       register: testvar_result
 
     - name: Display testvar variable output
-      debug:
+      ansible.builtin.debug:
         var: testvar_result
+

@@ -6,13 +6,14 @@
 
   tasks:
     - name: httpd is installed
-      yum:
+      ansible.builtin.yum:
         name: httpd
         state: latest
       tags: 
         - webserver
 
     - name: postfix is installed
-      yum:
+      ansible.builtin.yum:
         name: postfix
         state: latest
+

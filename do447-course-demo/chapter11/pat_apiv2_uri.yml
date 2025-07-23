@@ -11,7 +11,7 @@
 
   tasks:
     - name: Get the token
-      uri:
+      ansible.builtin.uri:
         url: "https://{{ tower_host }}/api/v2/users/1/personal_tokens/"
         method: POST
         validate_certs: false
@@ -24,7 +24,7 @@
       register: response
 
     - name: Use the token
-      uri:
+      ansible.builtin.uri:
         url: "https://{{ tower_host }}/api/v2/job_templates/{{ template_name | urlencode }}/launch/"
         method: POST
         validate_certs: false
@@ -34,3 +34,4 @@
           Authorization: "Bearer {{ response['json']['token'] }}"
           Content-Type: "application/json"
       register: launch
+

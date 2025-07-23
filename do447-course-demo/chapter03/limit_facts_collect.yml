@@ -5,7 +5,7 @@
 
   tasks:
     - name: Collect only-network-related facts
-      setup:
+      ansible.builtin.setup:
         gather_subset:
           - '!all'
           - '!min'
@@ -14,3 +14,4 @@
     - name: Display collected network facts
       ansible.builtin.debug:
         var: ansible_facts
+

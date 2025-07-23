@@ -1,19 +1,17 @@
 ---
-# the configure file just for DO374 RHAAP2.0 demo
 ansible-navigator:
   ansible:
-    config: ./ansible.cfg
-
+    config:
+      path: ./ansible.cfg
   execution-environment:
     container-engine: podman
-    enabled: True
-    image: hub.lab.example.com/ee-supported-rhel8:2.0
+    enabled: true
+    #image: hub.lab.example.com/ee-supported-rhel8:2.0
+    image: utility.lab.example.com/ee-supported-rhel8:latest
     pull:
       policy: missing
-      # pull eei image when missing
   logging:
     file: /dev/null
   mode: stdout
-  # use interactive mode to override this configure
   playbook-artifact:
-    enable: False
+    enable: false

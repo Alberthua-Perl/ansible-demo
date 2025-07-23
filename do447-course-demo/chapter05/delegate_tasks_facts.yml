@@ -7,22 +7,20 @@
 
   tasks:
     - name: "{{ inventory_hostname }}: get system information"
-      #command: uname -a
       ansible.builtin.command: uname -a
       register: inventory_server_info
 
     - name: "{{ inventory_hostname }}: display system information"
-      debug:
+      dansible.builtin.ebug:
         msg: "{{ inventory_server_info }}"
 
     - name: Delegate system information to other host
-      #command: uname -a
       ansible.builtin.command: uname -a
       delegate_to: serverb.lab.example.com
       register: delegate_server_info
 
     - name: Display delegate system information
-      debug:
+      ansible.builtin.debug:
         msg: "{{ delegate_server_info }}"
 
 - name: Test delegation facts
@@ -33,12 +31,13 @@
 
   tasks:
     - name: Set a fact in delegated task for serverb
-      set_fact:
+      ansible.builtin.set_fact:
         myfact: Where am I set?
       delegate_to: serverb.lab.example.com
       delegate_facts: true
 
     - name: Display the facts from serverb.lab.example.com
-      debug:
+      ansible.builtin.debug:
         msg: "{{ hostvars['serverb.lab.example.com']['myfact'] }}"
       # use magic variable to verify delegation fact
+

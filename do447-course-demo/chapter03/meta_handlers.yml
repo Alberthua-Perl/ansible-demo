@@ -5,7 +5,7 @@
 
   tasks:
     - name: Install several packages
-      yum:
+      ansible.builtin.yum:
         name:
           - httpd
           - mariadb-server
@@ -16,18 +16,19 @@
       changed_when: true  
 
     - name: Use meta module to flush handlers
-      meta: flush_handlers
+      ansible.builtin.meta: flush_handlers
       # meta 模块将强制刷新上一任务中 notify 指令定义的通知列表
       # 以上示例将刷新两个 handlers 任务
 
   handlers:
     - name: Restart apache web server
-      service:
+      ansible.builtin.service:
         name: httpd
         state: restarted
         enabled: yes
     - name: Restart mariadb database
-      service:
+      ansible.builtin.service:
         name: mariadb
         state: restarted
         enabled: yes
+

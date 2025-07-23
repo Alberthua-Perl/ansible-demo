@@ -14,3 +14,4 @@
     - name: Show that we still know the facts
       ansible.builtin.debug:
         var: ansible_facts
+

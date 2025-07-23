@@ -4,13 +4,15 @@
   become: false
   vars:
     ansible_become: true
-    # ansible 连接变量的优先级比 play 级别的 become 指令高。
+    #ansible 连接变量的优先级比 play 级别的 become 指令高
+
   tasks:
     - name: Verify current username
-      debug:
+      ansible.builtin.debug:
         var: ansible_user_id
 
     - name: Play will use privilege escalation even if inventory says no
-      yum:
+      ansible.builtin.yum:
         name: perl
         state: installed
+

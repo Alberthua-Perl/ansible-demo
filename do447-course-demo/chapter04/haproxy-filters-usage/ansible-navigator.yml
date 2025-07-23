@@ -1,5 +1,5 @@
 ---
-# the configure file just for DO374 RHAAP2.0 demo
+# the configure file just for DO374 RHAAP2.x demo
 ansible-navigator:
   ansible:
     config: ./ansible.cfg

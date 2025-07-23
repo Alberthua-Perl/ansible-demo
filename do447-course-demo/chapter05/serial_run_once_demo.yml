@@ -8,18 +8,18 @@
 
   tasks:
     - name: 'List: show all hosts in play'
-      debug:
+      ansible.builtin.debug:
         var: ansible_play_hosts
 
     - name: 'List: show all hosts in each batch'
-      debug:
+      ansible.builtin.debug:
         var: ansible_play_batch
 
-    - debug:
+    - ansible.builtin.debug:
         msg: First host in play is {{ ansible_play_hosts[0] }}
 
     - name: Report batch process on managed hosts
-      shell: "echo {{ inventory_hostname }} -- {{ batch_nodes }} >> /tmp/batch_nodes.txt"
+      ansible.builtin.shell: "echo {{ inventory_hostname }} -- {{ batch_nodes }} >> /tmp/batch_nodes.txt"
       run_once: yes
       # Just run once on the first node of batch, ignore other nodes.
       delegate_to: workstation.lab.example.com
@@ -28,3 +28,4 @@
       # ansible_play_batch variable is list included batch managed hosts.
       #when: inventory_hostname == ansible_play_hosts[0]
       # Just run the task on the fist node of all hosts
+

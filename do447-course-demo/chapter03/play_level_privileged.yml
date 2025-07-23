@@ -2,20 +2,26 @@
 - name: Become the user "manager"
   hosts: webservers
   become: true
+
   tasks:
     - name: Show the user used by this play
-      debug:
+      ansible.builtin.debug:
         var: ansible_user_id
+
 - name: Do not use privilege escalation
   hosts: webservers
   become: false
+
   tasks:
     - name: Show the user used by this play
-      debug:
+      ansible.builtin.debug:
         var: ansible_user_id
+
 - name: Use privilege escalation based on defaults
   hosts: webservers
+  
   tasks:
     - name: Show the user used by this play
-      debug:
+      ansible.builtin.debug:
         var: ansible_user_id
+
