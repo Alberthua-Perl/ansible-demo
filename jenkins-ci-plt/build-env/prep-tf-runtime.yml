@@ -23,6 +23,11 @@
         group: jenkins
         mode: '0755'
       when: inventory_hostname == 'jenkins-master.lab.example.com'
+    - name: Ensure jenkins user existed
+      ansible.builtin.user:
+        name: jenkins
+        state: present
+      when: inventory_hostname == 'jenkins-agent1.lab.example.com'
     - name: Create {{ jenkins_local_pip_conf }} directory
       ansible.builtin.file:
         path: "{{ jenkins_local_pip_conf }}"

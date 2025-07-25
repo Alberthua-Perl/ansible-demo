@@ -4,6 +4,7 @@
   vars_files:
     - ../vars/all_vars.yml
   tags:
+    - base_config
     - master_config
     - agent_config
 

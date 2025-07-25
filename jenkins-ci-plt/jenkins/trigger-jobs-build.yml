@@ -1,0 +1,13 @@
+---
+- name: Trigger jenkins jobs build
+  hosts: localhost
+   
+  tasks:
+    - name: Use specfied job ID to build
+      community.general.jenkins_build:
+        name: "{{ job_build_name | quote }}"
+        build_number: "{{ job_build_id }}"
+        state: present
+        user: "{{ jkn_login_user | quote }}"
+        password: "{{ jkn_login_password | quote }}"
+        url: "{{ jkn_login_url | quote }}"

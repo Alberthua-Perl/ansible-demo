@@ -26,7 +26,7 @@ WORKDIR /app
 
 EXPOSE 8080
 
-ENTRYPOINT ["sh", "-c", "/opt/openjdk-17/bin/java -jar spring-boot-helloworld-0.9.6-SNAPSHOT.jar --server.port=80]
+ENTRYPOINT ["sh", "-c", "/opt/openjdk-17/bin/java -jar spring-boot-helloworld-0.9.6-SNAPSHOT.jar --server.port=80"]
 EOF
 
 echo -e "\n---> Login and pull base image..."
