@@ -22,7 +22,7 @@
         msg: |
           The default IPv4 address of {{ ansible_facts.fqdn }}
           is {{ ansible_facts.default_ipv4.address }}
-      # | 与 > 的区别：| 在返回的结果中不带有 \n，而 > 在返回的结果中带有 \n。
+      # | 与 > 的区别：| 在返回的结果中带有 \n，而 > 在返回的结果中不带有 \n。
 
 #    - name: Verify Apache httpd installed
 #      ansible.builtin.yum:
