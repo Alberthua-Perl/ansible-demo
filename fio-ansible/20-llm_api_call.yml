@@ -1,0 +1,43 @@
+---
+- name: 测试 LLM API 连通性
+  hosts: localhost
+  vars_files:
+    - vars/llm.yml
+
+  tasks:
+  - name: 调用 LLM API 分析
+    ansible.builtin.uri:
+      url: "{{ llm_api_url }}"
+      method: POST
+      headers:
+        Content-Type: "application/json"
+        Authorization: "Bearer {{ llm_api_key }}"
+      body_format: json
+      body:
+        model: "{{ llm_model }}"
+        messages:
+          - role: "system"
+            content: "{{ llm_system_content }}"
+          - role: "user"
+            content: "{{ llm_user_content }}"
+        #max_tokens: "{{ llm_max_tokens | int }}"
+        #temperature: "{{ llm_temperature | float }}"
+      status_code: 200
+      timeout: 180
+    register: llm_response
+    delegate_to: localhost
+    run_once: no
+
+  - name: 提取 LLM 报告内容
+    ansible.builtin.set_fact:
+      llm_report: "{{ llm_response.json.choices[0].message.content }}"
+
+  - name: 输出 LLM 返回内容
+    ansible.builtin.debug:
+      msg: "{{ llm_report }}"
+
+  - name: 保存内容至本地
+    ansible.builtin.copy:
+      content: "{{ llm_report }}"
+      dest: "LLM API 测试.md"
+

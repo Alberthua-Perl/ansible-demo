@@ -1,0 +1,54 @@
+---
+
+# We use the ubuntu2204 image provided by ansible-test.
+
+# The GPG key is imported in the files folder from:
+#   https://dev.mysql.com/doc/refman/8.4/en/checking-gpg-signature.html
+# Downloading the key on each iteration of the tests is too slow.
+- name: Install MySQL PGP public key
+  ansible.builtin.copy:
+    src: files/mysql.gpg
+    dest: /usr/share/keyrings/mysql.gpg
+    owner: root
+    group: root
+    mode: '0644'
+  when:
+    - db_engine == 'mysql'
+    - db_version is version('8.4', '>=')
+
+- name: Add Apt signing key to keyring
+  ansible.builtin.apt_key:
+    id: A8D3785C
+    file: /usr/share/keyrings/mysql.gpg
+    state: present
+  when:
+    - db_engine == 'mysql'
+    - db_version is version('8.4', '>=')
+
+- name: Add MySQL 8.4 repository
+  ansible.builtin.apt_repository:
+    repo: deb http://repo.mysql.com/apt/ubuntu/ jammy mysql-8.4-lts mysql-tools
+    state: present
+    filename: mysql
+  when:
+    - db_engine == 'mysql'
+    - db_version is version('8.4', '>=')
+
+- name: "{{ role_name }} | Requirements | Install Linux packages"
+  ansible.builtin.package:
+    name:
+      - bzip2     # To test mysql_db dump compression
+      - "{{ db_engine }}-client"
+
+      # The command mysql-config must be present for mysqlclient python package.
+      # The package libmysqlclient-dev that provides this command have a
+      # different name between Ubuntu 20.04 and 22.04. Luckily, libmysql++ is
+      # available on both.
+      - "{{ 'libmysql++-dev' if db_engine == 'mysql' else 'libmariadb-dev' }}"
+    state: present
+
+- name: "{{ role_name }} | Requirements | Install Python packages"
+  ansible.builtin.pip:
+    name:
+      - "{{ connector_name }}=={{ connector_version }}"
+    state: present

@@ -1,0 +1,13 @@
+---
+fio_runtime: 60
+fio_size: 500M
+test_jobs:
+  - { name: seqread, rw: read, bs: 128k, iodepth: 32 }
+  - { name: seqwrite, rw: write, bs: 128k, iodepth: 32 }
+  - { name: randread, rw: randread, bs: 4k, iodepth: 128 }
+  - { name: randwrite, rw: randwrite, bs: 4k, iodepth: 128 }
+  - { name: randrw, rw: randrw, bs: 4k, iodepth: 64, rwmixread: 70 }
+
+test_device: /dev/vdb
+target_size: 2GiB
+test_mount: /mnt/fio-test

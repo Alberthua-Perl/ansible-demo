@@ -1,0 +1,22 @@
+[global]
+directory={{ test_mount }}
+size={{ fio_size }}
+runtime={{ fio_runtime }}
+time_based
+group_reporting
+direct=1
+ioengine=libaio
+numjobs=4
+filename=fio-test.dat
+
+{% for job in test_jobs %}
+[{{ job.name }}]
+rw={{ job.rw }}
+bs={{ job.bs }}
+iodepth={{ job.iodepth }}
+{% if job.rwmixread is defined %}
+rwmixread={{ job.rwmixread }}
+{% endif %}
+stonewall
+
+{% endfor %}

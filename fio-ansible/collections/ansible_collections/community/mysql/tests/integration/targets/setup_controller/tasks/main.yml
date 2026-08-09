@@ -1,0 +1,21 @@
+---
+####################################################################
+# WARNING: These are designed specifically for Ansible tests       #
+# and should not be used as examples of how to write Ansible roles #
+####################################################################
+
+- name: "{{ role_name }} | Main | Prepare the fake root folder"
+  ansible.builtin.import_tasks:
+    file: fake_root.yml
+
+- name: "{{ role_name }} | Main | Set variables"
+  ansible.builtin.import_tasks:
+    file: setvars.yml
+
+- name: "{{ role_name }} | Main | Install requirements"
+  ansible.builtin.import_tasks:
+    file: requirements.yml
+
+- name: "{{ role_name }} | Main | Verify all components version under test"
+  ansible.builtin.import_tasks:
+    file: verify.yml

@@ -1,0 +1,28 @@
+# FIO 存储性能测试 — 汇总报告
+
+**生成时间**: {{ ansible_date_time.iso8601 }}  
+**测试节点数**: {{ all_nodes | length }}
+
+---
+
+{% for node in all_nodes %}
+## 节点: {{ node }}
+
+- [结构化数据]({{ node }}-metrics.json)
+- [LLM 分析报告]({{ node }}-report.md)
+
+{% endfor %}
+
+---
+
+## 快速结论
+
+| 节点 | 总 IOPS | 关键瓶颈 | 建议措施 |
+|:---|:---|:---|:---|
+{% for node in all_nodes %}
+| {{ node }} | 见详细报告 | 见详细报告 | 见详细报告 |
+{% endfor %}
+
+---
+
+*本报告由 Ansible + fio + LLM 自动生成*

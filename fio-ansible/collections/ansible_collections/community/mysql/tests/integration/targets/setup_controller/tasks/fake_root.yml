@@ -1,0 +1,11 @@
+---
+
+- name: "{{ role_name }} | Fake root | Ensure folder"
+  ansible.builtin.file:
+    path: "{{ playbook_dir }}/root"
+    state: directory
+
+- name: "{{ role_name }} | Fake root | Ensure default file exists"
+  ansible.builtin.file:
+    path: "{{ playbook_dir }}/root/.my.cnf"
+    state: touch

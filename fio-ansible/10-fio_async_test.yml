@@ -1,0 +1,369 @@
+---
+# 示例：利用 FIO 测试文件系统不同 IO 模式的读写性能，提取指标结构化信息，
+# 再由 LLM 分析返回 Markdown 格式的文件。
+- name: FIO 异步文件系统测试、结果采集与 LLM 分析
+  hosts: storage_nodes
+  gather_facts: yes
+  vars_files:
+    - vars/fio_paras.yml
+    - vars/llm.yml
+  
+  tasks:
+    # ========== 1. 环境准备 ==========
+    - name: 安装 fio 和文件系统工具
+      ansible.builtin.dnf:
+        name:
+          - fio
+          - xfsprogs
+          - e2fsprogs
+        state: present
+      tags:
+        - prep_env
+
+    # 注意：
+    #   1. 使用 virt-manager 在 serverc 与 serverd 上新添加容量为 5GiB 的虚拟磁盘
+    #   2. 登录 serverc 与 serverd 执行 lsblk
+
+    - name: 实现 vdb 磁盘分区
+      community.general.parted:
+        device: "{{ test_device }}"
+        number: 1
+        state: present
+        part_end: "{{ target_size }}"
+      tags:
+        - prep_env
+
+    # ========== 2. 文件系统准备 ==========
+    - name: 检查现有磁盘分区
+      ansible.builtin.shell: blkid | grep vdb1
+      register: blkid_result
+      ignore_errors: yes
+      tags:
+        - fs_prep
+
+    #- name: 调试 vdb1 查询结果
+    #  ansible.builtin.debug:
+    #    var: blkid_result
+
+    #- name: 格式化文件系统前确认
+    #  ansible.builtin.pause:
+    #    prompt: |
+    #      ========================================
+    #      警告：以下操作将销毁原始数据！
+    #      - 目标设备：{{ test_device }}
+    #      - 节点：{{ inventory_hostname }}
+    #      请输入 "YES" 继续：
+    #  register: confirm
+
+    #- name: 验证用户输入
+    #  ansible.builtin.debug:
+    #    msg: "用户取消操作"
+    #  failed_when: confirm.user_input | default('') != "YES"
+
+    - name: 格式化 XFS（强制）
+      community.general.filesystem:
+        fstype: xfs
+        dev: "{{ test_device }}1"
+      when: blkid_result.rc == 0
+      tags:
+        - fs_prep
+
+    - name: 创建文件系统挂载点
+      ansible.builtin.file:
+        path: "{{ test_mount }}"
+        state: directory
+        mode: '0755'
+      tags:
+        - fs_prep
+
+    - name: 挂载测试设备
+      ansible.posix.mount:
+        path: "{{ test_mount }}"
+        src: "{{ test_device }}1"
+        fstype: xfs
+        state: mounted
+      # fio 在此目录内生成对应的测试文件完成测试
+      tags:
+        - fs_prep
+
+    # ========== 3. 生成 fio job 文件 ==========
+    - name: 渲染 fio 配置文件
+      ansible.builtin.template:
+        src: templates/fio-test.job.j2
+        dest: /tmp/fio-test.job
+        mode: '0644'
+      tags:
+        - fio_setup
+ 
+    # ========== 4. 后台执行 fio 测试 ==========
+    - name: 启动 fio 后台任务
+      ansible.builtin.shell: |
+        nohup fio --output-format=json \
+                  --output=/tmp/fio-raw-result.json \
+                  /tmp/fio-test.job > /tmp/fio-test.log 2>&1 &
+        echo $! > /tmp/fio-test.pid
+        sleep 2
+        cat /tmp/fio-test.pid
+      register: fio_start
+      tags:
+        - fio_run
+
+    # ========== 5. 等待测试完成 ==========
+    - name: 等待 fio 测试完成（轮询结果文件）
+      ansible.builtin.wait_for:
+        path: /tmp/fio-raw-result.json
+        state: present
+        timeout: "{{ fio_runtime * 5 }}"
+        sleep: 5
+      register: fio_wait
+      tags:
+        - fio_wait
+
+    - name: 请等待 {{ fio_runtime * 5 }} 秒
+      ansible.builtin.debug:
+        msg: 测试倒计时 {{ fio_runtime * 5 }} 秒
+      tags:
+        - fio_wait
+
+    - name: 等待进程真正结束
+      ansible.builtin.shell: |
+        while kill -0 $(cat /tmp/fio-test.pid) 2>/dev/null; do
+          sleep 2
+        done
+        wait $(cat /tmp/fio-test.pid)
+        echo $?
+      register: fio_exit
+      tags:
+        - fio_wait
+      # kill -0 不发送任何信号，只检查权限和进程的存在性
+      # 返回 0，表示当前存在且当前用户有权限；返回非 0，表示进程不存在或无权操作
+      # wait 命令获取进程退出码
+
+    #- name: 检查 fio 退出码
+    #  ansible.builtin.fail:
+    #    msg: "FIO 进程退出状态码：rc={{ fio_exit.stdout }}"
+    #  when: fio_exit.stdout | int != 0
+    #  ignore_errors: yes
+
+    # ========== 6. 结果采集与解析 ==========
+    - name: 确保本地结果目录存在
+      delegate_to: localhost
+      ansible.builtin.file:
+        path: "results/{{ inventory_hostname }}"
+        state: directory
+        mode: '0755'
+      tags:
+        - fix_results
+
+    - name: 拉取 fio JSON 结果到控制节点
+      ansible.builtin.fetch:
+        src: /tmp/fio-raw-result.json
+        dest: "results/{{ inventory_hostname }}/fio-raw-result.json"
+        flat: yes
+      tags:
+        - fix_results
+      # 从受管节点拉取文件至控制节点
+
+    # ========== 7. 结果预处理（提取关键指标）==========
+    - name: 提取结构化指标用以 LLM 分析
+      ansible.builtin.shell: |
+        python3 -c "
+        import sys, json
+        with open('/tmp/fio-raw-result.json') as f:
+            data = json.load(f)
+
+        summary = {
+            'hostname': '{{ inventory_hostname }}',
+            'device': '{{ test_device }}',
+            'filesystem': '{{ test_mount }}',
+            'timestamp': '{{ ansible_date_time.iso8601 }}',
+            'jobs': []
+        }
+
+        numjobs = int(data.get('global options', {}).get('numjobs', 'unkonwn'))
+        # JSON 字段索引：data 为 JSON 对象调用 get 方法索引 global options 键，
+        # 若不存在对应的值，设置默认值为空字典；多级索引采用多次调用 get 方法的方式。
+
+        # 从原始采集数据中统计
+        # 以下的 jobs 是原始采集数据中的字段，区别于上述 summary 中的 jobs
+        for job in data.get('jobs', []):
+          j = {
+            'name': job['jobname'],
+            'rw_mode': job['job options'].get('rw', 'unknown'),
+            'blocksize': job['job options'].get('bs', 'unknown'),
+            'iodepth': int(job['job options'].get('iodepth', 0)),
+            'numjobs': numjobs
+          }
+          
+          # 读指标
+          read_io = job.get('read', {})
+          if read_io.get('io_bytes', 0) > 0:
+              # 创建读指标的子字典
+              j['read'] = {
+                  'iops': round(read_io.get('iops', 0), 2),
+                  'bw_mib': round(read_io.get('bw', 0) / 1024 / 1024, 2),
+                  'lat_avg_us': round(read_io.get('lat_ns', {}).get('mean', 0) / 1000, 2),
+                  'lat_p99_us': round(read_io.get('clat_ns', {}).get('percentile', {}).get('99.000000', 0) / 1000, 2) if 'clat_ns' in read_io else None
+              }
+
+          # 写指标
+          write_io = job.get('write', {})
+          if write_io.get('io_bytes', 0) > 0:
+              # 创建写指标的子字典
+              j['write'] = {
+                  'iops': round(write_io.get('iops', 0), 2),
+                  'bw_mib': round(write_io.get('bw', 0) / 1024 /1024, 2),
+                  'lat_avg_us': round(write_io.get('lat_ns', {}).get('mean', 0) / 1000, 2),
+                  'lat_p99_us': round(write_io.get('clat_ns', {}).get('percentile', {}).get('99.000000', 0) / 1000, 2) if 'percentile' in write_io.get('clat_ns', {}) else None
+              }
+
+          # 错误统计
+          j['error'] = job.get('error', 0)
+          
+          summary['jobs'].append(j)
+          # 共计 5 种测试类型
+
+        # 计算综合评分
+        total_iops = sum(j.get('read', {}).get('iops', 0) + j.get('write', {}).get('iops', 0) for j in summary['jobs'])
+        summary['aggregate'] = {
+            'total_iops': round(total_iops, 2),
+            'job_count': len(summary['jobs'])
+        }
+
+        print(json.dumps(summary, indent=2))" > /tmp/fio-metrics.json
+        cat /tmp/fio-metrics.json
+      register: metrics_output
+      tags:
+        - metrics_handle
+
+    - name: 获取 fio 指标输出
+      ansible.builtin.debug:
+        msg: fio 结构化指标 {{ metrics_output.stdout }}
+      tags:
+        - metrics_handle
+
+    - name: 保存结构化指标到本地
+      delegate_to: localhost
+      ansible.builtin.copy:
+        content: "{{ metrics_output.stdout }}"
+        dest: "results/{{ inventory_hostname }}-metrics.json"
+      run_once: no    # run_once 指当前任务在此批次主机中的第一个主机上执行
+      tags:
+        - metrics_handle
+
+    # ========== 8. 调用 LLM API 生成分析报告 ==========
+    - name: 生成 LLM 分析提示词
+      ansible.builtin.set_fact:
+        llm_prompt: |
+          你是一位资深 Linux 存储性能专家。请根据以下 fio 磁盘测试数据，生成一份专业的性能分析报告。
+
+          ## 测试环境
+          - 主机：{{ inventory_hostname }}
+          - 设备：{{ test_device }}
+          - 文件系统：{{ test_mount }}
+          - 测试时间：{{ ansible_date_time.iso8601 }}
+
+          ## 测试指标数据（JSON）
+          ```json
+          {{ metrics_output.stdout | to_nice_json }}
+          ```
+
+          ## 分析要求
+          1. **性能概况**：总结各场景 IOPS、带宽、延迟表现
+          2. **瓶颈诊断**：识别性能瓶颈（队列深度、并发度、介质类型）
+          3. **健康评估**：与业界标准对比（SATA SSD / NVMe / 企业级）
+          4. **优化建议**: 给出可操作的调优方案（内核参数、调度器、文件系统挂载选项）
+          5. **风险提示**: 指出潜在的数据可靠性风险
+
+          请用 Markdown 格式输出，包含表格和分级标题。
+      tags:
+        - llm_analyze
+
+    - name: 调用 LLM API 分析
+      delegate_to: localhost
+      ansible.builtin.uri:
+        url: "{{ llm_api_url }}"
+        method: POST
+        headers:
+          Content-Type: "application/json"
+          Authorization: "Bearer {{ llm_api_key }}"
+        body_format: json
+        body:
+          model: "{{ llm_model }}"
+          messages:
+            - role: "system"
+              content: "你是一位资深 Linux 存储性能专家，擅长分析 fio 测试数据并给出专业建议。"
+            - role: "user"
+              content: "{{ llm_prompt }}"
+          #max_tokens: "{{ llm_max_tokens | int }}"        # 适用于离线自托管的 LLM 环境
+          #temperature: "{{ llm_temperature | float }}"    # 适用于离线自托管的 LLM 环境
+        status_code: 200
+        timeout: "{{ llm_response_timeout }}"
+      register: llm_response
+      run_once: no
+      tags:
+        - metrics_handle
+
+    - name: 调试 LLM 返回的内容
+      ansible.builtin.debug:
+        var: llm_response
+      tags:
+        - metrics_handle
+
+    - name: 提取 LLM 报告内容
+      ansible.builtin.set_fact:
+        llm_report: "{{ llm_response.json.choices[0].message.content }}"
+      tags:
+        - metrics_handle
+
+    - name: 保存 LLM 分析报告到本地
+      delegate_to: localhost
+      ansible.builtin.copy:
+        content: "{{ llm_report }}"
+        dest: "results/{{ inventory_hostname }}-report.md"
+      run_once: no
+      tags:
+        - metrics_handle
+
+    # ========== 9. 生成最终汇总报告 ==========
+    - name: 生成本地汇总报告
+      delegate_to: localhost
+      ansible.builtin.template:
+        src: templates/final-report.md.j2
+        dest: "results/FINAL-REPORT.md"
+      vars:
+        all_nodes: "{{ groups['storage_nodes'] }}"
+      run_once: yes
+      tags:
+        - report_output
+
+    # ========== 10. 最终输出 ==========
+    - name: 显示报告路径
+      ansible.builtin.debug:
+        msg: |
+          ============================================
+          FIO 测试 + LLM 分析完成！
+
+          报告位置：
+            - 结构化数据: results/{{ inventory_hostname }}-metrics.json
+            - LLM 分析:   results/{{ inventory_hostname }}-report.md
+            - 汇总报告:   results/FINAL-REPORT.md
+          ============================================
+      run_once: yes
+      tags:
+        - final_report
+ 
+    # ========== 11. 环境清理 ==========
+    - name: 清除临时文件
+      ansible.builtin.file:
+        path: "{{ item }}"
+        state: absent
+      loop:
+        - /tmp/fio-test.log
+        - /tmp/fio-test.pid
+        - /tmp/fio-raw-result.json
+        - /tmp/fio-metrics.json
+        - /tmp/fio-test.job
+      tags:
+        - cleanup_tmp
+

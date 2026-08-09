@@ -1,0 +1,143 @@
+---
+####################################################################
+# WARNING: These are designed specifically for Ansible tests       #
+# and should not be used as examples of how to write Ansible roles #
+####################################################################
+
+# Test code for mysql_info module
+# Copyright: (c) 2019, Andrew Klychkov (@Andersson007) <andrew.a.klychkov@gmail.com>
+# GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
+
+###################
+# Prepare for tests
+#
+
+- vars:
+    mysql_parameters: &mysql_params
+      login_user: '{{ mysql_user }}'
+      login_password: '{{ mysql_password }}'
+      login_host: '{{ mysql_host }}'
+      login_port: '{{ mysql_primary_port }}'
+
+  block:
+
+    # Create default MySQL config file with credentials
+    - name: mysql_info - create default config file
+      template:
+        src: my.cnf.j2
+        dest: "{{ playbook_dir }}/root/.my.cnf"
+        mode: '0400'
+
+    # Create non-default MySQL config file with credentials
+    - name: mysql_info - create non-default config file
+      template:
+        src: my.cnf.j2
+        dest: "{{ playbook_dir }}/root/non-default_my.cnf"
+        mode: '0400'
+
+    ###############
+    # Do tests
+
+    # Access by default cred file
+    - name: mysql_info - collect default cred file
+      mysql_info:
+        login_user: '{{ mysql_user }}'
+        login_host: '{{ mysql_host }}'
+        login_port: '{{ mysql_primary_port }}'
+        config_file: "{{ playbook_dir }}/root/.my.cnf"
+      register: result
+
+    - assert:
+        that:
+          - result is not changed
+          - db_version in result.version.full
+          - result.settings != {}
+          - result.global_status != {}
+          - result.databases != {}
+          - result.engines != {}
+          - result.users != {}
+          - result.server_engine == 'MariaDB' or result.server_engine == 'MySQL'
+
+    - name: mysql_info - Test connector informations display
+      ansible.builtin.import_tasks:
+        file: connector_info.yml
+
+    # Access by non-default cred file
+    - name: mysql_info - check non-default cred file
+      mysql_info:
+        login_user: '{{ mysql_user }}'
+        login_host: '{{ mysql_host }}'
+        login_port: '{{ mysql_primary_port }}'
+        config_file: "{{ playbook_dir }}/root/non-default_my.cnf"
+      register: result
+
+    - assert:
+        that:
+        - result is not changed
+        - result.version != {}
+
+    # Remove cred files
+    - name: mysql_info - remove cred files
+      file:
+        path: '{{ item }}'
+        state: absent
+      loop:
+        - "{{ playbook_dir }}/.my.cnf"
+        - "{{ playbook_dir }}/non-default_my.cnf"
+
+    # Access with password
+    - name: mysql_info - check access with password
+      mysql_info:
+        <<: *mysql_params
+      register: result
+
+    - assert:
+        that:
+          - result is not changed
+          - result.version != {}
+
+    # Test excluding
+    - name: Collect all info except settings and users
+      mysql_info:
+        <<: *mysql_params
+        filter: '!settings,!users'
+      register: result
+
+    - assert:
+        that:
+          - result is not changed
+          - result.version != {}
+          - result.global_status != {}
+          - result.databases != {}
+          - result.engines != {}
+          - result.settings is not defined
+          - result.users is not defined
+
+    # Test including
+    - name: Collect info only about version and databases
+      mysql_info:
+        <<: *mysql_params
+        filter:
+        - version
+        - databases
+      register: result
+
+    - assert:
+        that:
+          - result is not changed
+          - result.version != {}
+          - result.databases != {}
+          - result.engines is not defined
+          - result.settings is not defined
+          - result.global_status is not defined
+          - result.users is not defined
+
+    - include_tasks: issue-28.yml
+
+    - name: Import tasks file to tests tables count in database filter
+      ansible.builtin.import_tasks:
+        file: filter_databases.yml
+
+    - name: Import tasks file to tests users_info filter
+      ansible.builtin.import_tasks:
+        file: filter_users_info.yml

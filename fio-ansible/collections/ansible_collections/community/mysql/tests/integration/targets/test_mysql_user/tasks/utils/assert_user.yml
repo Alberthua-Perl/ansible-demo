@@ -1,0 +1,21 @@
+---
+
+- name: Utils | Assert user | Query for user {{ user_name }}
+  command: "{{ mysql_command }} -e \"SELECT user FROM mysql.user where user='{{ user_name }}'\""
+  register: result
+
+- name: Utils | Assert user | Assert user is present
+  assert:
+    that:
+      - user_name in result.stdout
+
+- name: Utils | Assert user | Query for privileges of user {{ user_name }}
+  command: "{{ mysql_command }} -e \"SHOW GRANTS FOR '{{ user_name }}'@'{{ user_host }}'\""
+  register: result
+  when: priv is defined
+
+- name: Utils | Assert user | Assert user has given privileges
+  ansible.builtin.assert:
+    that:
+      - "'GRANT {{ priv }} ON *.*' in result.stdout"
+  when: priv is defined

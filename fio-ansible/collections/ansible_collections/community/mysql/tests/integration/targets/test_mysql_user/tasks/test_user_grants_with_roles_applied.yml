@@ -1,0 +1,92 @@
+---
+# https://github.com/ansible-collections/community.mysql/issues/231
+- vars:
+    mysql_parameters: &mysql_params
+      login_user: '{{ mysql_user }}'
+      login_password: '{{ mysql_password }}'
+      login_host: '{{ mysql_host }}'
+      login_port: '{{ mysql_primary_port }}'
+
+  block:
+
+    - name: User grants with roles applied | Skip unsupported versions
+      meta: end_play
+      when:
+        - db_engine == 'mysql'
+        - db_version is version('8.0.0', '<')
+
+    - name: User grants with roles applied | Create test databases
+      mysql_db:
+        <<: *mysql_params
+        name: '{{ item }}'
+        state: present
+      loop:
+        - data1
+        - data2
+
+    - name: User grants with roles applied | Create user with privileges
+      mysql_user:
+        <<: *mysql_params
+        name: '{{ user_name_3 }}'
+        password: '{{ user_password_3 }}'
+        priv:
+          "data1.*": "SELECT"
+          "data2.*": "SELECT"
+        state: present
+
+    - name: User grants with roles applied | Run command to show privileges for user (expect privileges in stdout)
+      command: "{{ mysql_command }} -e \"SHOW GRANTS FOR '{{ user_name_3 }}'@'localhost'\""
+      register: result
+
+    - name: Assert user has giving privileges
+      assert:
+        that:
+          - "'GRANT SELECT ON `data1`.*' in result.stdout"
+          - "'GRANT SELECT ON `data2`.*' in result.stdout"
+
+    - name: User grants with roles applied | Create role
+      mysql_role:
+        <<: *mysql_params
+        name: test231
+        members:
+          - '{{ user_name_3 }}@localhost'
+
+    - name: User grants with roles applied | Try to change privs
+      mysql_user:
+        <<: *mysql_params
+        name: '{{ user_name_3 }}'
+        priv:
+          "data1.*": "INSERT"
+          "data2.*": "INSERT"
+        state: present
+
+    - name: User grants with roles applied | Run command to show privileges for user (expect privileges in stdout)
+      command: "{{ mysql_command }} -e \"SHOW GRANTS FOR '{{ user_name_3 }}'@'localhost'\""
+      register: result
+
+    - name: User grants with roles applied | Assert user has giving privileges
+      assert:
+        that:
+          - "'GRANT INSERT ON `data1`.*' in result.stdout"
+          - "'GRANT INSERT ON `data2`.*' in result.stdout"
+
+    ##########
+    # Clean up
+    - name: User grants with roles applied | Drop test databases
+      mysql_db:
+        <<: *mysql_params
+        name: '{{ item }}'
+        state: absent
+      loop:
+        - data1
+        - data2
+
+    - include_tasks: utils/remove_user.yml
+      vars:
+        user_name: "{{ user_name_3 }}"
+
+    - name: User grants with roles applied | Drop test role
+      mysql_role:
+        <<: *mysql_params
+        name: test231
+        state: absent

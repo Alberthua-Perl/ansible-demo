@@ -1,0 +1,24 @@
+####################################################################
+# WARNING: These are designed specifically for Ansible tests       #
+# and should not be used as examples of how to write Ansible roles #
+####################################################################
+
+# mysql_role module initial CI tests
+# TODO, many tests fails with MariaDB, debug them then remove the 
+# when clause and swap include_tasks for import_tasks.
+- include_tasks: mysql_role_initial.yml
+  when:
+    - db_engine == 'mysql'
+
+# Test that subtract_privs will only revoke the grants given by priv
+# (https://github.com/ansible-collections/community.mysql/issues/331)
+- include_tasks: test_priv_subtract.yml
+  vars:
+    enable_check_mode: no
+- include_tasks: test_priv_subtract.yml
+  vars:
+    enable_check_mode: yes
+
+- name: Test column case sensitive
+  ansible.builtin.import_tasks:
+    file: test_column_case_sensitive.yml

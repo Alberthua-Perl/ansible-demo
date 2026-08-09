@@ -1,0 +1,30 @@
+---
+# Added in 3.6.0 in
+# https://github.com/ansible-collections/community.mysql/pull/497
+
+- name: Connector info | Assert connector_name exists and has expected values
+  ansible.builtin.assert:
+    that:
+      - result.connector_name is defined
+      - result.connector_name is in ['pymysql', 'MySQLdb']
+    success_msg: >-
+      Assertions passed, result.connector_name is {{ result.connector_name }}
+    fail_msg: >-
+      Assertion failed, result.connector_name is
+      {{ result.connector_name | d('Unknown')}} which is different than expected
+      pymysql or MySQLdb
+
+- name: Connector info | Assert connector_version exists and has expected values
+  ansible.builtin.assert:
+    that:
+      - result.connector_version is defined
+      - >
+        result.connector_version == 'Unknown'
+        or result.connector_version is version(connector_version, '==')
+    success_msg: >-
+      Assertions passed, result.connector_version is
+      {{ result.connector_version }}
+    fail_msg: >-
+      Assertion failed, result.connector_version is
+      {{ result.connector_version }} which is different than expected
+      {{ connector_version }}

@@ -1,0 +1,90 @@
+---
+- vars:
+    mysql_parameters: &mysql_params
+      login_user: '{{ mysql_user }}'
+      login_password: '{{ mysql_password }}'
+      login_host: '{{ mysql_host }}'
+      login_port: '{{ mysql_primary_port }}'
+
+  block:
+    # ========================================================================
+    # Creation
+    # ========================================================================
+    - include_tasks: utils/create_user.yml
+      vars:
+        user_name: "{{ user_name_1 }}"
+        user_password: "{{ user_password_1 }}"
+
+    - name: Idempotency | Create user that already exist (expect changed=false)
+      mysql_user:
+        <<: *mysql_params
+        name: "{{ user_name_1 }}"
+        password: "{{ user_password_1 }}"
+        state: present
+      register: result
+
+    - name: Idempotency | Assert create user task is not changed
+      assert: {that: [result is not changed]}
+
+    # ========================================================================
+    # Removal
+    # ========================================================================
+    - name: Idempotency | Remove user (expect changed=true)
+      mysql_user:
+        <<: *mysql_params
+        name: "{{ user_name_1 }}"
+        state: absent
+      register: result
+
+    - name: Idempotency | Assert remove user task is changed
+      ansible.builtin.assert:
+        that:
+          - result is changed
+
+    - name: Idempotency | Remove user that doesn't exists (expect changed=false)
+      mysql_user:
+        <<: *mysql_params
+        name: "{{ user_name_1 }}"
+        state: absent
+      register: result
+
+    - name: Idempotency | Assert remove user task is not changed
+      ansible.builtin.assert:
+        that:
+          - result is not changed
+
+    # ========================================================================
+    # Removal with host_all
+    # ========================================================================
+
+    # Create blank  user to be removed later
+    - include_tasks: utils/create_user.yml
+      vars:
+        user_name: ""
+        user_password: 'KJFDY&D*Sfuysf'
+
+    - name: Idempotency | Remove blank  user with hosts=all (expect changed)
+      mysql_user:
+        <<: *mysql_params
+        name: ""
+        host_all: true
+        state: absent
+      register: result
+
+    - name: Idempotency | Assert removing all blank users is changed
+      ansible.builtin.assert:
+        that:
+          - result is changed
+
+    - name: Idempotency | Remove blank user with hosts=all (expect ok)
+      mysql_user:
+        <<: *mysql_params
+        name: ""
+        host_all: true
+        state: absent
+      register: result
+
+    - name: Idempotency | Assert removing all blank users is not changed
+      ansible.builtin.assert:
+        that:
+          - result is not changed
