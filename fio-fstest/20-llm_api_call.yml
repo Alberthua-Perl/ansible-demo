@@ -39,5 +39,5 @@
   - name: 保存内容至本地
     ansible.builtin.copy:
       content: "{{ llm_report }}"
-      dest: "LLM API 测试.md"
+      dest: "LLM API 连通性测试.md"
 
