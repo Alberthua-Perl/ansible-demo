@@ -1,17 +1,17 @@
 # **Ansible 自动化示例**
 
-- ✒️  **rh294-rhel8-course-demo**: RH294 Course in RHEL8.4 (Ansible v2.8)
-- ✏️  **rh294-rhel9-course-demo**: RH294 Course in RHEL9.0 (Ansible Core and Ansible Navigator on RHAAP2.2)
-- 🔖 **do374-rhaap2.0-course-demo**: DO374 Course (RedHat Ansible Automation Platform 2.0, RHAAP2.0)
-- 📜 **do447-course-demo**: DO447 Course (Ansible v2.8 and Ansible Tower)
-- 📄 **rh358-rhel8-course-demo**: RH358 Course in RHEL8.1 (Ansible v2.9.5) including linux server configurations and automation through ansible
-- 🔁 **deploy-pxe-server**: Deploy PXE server on all-in-one node
-- 🛡️ **sync-sshkey**: authorized_keys module in playbook to sync user ssh public key
-- 🌐 **haproxy-lamp**: Deploy Haproxy, Apache, PHP and MySQL through playbook roles
-- ⭕ **[Kani](https://github.com/Alberthua-Perl/kani)**: Deploy and manage Kubernetes cluster v1.22.1
-- 🧪 **ansible-cicd-plt**: Deploy and manage GitLab-CE and Jenkins CI platform by Ansible
-- ⚗️  **jenkins-ci-plt**:
-	- Containerd platform by podman: *GitLab-CE*, *Nexus3*
-	- RPM deployed: *Jenkins(Master+Agent)*, *Postgres Server*, *Node.js* runtime environment
-	- All of them deployed and managed by Ansible Navigator
-- 📈 **fio-fstest**: FIO test filesystem IO performance, and use structured results to generate analyse reports by LLM
+| 示例名称 | 示例说明 | 软件版本 & 文档链接 |
+| ----- | ----- | ----- |
+| ✒️  **rh294-rhel8-course-demo** | RHEL8.4 版本 RH294 课程代码示例 | Ansible v2.8 |
+| ✏️  **rh294-rhel9-course-demo** | RHEL9.0 版本 RH294 课程代码示例 | RHAAP2.2 |
+| 🔖 **do374-rhaap2.0-course-demo** | DO374 课程代码示例 | RHAAP2.0 |
+| 📜 **do447-course-demo** |  DO447 课程代码示例 | Ansible v2.8 & Ansible Tower |
+| 📄 **rh358-rhel8-course-demo** |  RHEL8.1 版本 RH358 课程代码示例（包含 Ansible 在 Linux 服务端的自动化配置） | Ansible v2.9.5 |
+| 🔁 **deploy-pxe-server** |  all-in-one 节点上自动化部署 PXE 服务器 | NA |
+| 🛡️ **sync-sshkey** | 使用 `authorized_keys` 模块同步用户 SSH 公钥 | NA |
+| 🚀 **nginx-deployment** | Nginx 自动化部署简易示例 | RHAAP2.2 |
+| 🌐 **haproxy-lamp** |  使用自定义角色部署 Haproxy + Apache + PHP + MySQL 的 Web 堆栈 | RHAAP2.2 |
+| ⭕ **[Kani](https://github.com/Alberthua-Perl/kani)** | 自动化部署与管理 Kubernetes v1.22.1 集群 | NA |
+| 🧪 **<font color=orange>ansible-cicd-plt</font>** | 自动化部署与管理基于 GitLab-CE 与 Jenkins 的持续集成平台 | [♾  Deploy and manage GitLab-CE and Jenkins CI platform by Ansible](https://github.com/Alberthua-Perl/ansible-demo/tree/master/ansible-cicd-plt) |
+| ⚗️  **<font color=redhat>jenkins-ci-plt</font>** | Podman 容器部署组件：*GitLab-CE*, *Nexus3* <br> RPM 软件包部署组件：*Jenkins(Master+Agent)*, *Postgres Server*, *Node.js* runtime environment <br> 使用 Ansible Navigator 部署与管理以上组件 | [🧪 基于 Ansible Navigator 部署管理分布式 Jenkins CI/CD 平台 —— 构建发布容器化 Node.js、Python 与 Java 应用](https://github.com/Alberthua-Perl/tech-docs/tree/master/DevOps%20%E6%8A%80%E6%9C%AF%E6%A0%88/Jenkins%20%E7%9A%84%20CICD%20%E4%B9%8B%E6%97%85) |
+| 📈 **fio-fstest** | 使用 FIO 对文件系统的 IO 性能测试，通过 LLM 分析结构化提取结果给出解决方法及建议 | RHAAP2.2 |
