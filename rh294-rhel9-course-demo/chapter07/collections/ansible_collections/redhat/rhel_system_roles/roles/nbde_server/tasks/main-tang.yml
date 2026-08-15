@@ -1,0 +1,36 @@
+---
+- name: Ensure tang is installed
+  package:
+    name: "{{ __nbde_server_packages }}"
+    state: present
+
+- name: Ensure keys are rotated
+  when: nbde_server_rotate_keys | bool
+  redhat.rhel_system_roles.nbde_server_tang:
+    state: keys-rotated
+    keygen: "{{ __nbde_server_keygen }}"
+    keydir: "{{ __nbde_server_keydir }}"
+    update: "{{ __nbde_server_update }}"
+    cachedir: "{{ __nbde_server_cachedir }}"
+
+- name: Ensure we have keys
+  when: not (nbde_server_rotate_keys | bool)
+  redhat.rhel_system_roles.nbde_server_tang:
+    state: keys-created
+    keygen: "{{ __nbde_server_keygen }}"
+    keydir: "{{ __nbde_server_keydir }}"
+    update: "{{ __nbde_server_update }}"
+    cachedir: "{{ __nbde_server_cachedir }}"
+
+- name: Perform key management (fetch/deploy) tasks
+  when: (nbde_server_fetch_keys | bool) or (nbde_server_deploy_keys | bool)
+  include_tasks: tang-key-management.yml
+
+- name: Ensure required services are enabled and at the right state
+  service:
+    name: "{{ item }}"
+    state: "{{ nbde_server_service_state | default(started) }}"
+    enabled: yes
+  loop: "{{ __nbde_server_services }}"
+
+## vim:set ts=2 sw=2 et:

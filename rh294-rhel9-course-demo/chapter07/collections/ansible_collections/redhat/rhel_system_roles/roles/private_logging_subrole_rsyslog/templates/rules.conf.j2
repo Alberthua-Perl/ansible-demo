@@ -1,0 +1,36 @@
+{# SPDX-License-Identifier: GPL-3.0-only #}
+{% if not inner_item.nocomment | d(false) %}
+{{ ansible_managed | comment }}
+{% endif %}
+{% macro print_config(element) %}
+{%   if element is mapping %}
+{%     if element.state is undefined or element.state != 'absent' %}
+{%       if element.comment | d() %}
+{{ element.comment | comment }}
+{%       endif %}
+{%       if element.selector | d() and element.action | d() %}
+{%         set rsyslog_tpl_selector = element.selector | trim %}
+{{ '%-30s %s' | format(rsyslog_tpl_selector, element.action) }}
+
+{%       elif element.options | d() %}
+{{ element.options }}
+
+{%       endif %}
+{%     endif %}
+{%   elif element is string %}
+{{ element }}
+
+{%   else %}
+{%     for thing in element %}
+{{ print_config(thing) -}}
+{%     endfor %}
+{%   endif %}
+{% endmacro %}
+{% if inner_item.sections | d() %}
+{%   for section in inner_item.sections %}
+{{ print_config(section) -}}
+{%   endfor %}
+{% else %}
+{{ print_config(inner_item) -}}
+{% endif %}
+

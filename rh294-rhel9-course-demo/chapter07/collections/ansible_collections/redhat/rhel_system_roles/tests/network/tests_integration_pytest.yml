@@ -1,0 +1,8 @@
+# SPDX-License-Identifier: BSD-3-Clause
+---
+- hosts: all
+  tasks:
+    - include_tasks: tasks/el_repo_setup.yml
+
+- import_playbook: playbooks/integration_pytest_python3.yml
+  when: (ansible_distribution in ["CentOS", "RedHat"] and ansible_distribution_major_version == "8") or ansible_distribution == "Fedora"

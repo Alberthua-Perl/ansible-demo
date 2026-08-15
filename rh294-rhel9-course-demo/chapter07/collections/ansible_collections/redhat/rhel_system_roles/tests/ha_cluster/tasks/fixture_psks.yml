@@ -1,0 +1,54 @@
+# SPDX-License-Identifier: MIT
+---
+- name: Generate pre-shared keys and certificates on the controller
+  block:
+    - name: List packages on the controller to see if OpenSSL is installed
+      package_facts:
+
+    - name: Ensure OpenSSL is installed on the controller
+      package:
+        name: openssl
+        state: present
+      when: "'openssl' not in ansible_facts.packages"
+
+    - name: Ensure a directory for temporary files exists
+      file:
+        path: "{{ playbook_dir }}/tmp"
+        state: directory
+        mode: 0700
+
+
+    - name: Generate a self signed pcsd cert and the pcsd key
+      command: >-
+        openssl req -x509 -newkey rsa:2048 -nodes
+        -keyout "{{ __test_pcsd_private_key_path }}"
+        -out "{{ __test_pcsd_public_key_path }}"
+        -subj "/CN={{ ansible_host }}"
+      changed_when: no
+
+    - name: Generate corosync key
+      copy:
+        content: "{{ lookup('pipe', 'openssl rand -base64 256') | b64decode }}"
+        dest: "{{ __test_corosync_key_path }}"
+        mode: 0400
+
+    - name: Generate pacemaker key
+      copy:
+        content: "{{ lookup('pipe', 'openssl rand -base64 256') | b64decode }}"
+        dest: "{{ __test_pacemaker_key_path }}"
+        mode: 0400
+
+    - name: Generate fence_xvm key
+      copy:
+        content: "{{ lookup('pipe', 'openssl rand -base64 512') | b64decode }}"
+        dest: "{{ __test_fence_xvm_key_path }}"
+        mode: 0400
+
+  delegate_to: localhost
+  run_once: yes
+  vars:
+    __test_pcsd_private_key_path: "{{ playbook_dir }}/tmp/pcsd.key"
+    __test_pcsd_public_key_path: "{{ playbook_dir }}/tmp/pcsd.crt"
+    __test_corosync_key_path: "{{ playbook_dir }}/tmp/corosync-authkey"
+    __test_pacemaker_key_path: "{{ playbook_dir }}/tmp/pacemaker-authkey"
+    __test_fence_xvm_key_path: "{{ playbook_dir }}/tmp/fence_xvm.key"

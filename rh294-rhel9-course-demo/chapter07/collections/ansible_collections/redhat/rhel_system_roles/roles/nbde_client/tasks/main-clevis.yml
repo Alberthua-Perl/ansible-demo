@@ -1,0 +1,107 @@
+---
+- name: Ensure required packages are installed
+  package:
+    name: "{{ __nbde_client_packages }}"
+    state: present
+
+- name: Enable clevis askpass unit
+  service:
+    name: clevis-luks-askpass.path
+    enabled: yes
+
+- name: Generate nbde_client dracut config
+  template:
+    src: nbde_client.conf
+    dest: /etc/dracut.conf.d/nbde_client.conf
+    owner: root
+    mode: '0444'
+
+- name: Check whether devices are at the desired state
+  when:
+    - nbde_client_bindings | default([])
+  redhat.rhel_system_roles.nbde_client_clevis:
+    bindings: "{{ nbde_client_bindings | default([]) }}"
+  check_mode: yes
+  register: __nbde_client_clevis_check_state
+
+- name: Prepare key files, perform clevis operations and dispose of key files
+  block:
+    - name: Create temporary directory to hold key files
+      tempfile:
+        state: directory
+        suffix: nbde_client_encryption_keys
+      when:
+        - nbde_client_bindings | default([])
+      register: nbde_client_tempdir
+
+    - name: Ensure we transfer key files
+      copy:
+        src: "{{ item.encryption_key_src }}"
+        dest: "{{ nbde_client_tempdir.path }}/"
+        mode: '0400'
+      when:
+        - nbde_client_tempdir.path is defined
+        - item.encryption_key_src | default("")
+      loop: "{{ nbde_client_bindings }}"
+      loop_control:
+        label: "{{ item.encryption_key_src | default('') }}"
+
+    - name: Perform clevis operations
+      when:
+        - nbde_client_bindings | default([])
+        - nbde_client_tempdir.path is defined
+      redhat.rhel_system_roles.nbde_client_clevis:
+        bindings: "{{ nbde_client_bindings | default([]) }}"
+        data_dir: "{{ nbde_client_tempdir.path }}"
+      notify: nbde_client update initramfs
+
+  always:
+    - name: Remove temporary directory used to hold key files
+      file:
+        path: "{{ nbde_client_tempdir.path }}"
+        state: absent
+      when:
+        - nbde_client_bindings | default([])
+        - nbde_client_tempdir.path is defined
+
+  when:
+    - __nbde_client_clevis_check_state is defined
+    - __nbde_client_clevis_check_state is changed
+
+- name: Set-up network flushing
+  block:
+    - name: Deploy network flushing script
+      copy:
+        src: "{{ role_path }}/files/nbde_client-network-flush"
+        dest: /usr/bin/nbde_client-network-flush
+        mode: '0755'
+
+    - name: Deploy network flushing service
+      copy:
+        src: "{{ role_path }}/files/nbde_client-network-flush.service"
+        dest: /etc/systemd/system/nbde_client-network-flush.service
+        mode: '0644'
+
+    - name: Deploy nbde_client dracut network flushing module
+      copy:
+        src: "{{ role_path }}/files/nbde_client/"
+        dest: /usr/lib/dracut/modules.d/60nbde_client/
+        directory_mode: '0755'
+        mode: '0644'
+
+    - name: Prepare for network flushing - reset autoconnect-priority
+      ansible.builtin.command:
+        cmd: /usr/bin/nbde_client-network-flush reset-autoconn-prio
+      register: __nbde_client_autoconn_prio
+      changed_when: __nbde_client_autoconn_prio.stderr
+
+    - name: Reload systemd config
+      systemd:
+        daemon_reload: yes
+
+    - name: Enable network flushing service
+      service:
+        name: nbde_client-network-flush.service
+        enabled: yes
+
+# vim:set ts=2 sw=2 et:

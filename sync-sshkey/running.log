@@ -1,0 +1,111 @@
+2026-08-15 14:07:35,346 p=16 u=root n=ansible | ERROR! - None of the provided paths were usable. Please specify a valid path with --collections-path
+2026-08-15 14:07:40,421 p=21 u=root n=ansible | ERROR! couldn't resolve module/action 'ansible.builtin.authorized_key'. This often indicates a misspelling, missing collection, or incorrect module path.
+
+The error appears to be in '/home/devops/sync-sshkey/sync-sshkey.yml': line 57, column 7, but may
+be elsewhere in the file depending on the exact syntax problem.
+
+The offending line appears to be:
+
+  tasks:
+    - name: Synchronize ssh public key
+      ^ here
+
+2026-08-15 14:09:17,670 p=16 u=root n=ansible | ERROR! - None of the provided paths were usable. Please specify a valid path with --collections-path
+2026-08-15 14:09:22,541 p=21 u=root n=ansible | PLAY [Prepare for ssh public key] ***********************************************************************************************************************
+2026-08-15 14:09:22,560 p=21 u=root n=ansible | TASK [Verify ssh public key file] ***********************************************************************************************************************
+2026-08-15 14:09:22,911 p=21 u=root n=ansible | changed: [localhost]
+2026-08-15 14:09:22,919 p=21 u=root n=ansible | TASK [Generate ssh keypair] *****************************************************************************************************************************
+2026-08-15 14:09:22,933 p=21 u=root n=ansible | skipping: [localhost]
+2026-08-15 14:09:22,943 p=21 u=root n=ansible | TASK [Create group_vars dir] ****************************************************************************************************************************
+2026-08-15 14:09:23,263 p=21 u=root n=ansible | changed: [localhost]
+2026-08-15 14:09:23,270 p=21 u=root n=ansible | TASK [Create group_vars file] ***************************************************************************************************************************
+2026-08-15 14:09:23,501 p=21 u=root n=ansible | changed: [localhost] => (item=control)
+2026-08-15 14:09:23,686 p=21 u=root n=ansible | changed: [localhost] => (item=nodes)
+2026-08-15 14:09:23,695 p=21 u=root n=ansible | TASK [Insert ssh password to group_vars file] ***********************************************************************************************************
+2026-08-15 14:09:23,977 p=21 u=root n=ansible | changed: [localhost] => (item=control)
+2026-08-15 14:09:24,152 p=21 u=root n=ansible | changed: [localhost] => (item=nodes)
+2026-08-15 14:09:24,167 p=21 u=root n=ansible | PLAY [Transfer remote user ssh public key] **************************************************************************************************************
+2026-08-15 14:09:24,181 p=21 u=root n=ansible | TASK [Synchronize ssh public key] ***********************************************************************************************************************
+2026-08-15 14:09:25,763 p=21 u=root n=ansible | ok: [workstation.lab.example.com]
+2026-08-15 14:09:25,818 p=21 u=root n=ansible | changed: [servera.lab.example.com]
+2026-08-15 14:09:25,888 p=21 u=root n=ansible | changed: [serverb.lab.example.com]
+2026-08-15 14:09:25,915 p=21 u=root n=ansible | changed: [serverd.lab.example.com]
+2026-08-15 14:09:25,919 p=21 u=root n=ansible | changed: [serverc.lab.example.com]
+2026-08-15 14:09:25,940 p=21 u=root n=ansible | PLAY [Post synchronize ssh public key] ******************************************************************************************************************
+2026-08-15 14:09:25,952 p=21 u=root n=ansible | TASK [Clear password in group_vars] *********************************************************************************************************************
+2026-08-15 14:09:26,172 p=21 u=root n=ansible | changed: [localhost] => (item=control)
+2026-08-15 14:09:26,345 p=21 u=root n=ansible | changed: [localhost] => (item=nodes)
+2026-08-15 14:09:26,359 p=21 u=root n=ansible | PLAY RECAP **********************************************************************************************************************************************
+2026-08-15 14:09:26,359 p=21 u=root n=ansible | localhost                  : ok=5    changed=5    unreachable=0    failed=0    skipped=1    rescued=0    ignored=0   
+2026-08-15 14:09:26,359 p=21 u=root n=ansible | servera.lab.example.com    : ok=1    changed=1    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0   
+2026-08-15 14:09:26,359 p=21 u=root n=ansible | serverb.lab.example.com    : ok=1    changed=1    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0   
+2026-08-15 14:09:26,360 p=21 u=root n=ansible | serverc.lab.example.com    : ok=1    changed=1    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0   
+2026-08-15 14:09:26,360 p=21 u=root n=ansible | serverd.lab.example.com    : ok=1    changed=1    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0   
+2026-08-15 14:09:26,360 p=21 u=root n=ansible | workstation.lab.example.com : ok=1    changed=0    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0   
+2026-08-15 10:10:04,171 p=19115 u=devops n=ansible | serverb.lab.example.com | SUCCESS => {
+    "ansible_facts": {
+        "discovered_interpreter_python": "/usr/bin/python3"
+    },
+    "changed": false,
+    "ping": "pong"
+}
+2026-08-15 10:10:04,241 p=19115 u=devops n=ansible | workstation.lab.example.com | SUCCESS => {
+    "ansible_facts": {
+        "discovered_interpreter_python": "/usr/bin/python3"
+    },
+    "changed": false,
+    "ping": "pong"
+}
+2026-08-15 10:10:04,249 p=19115 u=devops n=ansible | servera.lab.example.com | SUCCESS => {
+    "ansible_facts": {
+        "discovered_interpreter_python": "/usr/bin/python3"
+    },
+    "changed": false,
+    "ping": "pong"
+}
+2026-08-15 10:10:04,251 p=19115 u=devops n=ansible | serverc.lab.example.com | SUCCESS => {
+    "ansible_facts": {
+        "discovered_interpreter_python": "/usr/bin/python3"
+    },
+    "changed": false,
+    "ping": "pong"
+}
+2026-08-15 10:10:04,283 p=19115 u=devops n=ansible | serverd.lab.example.com | SUCCESS => {
+    "ansible_facts": {
+        "discovered_interpreter_python": "/usr/bin/python3"
+    },
+    "changed": false,
+    "ping": "pong"
+}
+2026-08-15 14:15:02,362 p=16 u=root n=ansible | ERROR! - None of the provided paths were usable. Please specify a valid path with --collections-path
+2026-08-15 14:15:05,786 p=21 u=root n=ansible | PLAY [Prepare for ssh public key] ***********************************************************************************************************************
+2026-08-15 14:15:05,805 p=21 u=root n=ansible | TASK [Verify ssh public key file] ***********************************************************************************************************************
+2026-08-15 14:15:06,128 p=21 u=root n=ansible | changed: [localhost]
+2026-08-15 14:15:06,135 p=21 u=root n=ansible | TASK [Generate ssh keypair] *****************************************************************************************************************************
+2026-08-15 14:15:06,149 p=21 u=root n=ansible | skipping: [localhost]
+2026-08-15 14:15:06,157 p=21 u=root n=ansible | TASK [Create group_vars dir] ****************************************************************************************************************************
+2026-08-15 14:15:06,486 p=21 u=root n=ansible | changed: [localhost]
+2026-08-15 14:15:06,493 p=21 u=root n=ansible | TASK [Create group_vars file] ***************************************************************************************************************************
+2026-08-15 14:15:06,716 p=21 u=root n=ansible | changed: [localhost] => (item=control)
+2026-08-15 14:15:06,890 p=21 u=root n=ansible | changed: [localhost] => (item=nodes)
+2026-08-15 14:15:06,898 p=21 u=root n=ansible | TASK [Insert ssh password to group_vars file] ***********************************************************************************************************
+2026-08-15 14:15:07,187 p=21 u=root n=ansible | changed: [localhost] => (item=control)
+2026-08-15 14:15:07,355 p=21 u=root n=ansible | changed: [localhost] => (item=nodes)
+2026-08-15 14:15:07,371 p=21 u=root n=ansible | PLAY [Transfer remote user ssh public key] **************************************************************************************************************
+2026-08-15 14:15:07,384 p=21 u=root n=ansible | TASK [Synchronize ssh public key] ***********************************************************************************************************************
+2026-08-15 14:15:08,893 p=21 u=root n=ansible | ok: [servera.lab.example.com]
+2026-08-15 14:15:08,945 p=21 u=root n=ansible | ok: [workstation.lab.example.com]
+2026-08-15 14:15:08,957 p=21 u=root n=ansible | ok: [serverc.lab.example.com]
+2026-08-15 14:15:08,996 p=21 u=root n=ansible | ok: [serverb.lab.example.com]
+2026-08-15 14:15:09,043 p=21 u=root n=ansible | ok: [serverd.lab.example.com]
+2026-08-15 14:15:09,060 p=21 u=root n=ansible | PLAY [Post synchronize ssh public key] ******************************************************************************************************************
+2026-08-15 14:15:09,073 p=21 u=root n=ansible | TASK [Clear password in group_vars] *********************************************************************************************************************
+2026-08-15 14:15:09,281 p=21 u=root n=ansible | changed: [localhost] => (item=control)
+2026-08-15 14:15:09,453 p=21 u=root n=ansible | changed: [localhost] => (item=nodes)
+2026-08-15 14:15:09,470 p=21 u=root n=ansible | PLAY RECAP **********************************************************************************************************************************************
+2026-08-15 14:15:09,470 p=21 u=root n=ansible | localhost                  : ok=5    changed=5    unreachable=0    failed=0    skipped=1    rescued=0    ignored=0   
+2026-08-15 14:15:09,470 p=21 u=root n=ansible | servera.lab.example.com    : ok=1    changed=0    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0   
+2026-08-15 14:15:09,470 p=21 u=root n=ansible | serverb.lab.example.com    : ok=1    changed=0    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0   
+2026-08-15 14:15:09,470 p=21 u=root n=ansible | serverc.lab.example.com    : ok=1    changed=0    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0   
+2026-08-15 14:15:09,470 p=21 u=root n=ansible | serverd.lab.example.com    : ok=1    changed=0    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0   
+2026-08-15 14:15:09,470 p=21 u=root n=ansible | workstation.lab.example.com : ok=1    changed=0    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0   

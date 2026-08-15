@@ -8,7 +8,7 @@
 | 📜 **do447-course-demo** |  DO447 课程代码示例 | Ansible v2.8 & Ansible Tower |
 | 📄 **rh358-rhel8-course-demo** |  RHEL8.1 版本 RH358 课程代码示例（包含 Ansible 在 Linux 服务端的自动化配置） | Ansible v2.9.5 |
 | 🔁 **deploy-pxe-server** |  all-in-one 节点上自动化部署 PXE 服务器 | NA |
-| 🛡️ **sync-sshkey** | 使用 `authorized_keys` 模块同步用户 SSH 公钥 | NA |
+| 🛡️ **sync-sshkey** | 使用 `authorized_keys` 模块同步用户 SSH 公钥 | RHAAP2.2 |
 | 🚀 **nginx-deployment** | Nginx 自动化部署简易示例 | RHAAP2.2 |
 | 🌐 **haproxy-lamp** |  使用自定义角色部署 Haproxy + Apache + PHP + MySQL 的 Web 堆栈 | RHAAP2.2 |
 | ⭕ **[Kani](https://github.com/Alberthua-Perl/kani)** | 自动化部署与管理 Kubernetes v1.22.1 集群 | NA |

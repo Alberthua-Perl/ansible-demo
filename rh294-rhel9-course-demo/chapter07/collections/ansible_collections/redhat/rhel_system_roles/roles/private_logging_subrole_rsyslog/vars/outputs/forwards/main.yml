@@ -1,0 +1,9 @@
+---
+# SPDX-License-Identifier: GPL-3.0-only
+
+# Forwards output configuration setting
+# -------------------------------------
+
+# List of rpm packages for Forwards output.
+__rsyslog_forwards_output_packages: []
+__rsyslog_forwards_output_rules: []

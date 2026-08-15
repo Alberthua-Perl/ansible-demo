@@ -1,0 +1,9 @@
+# SPDX-License-Identifier: BSD-3-Clause
+---
+- name: Include network role
+  include_role:
+    name: redhat.rhel_system_roles.network
+  vars:
+    network_connections: []
+    network_provider: nm
+...

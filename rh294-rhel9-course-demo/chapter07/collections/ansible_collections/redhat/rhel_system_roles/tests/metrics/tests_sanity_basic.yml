@@ -1,0 +1,23 @@
+# SPDX-License-Identifier: MIT
+---
+- name: Test basic services of the role are installed and running
+  hosts: all
+
+  roles:
+    - role: redhat.rhel_system_roles.metrics
+
+  pre_tasks:
+    - name: Save state of services
+      import_tasks: get_services_state.yml
+
+  tasks:
+    - name: Check if basic metrics role setup works
+      include_tasks: "{{ item }}"
+      loop:
+        - check_pcp.yml
+        - check_pmlogger.yml
+        - check_pmie.yml
+
+  post_tasks:
+    - name: Restore state of services
+      import_tasks: restore_services_state.yml

@@ -1,0 +1,12 @@
+---
+- hosts: all
+
+  vars:
+    certificate_requests:
+      - name: mycert
+        dns: www.example.com
+        principal: HTTP/www.example.com@EXAMPLE.com
+        ca: self-sign
+
+  roles:
+    - redhat.rhel_system_roles.certificate

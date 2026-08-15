@@ -1,8 +1,10 @@
 ---
 # Synchronize user ssh public key to multiple hosts automatically
-# not through bash script.
-# Before running this playbook, you should change `group_name',
-# `dir_path', `ssh_password' variable.
+# 
+# Before running this playbook, you should change variables:
+#   - group_name
+#   - dir_path
+#   - ssh_password
 
 - name: Prepare for ssh public key
   hosts: localhost
@@ -20,23 +22,23 @@
 
   tasks:
     - name: Verify ssh public key file
-      command: "ls -l {{ home }}/.ssh/id_rsa.pub"
+      ansible.builtin.command: ls -l {{ home }}/.ssh/id_rsa.pub
       ignore_errors: yes
       register: pub_result
 
     - name: Generate ssh keypair
-      command: ssh-keygen -t rsa -P "" -f {{ home }}/.ssh/id_rsa
+      ansible.builtin.command: ssh-keygen -t rsa -P "" -f {{ home }}/.ssh/id_rsa
       # no prompt to generate ssh keypair
       when: pub_result.rc != 0
 
     - name: Create group_vars dir
-      file:
+      ansible.builtin.file:
         path: "{{ dir_path }}"
         state: directory
         mode: '0755'
 
     - name: Create group_vars file
-      file: 
+      ansible.builtin.file: 
         path: "{{ dir_path }}/{{ item }}"
         state: touch
         # create file if not exists
@@ -44,7 +46,7 @@
       loop: "{{ group_name }}"
 
     - name: Insert ssh password to group_vars file
-      lineinfile:
+      ansible.builtin.lineinfile:
         path: "{{ dir_path }}/{{ item }}"
         line: "ansible_ssh_pass: {{ ssh_password | default(default_password, True) }}"
       loop: "{{ group_name }}"
@@ -55,7 +57,7 @@
 
   tasks:
     - name: Synchronize ssh public key
-      authorized_key:
+      ansible.posix.authorized_key:
         user: "{{ remote_user }}"
         # The username on the remote host whose authorized_keys file will be modified.
         state: present
@@ -76,7 +78,7 @@
 
   tasks:
     - name: Clear password in group_vars
-      lineinfile:
+      ansible.builtin.lineinfile:
         path: "{{ dir_path }}/{{ item }}"
         regexp: '^ansible_ssh_pass'
         line: ''

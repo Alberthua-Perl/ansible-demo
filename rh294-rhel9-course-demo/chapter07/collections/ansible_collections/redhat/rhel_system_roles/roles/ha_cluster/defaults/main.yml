@@ -1,0 +1,41 @@
+# SPDX-License-Identifier: MIT
+---
+ha_cluster_enable_repos: yes
+
+ha_cluster_cluster_present: yes
+
+ha_cluster_start_on_boot: yes
+
+ha_cluster_extra_packages: []
+
+ha_cluster_fence_agent_packages:
+  - fence-agents-all
+  - fence-virt
+
+ha_cluster_hacluster_password: ""
+ha_cluster_regenerate_keys: no
+ha_cluster_corosync_key_src:
+ha_cluster_pacemaker_key_src:
+ha_cluster_fence_virt_key_src:
+ha_cluster_pcsd_public_key_src:
+ha_cluster_pcsd_private_key_src:
+
+ha_cluster_cluster_name: my-cluster
+
+ha_cluster_pcs_permission_list:
+  - type: group
+    name: haclient
+    allow_list:
+      - grant
+      - read
+      - write
+
+ha_cluster_cluster_properties: []
+ha_cluster_resource_primitives: []
+ha_cluster_resource_groups: []
+ha_cluster_resource_clones: []
+
+ha_cluster_constraints_location: []
+ha_cluster_constraints_colocation: []
+ha_cluster_constraints_order: []
+ha_cluster_constraints_ticket: []

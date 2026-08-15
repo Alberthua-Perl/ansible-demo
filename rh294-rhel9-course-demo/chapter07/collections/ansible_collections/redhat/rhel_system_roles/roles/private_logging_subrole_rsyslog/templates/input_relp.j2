@@ -1,0 +1,63 @@
+input(name="{{ __rsyslog_input.name }}"
+      type="imrelp"
+      port="{{ __rsyslog_input.port | d(20514) | int }}"
+      maxDataSize="{{ __rsyslog_input.max_data_size | d(logging_max_message_size) | int }}"
+{% if __rsyslog_input.tls | default(true) %}
+{%   if __rsyslog_input.ca_cert is defined %}
+{%     set __cacert = __rsyslog_input.ca_cert %}
+{%   elif __rsyslog_input.ca_cert_src is defined %}
+{%     set __cacert = __rsyslog_default_pki_path + __rsyslog_default_pki_cert_dir + __rsyslog_input.ca_cert_src | basename %}
+{%   else %}
+{%     set __cacert = __rsyslog_default_pki_path + __rsyslog_default_pki_cert_dir + 'relp-ca.crt' %}
+{%   endif %}
+{%   if __rsyslog_input.cert is defined %}
+{%     set __mycert = __rsyslog_input.cert %}
+{%   elif __rsyslog_input.cert_src is defined %}
+{%     set __mycert = __rsyslog_default_pki_path + __rsyslog_default_pki_cert_dir + __rsyslog_input.cert_src | basename %}
+{%   else %}
+{%     set __mycert = __rsyslog_default_pki_path + __rsyslog_default_pki_cert_dir + 'relp-cert.pem' %}
+{%   endif %}
+{%   if __rsyslog_input.private_key is defined %}
+{%     set __myprivkey = __rsyslog_input.private_key %}
+{%   elif __rsyslog_input.private_key_src is defined %}
+{%     set __myprivkey = __rsyslog_default_pki_path + __rsyslog_default_pki_key_dir + __rsyslog_input.private_key_src | basename %}
+{%   else %}
+{%     set __myprivkey = __rsyslog_default_pki_path + __rsyslog_default_pki_key_dir + 'relp-key.pem' %}
+{%   endif %}
+      tls="on"
+      tls.cacert="{{ __cacert }}"
+      tls.mycert="{{ __mycert }}"
+      tls.myprivkey="{{ __myprivkey }}"
+      tls.authmode="{{ __rsyslog_input.pki_authmode | d('name') }}"
+{%   if __rsyslog_input.permitted_clients is defined %}
+      tls.permittedpeer=["{{ __rsyslog_input.permitted_clients | join('","') }}"]
+{%   else %}
+      tls.permittedpeer=["{{ '*.' + logging_domain }}"]
+{%   endif %}
+{% endif %}
+)
+{% set rsyslog_flows = logging_flows | d([ {"name": "default_flow", "inputs": [ __rsyslog_input.name ], "outputs": ["default_files"]} ], true) %}
+{% set outdict = {} %}
+{% for flow in rsyslog_flows %}
+{%   if flow.inputs | intersect([ __rsyslog_input.name ]) %}
+{%     for oname in flow.outputs %}
+{%       set _ = outdict.__setitem__(oname, outdict.get(oname,[])|union([ __rsyslog_input.name ])) %}
+{%     endfor %}
+{%   endif %}
+{% endfor %}
+{% for output in rsyslog_outputs %}
+{%   if outdict[output.name] | d(false) %}
+if
+{%     for inputname in outdict[output.name] %}
+{%       if inputname == __rsyslog_input.name %}
+{%         if not loop.first %}
+  or
+{%         endif %}
+  ($inputname == "{{ __rsyslog_input.name }}")
+{%       endif %}
+{%     endfor %}
+  then {
+    call {{ output.name }}
+}
+{%   endif %}
+{% endfor %}
