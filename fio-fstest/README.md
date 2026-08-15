@@ -1,4 +1,4 @@
-# �� FIO 文件系统性能测试与 LLM 结构化结果分析
+# 📈 FIO 文件系统性能测试与 LLM 结构化结果分析
 
 ## 项目说明
 
@@ -22,7 +22,7 @@ $ ansible-navigator run -m stdout 20-llm_api_call.yml
 $ ansible-navigator run -m stdout 10-fio_async_test.yml
 # 核心步骤：FIO 测试，指标结构化输出与 LLM 分析
 
-$ ansible-navigator run -m stdout 10-fio_async_test.yml --tag cleanup_tmp
+$ ansible-navigator run -m stdout 10-fio_async_test.yml --tags cleanup_tmp
 # 清除测试临时文件
 ```
 
