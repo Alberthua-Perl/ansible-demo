@@ -12,6 +12,7 @@
 ```bash
 [devops@workstation ~]$ cd ~/nginx-deployment/
 [devops@workstation nginx-deployment]$ ansible-navigator run -m stdout site.yml
+
 [devops@workstation nginx-deployment]$ sudo su -
 [root@workstation ~]# cd /var/www/html/materials    # 切换 Web 材料目录
 [root@workstation materials]# wget https://rh-course-materials.oss-cn-hangzhou.aliyuncs.com/monitor/prometheus-3.8.0.linux-amd64.tar.gz
@@ -40,20 +41,19 @@ fatal: [serverd]: FAILED! => {"changed": false, "msg": "Reboot is required to ap
 
 ### 3. 部署运行可视化 Prometheus 监控告警平台与应用
 
-方法1：分别指定不同组件独立部署运行
+**方法1**：分别指定不同组件独立部署运行
 
 ```bash
 [devops@workstation monitoring-stacks]$ ansible-navigator run -m stdout playbooks/site.yml --tags prometheus
 [devops@workstation monitoring-stacks]$ ansible-navigator run -m stdout playbooks/site.yml --tags alertmanager
-# 注意：
-#   prometheus 部署完成后访问 9090 端口，暂时只有自身与 alertmanager 节点处于 UP 状态，
-#   直至其他节点的 node_exporter 部署运行后才将出现对应的 UP 状态。
 [devops@workstation monitoring-stacks]$ ansible-navigator run -m stdout playbooks/site.yml --tags node_exporter
-[devops@workstation monitoring-stacks]$ ansible-navigator run -m stdout playbooks/site.yml --tags grafana
 [devops@workstation monitoring-stacks]$ ansible-navigator run -m stdout playbooks/site.yml --tags python_app
+[devops@workstation monitoring-stacks]$ ansible-navigator run -m stdout playbooks/site.yml --tags grafana
 ```
 
-方法2：直接一键运行
+> 注意：prometheus 部署完成后访问 9090 端口，暂时只有自身与 alertmanager 节点处于 UP 状态，直至其他节点的 node_exporter 部署运行后才将出现对应的 UP 状态。
+
+**方法2**：直接一键运行
 
 ```bash
 [devops@workstation monitoring-stacks]$ ansible-navigator run -m stdout playbooks/site.yml
@@ -61,7 +61,43 @@ fatal: [serverd]: FAILED! => {"changed": false, "msg": "Reboot is required to ap
 
 ### 4. Web 浏览器验证部署与测试
 
-访问 http://servera.lab.example.com:9090/targets 确认各节点在 prometheus 配置文件中是否被正确识别
+- Prometheus 验证：
+
+  | URL 地址 | 验证内容 |
+  | ----- | ----- |
+  | http://servera.lab.example.com:9090/targets | 确认在配置文件中包含的节点是否被正确识别 |
+  | http://servera.lab.example.com:9090/alerts | 确认能否显示配置的所有告警规则 |
+  | http://servera.lab.example.com:9090/metrics | 确认 prometheus 的全部内置性能指标 |
+
+  ![prometheus-status-1](prometheus-status-1.png)
+
+  ![prometheus-status-2](prometheus-status-2.png)
+
+  | api 地址 | 端点功能 |
+  | ----- | ----- |
+  | /api/v1/targets | 查看抓取目标状态 |
+  | /api/v1/rules | 查看告警/记录规则 |
+  | /api/v1/alerts | 查看当前触发的告警 |
+  | /api/v1/status/config | 查看当前配置 |
+  | /api/v1/status/flags | 查看启动参数 |
+  | /api/v1/query | 瞬时查询 PromQL |
+  | /api/v1/series | 查询时间序列元数据 |
+  | /api/v1/labels | 获取所有 label 名称 |
+  | /api/v1/labels/<name>/values | 获取某个 label 的所有值 |
+
+- Alertmanager 验证：
+
+  ![alertmanager-status](alertmanager-status.png)
+
+- Grafana 可视化面板导入：
+  - Prometheus 数据源在部署 Grafana 时已配置完成
+  - 导入 [ID 1860](https://grafana.com/grafana/dashboards/1860-node-exporter-full/) 面板展示 Node Exporter 数据
+  - 导入 [ID 11074](https://grafana.com/grafana/dashboards/11074-node-exporter-for-prometheus-dashboard-en-v20201010/) 面板展示 Node Exporter 数据
+  - 导入自定义 `python_app_dashboard.json` 应用面板
+
+  ![grafana-status](grafana-status.png)
+
+  ![python-app-status](python-app-status.png)
 
 ## Ansible 故障点排除
 

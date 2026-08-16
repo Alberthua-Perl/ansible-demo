@@ -12741,3 +12741,733 @@ Failed to connect to the host via ssh: ssh: connect to host serverd port 22: Con
 2026-08-16 05:23:16,689 p=21 u=root n=ansible | changed: [servera]
 2026-08-16 05:23:16,704 p=21 u=root n=ansible | PLAY RECAP **********************************************************************************************************************************************
 2026-08-16 05:23:16,705 p=21 u=root n=ansible | servera                    : ok=9    changed=3    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0   
+2026-08-16 07:54:43,787 p=16 u=root n=ansible | {"/home/devops/monitoring-stacks/collections/ansible_collections": {"ansible.posix": {"version": "1.5.2"}, "community.general": {"version": "9.5.7"}, "community.mysql": {"version": "3.12.0"}, "redhat.rhel_system_roles": {"version": "1.16.2"}}}
+2026-08-16 07:54:44,907 p=21 u=root n=ansible | PLAY [节点基础设置：NTP 服务器、SELinux 与 Firewalld 防火墙] *************************************************************************************************
+2026-08-16 07:54:44,928 p=21 u=root n=ansible | TASK [Gathering Facts] ***************************************************************************************************************************************
+2026-08-16 07:54:46,690 p=21 u=root n=ansible | ok: [serverd]
+2026-08-16 07:54:46,699 p=21 u=root n=ansible | ok: [serverc]
+2026-08-16 07:54:46,803 p=21 u=root n=ansible | ok: [serverb]
+2026-08-16 07:54:46,818 p=21 u=root n=ansible | ok: [servera]
+2026-08-16 07:54:46,832 p=21 u=root n=ansible | TASK [永久关闭 SELinux] **************************************************************************************************************************************
+2026-08-16 07:54:46,869 p=21 u=root n=ansible | ok: [servera] => {
+    "msg": "永久关闭 SELinux"
+}
+2026-08-16 07:54:46,887 p=21 u=root n=ansible | ok: [serverb] => {
+    "msg": "永久关闭 SELinux"
+}
+2026-08-16 07:54:46,891 p=21 u=root n=ansible | ok: [serverc] => {
+    "msg": "永久关闭 SELinux"
+}
+2026-08-16 07:54:46,906 p=21 u=root n=ansible | ok: [serverd] => {
+    "msg": "永久关闭 SELinux"
+}
+2026-08-16 07:54:46,917 p=21 u=root n=ansible | TASK [设置时间同步服务器] ************************************************************************************************************************************
+2026-08-16 07:54:46,955 p=21 u=root n=ansible | ok: [servera] => {
+    "msg": "设置时间同步服务器"
+}
+2026-08-16 07:54:46,973 p=21 u=root n=ansible | ok: [serverb] => {
+    "msg": "设置时间同步服务器"
+}
+2026-08-16 07:54:46,976 p=21 u=root n=ansible | ok: [serverc] => {
+    "msg": "设置时间同步服务器"
+}
+2026-08-16 07:54:46,995 p=21 u=root n=ansible | ok: [serverd] => {
+    "msg": "设置时间同步服务器"
+}
+2026-08-16 07:54:47,016 p=21 u=root n=ansible | TASK [redhat.rhel_system_roles.selinux : Install SELinux python2 tools] **************************************************************************************
+2026-08-16 07:54:47,045 p=21 u=root n=ansible | skipping: [servera]
+2026-08-16 07:54:47,063 p=21 u=root n=ansible | skipping: [serverb]
+2026-08-16 07:54:47,081 p=21 u=root n=ansible | skipping: [serverc]
+2026-08-16 07:54:47,094 p=21 u=root n=ansible | skipping: [serverd]
+2026-08-16 07:54:47,106 p=21 u=root n=ansible | TASK [redhat.rhel_system_roles.selinux : Install SELinux python3 tools] **************************************************************************************
+2026-08-16 07:54:48,577 p=21 u=root n=ansible | ok: [serverc]
+2026-08-16 07:54:49,151 p=21 u=root n=ansible | ok: [serverd]
+2026-08-16 07:54:49,183 p=21 u=root n=ansible | ok: [serverb]
+2026-08-16 07:54:49,186 p=21 u=root n=ansible | ok: [servera]
+2026-08-16 07:54:49,198 p=21 u=root n=ansible | TASK [redhat.rhel_system_roles.selinux : refresh facts] ******************************************************************************************************
+2026-08-16 07:54:50,290 p=21 u=root n=ansible | ok: [serverc]
+2026-08-16 07:54:50,307 p=21 u=root n=ansible | ok: [serverb]
+2026-08-16 07:54:50,334 p=21 u=root n=ansible | ok: [serverd]
+2026-08-16 07:54:50,341 p=21 u=root n=ansible | ok: [servera]
+2026-08-16 07:54:50,356 p=21 u=root n=ansible | TASK [redhat.rhel_system_roles.selinux : Install SELinux tool semanage] **************************************************************************************
+2026-08-16 07:54:51,599 p=21 u=root n=ansible | ok: [serverc]
+2026-08-16 07:54:51,601 p=21 u=root n=ansible | ok: [serverb]
+2026-08-16 07:54:51,602 p=21 u=root n=ansible | ok: [servera]
+2026-08-16 07:54:51,628 p=21 u=root n=ansible | ok: [serverd]
+2026-08-16 07:54:51,642 p=21 u=root n=ansible | TASK [redhat.rhel_system_roles.selinux : Set permanent SELinux state if enabled] *****************************************************************************
+2026-08-16 07:54:52,596 p=21 u=root n=ansible | [WARNING]: SELinux state temporarily changed from 'enforcing' to 'permissive'. State change will take effect next reboot.
+
+2026-08-16 07:54:52,597 p=21 u=root n=ansible | changed: [serverc]
+2026-08-16 07:54:52,601 p=21 u=root n=ansible | changed: [servera]
+2026-08-16 07:54:52,613 p=21 u=root n=ansible | changed: [serverd]
+2026-08-16 07:54:52,617 p=21 u=root n=ansible | changed: [serverb]
+2026-08-16 07:54:52,631 p=21 u=root n=ansible | TASK [redhat.rhel_system_roles.selinux : Set permanent SELinux state if disabled] ****************************************************************************
+2026-08-16 07:54:52,654 p=21 u=root n=ansible | skipping: [servera]
+2026-08-16 07:54:52,672 p=21 u=root n=ansible | skipping: [serverb]
+2026-08-16 07:54:52,689 p=21 u=root n=ansible | skipping: [serverc]
+2026-08-16 07:54:52,698 p=21 u=root n=ansible | skipping: [serverd]
+2026-08-16 07:54:52,710 p=21 u=root n=ansible | TASK [redhat.rhel_system_roles.selinux : Set ansible facts if needed] ****************************************************************************************
+2026-08-16 07:54:52,768 p=21 u=root n=ansible | ok: [servera]
+2026-08-16 07:54:52,783 p=21 u=root n=ansible | ok: [serverb]
+2026-08-16 07:54:52,798 p=21 u=root n=ansible | ok: [serverc]
+2026-08-16 07:54:52,812 p=21 u=root n=ansible | ok: [serverd]
+2026-08-16 07:54:52,826 p=21 u=root n=ansible | TASK [redhat.rhel_system_roles.selinux : Fail if reboot is required] *****************************************************************************************
+2026-08-16 07:54:52,866 p=21 u=root n=ansible | fatal: [servera]: FAILED! => {"changed": false, "msg": "Reboot is required to apply changes. Re-execute the role after boot."}
+2026-08-16 07:54:52,910 p=21 u=root n=ansible | fatal: [serverb]: FAILED! => {"changed": false, "msg": "Reboot is required to apply changes. Re-execute the role after boot."}
+2026-08-16 07:54:52,929 p=21 u=root n=ansible | fatal: [serverc]: FAILED! => {"changed": false, "msg": "Reboot is required to apply changes. Re-execute the role after boot."}
+2026-08-16 07:54:52,961 p=21 u=root n=ansible | fatal: [serverd]: FAILED! => {"changed": false, "msg": "Reboot is required to apply changes. Re-execute the role after boot."}
+2026-08-16 07:54:52,963 p=21 u=root n=ansible | PLAY RECAP ***************************************************************************************************************************************************
+2026-08-16 07:54:52,963 p=21 u=root n=ansible | servera                    : ok=8    changed=1    unreachable=0    failed=1    skipped=2    rescued=0    ignored=0   
+2026-08-16 07:54:52,963 p=21 u=root n=ansible | serverb                    : ok=8    changed=1    unreachable=0    failed=1    skipped=2    rescued=0    ignored=0   
+2026-08-16 07:54:52,963 p=21 u=root n=ansible | serverc                    : ok=8    changed=1    unreachable=0    failed=1    skipped=2    rescued=0    ignored=0   
+2026-08-16 07:54:52,963 p=21 u=root n=ansible | serverd                    : ok=8    changed=1    unreachable=0    failed=1    skipped=2    rescued=0    ignored=0   
+2026-08-16 03:55:07,853 p=34347 u=devops n=ansible | serverb | FAILED | rc=-1 >>
+Failed to connect to the host via ssh: ssh: connect to host serverb port 22: Connection refused
+
+2026-08-16 03:55:08,108 p=34347 u=devops n=ansible | serverd | FAILED | rc=-1 >>
+Failed to connect to the host via ssh: System is going down. Unprivileged users are not permitted to log in anymore. For technical details, see pam_nologin(8).
+
+Connection closed by 172.25.250.13 port 22
+
+2026-08-16 03:55:08,112 p=34347 u=devops n=ansible | servera | FAILED | rc=-1 >>
+Failed to connect to the host via ssh: System is going down. Unprivileged users are not permitted to log in anymore. For technical details, see pam_nologin(8).
+
+Connection closed by 172.25.250.10 port 22
+
+2026-08-16 03:55:08,151 p=34347 u=devops n=ansible | serverc | FAILED | rc=-1 >>
+Failed to connect to the host via ssh: System is going down. Unprivileged users are not permitted to log in anymore. For technical details, see pam_nologin(8).
+
+Connection closed by 172.25.250.12 port 22
+
+2026-08-16 07:55:55,961 p=16 u=root n=ansible | {"/home/devops/monitoring-stacks/collections/ansible_collections": {"ansible.posix": {"version": "1.5.2"}, "community.general": {"version": "9.5.7"}, "community.mysql": {"version": "3.12.0"}, "redhat.rhel_system_roles": {"version": "1.16.2"}}}
+2026-08-16 07:55:57,082 p=21 u=root n=ansible | PLAY [节点基础设置：NTP 服务器、SELinux 与 Firewalld 防火墙] *************************************************************************************************
+2026-08-16 07:55:57,102 p=21 u=root n=ansible | TASK [Gathering Facts] ***************************************************************************************************************************************
+2026-08-16 07:55:58,993 p=21 u=root n=ansible | ok: [serverd]
+2026-08-16 07:55:59,036 p=21 u=root n=ansible | ok: [serverc]
+2026-08-16 07:55:59,055 p=21 u=root n=ansible | ok: [servera]
+2026-08-16 07:55:59,059 p=21 u=root n=ansible | ok: [serverb]
+2026-08-16 07:55:59,071 p=21 u=root n=ansible | TASK [永久关闭 SELinux] **************************************************************************************************************************************
+2026-08-16 07:55:59,121 p=21 u=root n=ansible | ok: [servera] => {
+    "msg": "永久关闭 SELinux"
+}
+2026-08-16 07:55:59,144 p=21 u=root n=ansible | ok: [serverb] => {
+    "msg": "永久关闭 SELinux"
+}
+2026-08-16 07:55:59,147 p=21 u=root n=ansible | ok: [serverc] => {
+    "msg": "永久关闭 SELinux"
+}
+2026-08-16 07:55:59,165 p=21 u=root n=ansible | ok: [serverd] => {
+    "msg": "永久关闭 SELinux"
+}
+2026-08-16 07:55:59,175 p=21 u=root n=ansible | TASK [设置时间同步服务器] ************************************************************************************************************************************
+2026-08-16 07:55:59,213 p=21 u=root n=ansible | ok: [servera] => {
+    "msg": "设置时间同步服务器"
+}
+2026-08-16 07:55:59,231 p=21 u=root n=ansible | ok: [serverb] => {
+    "msg": "设置时间同步服务器"
+}
+2026-08-16 07:55:59,234 p=21 u=root n=ansible | ok: [serverc] => {
+    "msg": "设置时间同步服务器"
+}
+2026-08-16 07:55:59,252 p=21 u=root n=ansible | ok: [serverd] => {
+    "msg": "设置时间同步服务器"
+}
+2026-08-16 07:55:59,274 p=21 u=root n=ansible | TASK [redhat.rhel_system_roles.selinux : Install SELinux python2 tools] **************************************************************************************
+2026-08-16 07:55:59,295 p=21 u=root n=ansible | skipping: [servera]
+2026-08-16 07:55:59,313 p=21 u=root n=ansible | skipping: [serverb]
+2026-08-16 07:55:59,330 p=21 u=root n=ansible | skipping: [serverc]
+2026-08-16 07:55:59,346 p=21 u=root n=ansible | skipping: [serverd]
+2026-08-16 07:55:59,357 p=21 u=root n=ansible | TASK [redhat.rhel_system_roles.selinux : Install SELinux python3 tools] **************************************************************************************
+2026-08-16 07:56:01,613 p=21 u=root n=ansible | ok: [serverc]
+2026-08-16 07:56:01,619 p=21 u=root n=ansible | ok: [serverb]
+2026-08-16 07:56:01,658 p=21 u=root n=ansible | ok: [serverd]
+2026-08-16 07:56:01,660 p=21 u=root n=ansible | ok: [servera]
+2026-08-16 07:56:01,672 p=21 u=root n=ansible | TASK [redhat.rhel_system_roles.selinux : refresh facts] ******************************************************************************************************
+2026-08-16 07:56:02,812 p=21 u=root n=ansible | ok: [serverd]
+2026-08-16 07:56:02,816 p=21 u=root n=ansible | ok: [servera]
+2026-08-16 07:56:02,821 p=21 u=root n=ansible | ok: [serverc]
+2026-08-16 07:56:02,823 p=21 u=root n=ansible | ok: [serverb]
+2026-08-16 07:56:02,835 p=21 u=root n=ansible | TASK [redhat.rhel_system_roles.selinux : Install SELinux tool semanage] **************************************************************************************
+2026-08-16 07:56:04,080 p=21 u=root n=ansible | ok: [servera]
+2026-08-16 07:56:04,099 p=21 u=root n=ansible | ok: [serverc]
+2026-08-16 07:56:04,122 p=21 u=root n=ansible | ok: [serverb]
+2026-08-16 07:56:04,151 p=21 u=root n=ansible | ok: [serverd]
+2026-08-16 07:56:04,165 p=21 u=root n=ansible | TASK [redhat.rhel_system_roles.selinux : Set permanent SELinux state if enabled] *****************************************************************************
+2026-08-16 07:56:04,189 p=21 u=root n=ansible | skipping: [servera]
+2026-08-16 07:56:04,211 p=21 u=root n=ansible | skipping: [serverb]
+2026-08-16 07:56:04,236 p=21 u=root n=ansible | skipping: [serverc]
+2026-08-16 07:56:04,245 p=21 u=root n=ansible | skipping: [serverd]
+2026-08-16 07:56:04,258 p=21 u=root n=ansible | TASK [redhat.rhel_system_roles.selinux : Set permanent SELinux state if disabled] ****************************************************************************
+2026-08-16 07:56:05,196 p=21 u=root n=ansible | ok: [serverb]
+2026-08-16 07:56:05,199 p=21 u=root n=ansible | ok: [serverc]
+2026-08-16 07:56:05,201 p=21 u=root n=ansible | ok: [serverd]
+2026-08-16 07:56:05,220 p=21 u=root n=ansible | ok: [servera]
+2026-08-16 07:56:05,233 p=21 u=root n=ansible | TASK [redhat.rhel_system_roles.selinux : Set ansible facts if needed] ****************************************************************************************
+2026-08-16 07:56:05,280 p=21 u=root n=ansible | ok: [servera]
+2026-08-16 07:56:05,305 p=21 u=root n=ansible | ok: [serverb]
+2026-08-16 07:56:05,318 p=21 u=root n=ansible | ok: [serverc]
+2026-08-16 07:56:05,342 p=21 u=root n=ansible | ok: [serverd]
+2026-08-16 07:56:05,353 p=21 u=root n=ansible | TASK [redhat.rhel_system_roles.selinux : Fail if reboot is required] *****************************************************************************************
+2026-08-16 07:56:05,374 p=21 u=root n=ansible | skipping: [servera]
+2026-08-16 07:56:05,391 p=21 u=root n=ansible | skipping: [serverb]
+2026-08-16 07:56:05,407 p=21 u=root n=ansible | skipping: [serverc]
+2026-08-16 07:56:05,416 p=21 u=root n=ansible | skipping: [serverd]
+2026-08-16 07:56:05,427 p=21 u=root n=ansible | TASK [redhat.rhel_system_roles.selinux : Warn if SELinux is disabled] ****************************************************************************************
+2026-08-16 07:56:05,467 p=21 u=root n=ansible | ok: [servera] => {
+    "msg": "SELinux is disabled on system - some SELinux modules can crash"
+}
+2026-08-16 07:56:05,485 p=21 u=root n=ansible | ok: [serverb] => {
+    "msg": "SELinux is disabled on system - some SELinux modules can crash"
+}
+2026-08-16 07:56:05,490 p=21 u=root n=ansible | ok: [serverc] => {
+    "msg": "SELinux is disabled on system - some SELinux modules can crash"
+}
+2026-08-16 07:56:05,509 p=21 u=root n=ansible | ok: [serverd] => {
+    "msg": "SELinux is disabled on system - some SELinux modules can crash"
+}
+2026-08-16 07:56:05,520 p=21 u=root n=ansible | TASK [redhat.rhel_system_roles.selinux : Drop all local modifications] ***************************************************************************************
+2026-08-16 07:56:05,574 p=21 u=root n=ansible | skipping: [servera]
+2026-08-16 07:56:05,595 p=21 u=root n=ansible | skipping: [serverb]
+2026-08-16 07:56:05,600 p=21 u=root n=ansible | skipping: [serverc]
+2026-08-16 07:56:05,618 p=21 u=root n=ansible | skipping: [serverd]
+2026-08-16 07:56:05,631 p=21 u=root n=ansible | TASK [redhat.rhel_system_roles.selinux : Purge all SELinux boolean local modifications] **********************************************************************
+2026-08-16 07:56:05,688 p=21 u=root n=ansible | skipping: [servera]
+2026-08-16 07:56:05,706 p=21 u=root n=ansible | skipping: [serverb]
+2026-08-16 07:56:05,708 p=21 u=root n=ansible | skipping: [serverc]
+2026-08-16 07:56:05,727 p=21 u=root n=ansible | skipping: [serverd]
+2026-08-16 07:56:05,739 p=21 u=root n=ansible | TASK [redhat.rhel_system_roles.selinux : Purge all SELinux file context local modifications] *****************************************************************
+2026-08-16 07:56:05,787 p=21 u=root n=ansible | skipping: [servera]
+2026-08-16 07:56:05,811 p=21 u=root n=ansible | skipping: [serverb]
+2026-08-16 07:56:05,815 p=21 u=root n=ansible | skipping: [serverc]
+2026-08-16 07:56:05,833 p=21 u=root n=ansible | skipping: [serverd]
+2026-08-16 07:56:05,843 p=21 u=root n=ansible | TASK [redhat.rhel_system_roles.selinux : Purge all SELinux port local modifications] *************************************************************************
+2026-08-16 07:56:05,882 p=21 u=root n=ansible | skipping: [servera]
+2026-08-16 07:56:05,899 p=21 u=root n=ansible | skipping: [serverb]
+2026-08-16 07:56:05,904 p=21 u=root n=ansible | skipping: [serverc]
+2026-08-16 07:56:05,922 p=21 u=root n=ansible | skipping: [serverd]
+2026-08-16 07:56:05,936 p=21 u=root n=ansible | TASK [redhat.rhel_system_roles.selinux : Purge all SELinux login local modifications] ************************************************************************
+2026-08-16 07:56:05,990 p=21 u=root n=ansible | skipping: [servera]
+2026-08-16 07:56:06,012 p=21 u=root n=ansible | skipping: [serverb]
+2026-08-16 07:56:06,014 p=21 u=root n=ansible | skipping: [serverc]
+2026-08-16 07:56:06,037 p=21 u=root n=ansible | skipping: [serverd]
+2026-08-16 07:56:06,050 p=21 u=root n=ansible | TASK [redhat.rhel_system_roles.selinux : Set SELinux booleans] ***********************************************************************************************
+2026-08-16 07:56:06,132 p=21 u=root n=ansible | TASK [redhat.rhel_system_roles.selinux : Set SELinux file contexts] ******************************************************************************************
+2026-08-16 07:56:06,208 p=21 u=root n=ansible | TASK [redhat.rhel_system_roles.selinux : Restore SELinux labels on filesystem tree] **************************************************************************
+2026-08-16 07:56:06,286 p=21 u=root n=ansible | TASK [redhat.rhel_system_roles.selinux : Restore SELinux labels on filesystem tree in check mode] ************************************************************
+2026-08-16 07:56:06,365 p=21 u=root n=ansible | TASK [redhat.rhel_system_roles.selinux : Set an SELinux label on a port] *************************************************************************************
+2026-08-16 07:56:06,443 p=21 u=root n=ansible | TASK [redhat.rhel_system_roles.selinux : Set linux user to SELinux user mapping] *****************************************************************************
+2026-08-16 07:56:06,515 p=21 u=root n=ansible | TASK [redhat.rhel_system_roles.selinux : Get SELinux modules facts] ******************************************************************************************
+2026-08-16 07:56:07,491 p=21 u=root n=ansible | ok: [servera]
+2026-08-16 07:56:07,496 p=21 u=root n=ansible | ok: [serverb]
+2026-08-16 07:56:07,502 p=21 u=root n=ansible | ok: [serverc]
+2026-08-16 07:56:07,507 p=21 u=root n=ansible | ok: [serverd]
+2026-08-16 07:56:07,522 p=21 u=root n=ansible | TASK [redhat.rhel_system_roles.selinux : include_tasks] ******************************************************************************************************
+2026-08-16 07:56:07,570 p=21 u=root n=ansible | skipping: [servera]
+2026-08-16 07:56:07,594 p=21 u=root n=ansible | skipping: [serverb]
+2026-08-16 07:56:07,598 p=21 u=root n=ansible | skipping: [serverc]
+2026-08-16 07:56:07,619 p=21 u=root n=ansible | skipping: [serverd]
+2026-08-16 07:56:07,687 p=21 u=root n=ansible | TASK [redhat.rhel_system_roles.timesync : Set version specific variables] ************************************************************************************
+2026-08-16 07:56:07,758 p=21 u=root n=ansible | ok: [servera]
+2026-08-16 07:56:07,759 p=21 u=root n=ansible | ok: [serverb]
+2026-08-16 07:56:07,770 p=21 u=root n=ansible | ok: [serverc]
+2026-08-16 07:56:07,793 p=21 u=root n=ansible | ok: [serverd]
+2026-08-16 07:56:07,808 p=21 u=root n=ansible | TASK [redhat.rhel_system_roles.timesync : Populate service facts] ********************************************************************************************
+2026-08-16 07:56:10,868 p=21 u=root n=ansible | [WARNING]: Unable to query 'service' tool (1):
+
+2026-08-16 07:56:10,869 p=21 u=root n=ansible | ok: [serverb]
+2026-08-16 07:56:11,009 p=21 u=root n=ansible | ok: [serverd]
+2026-08-16 07:56:11,016 p=21 u=root n=ansible | ok: [servera]
+2026-08-16 07:56:11,030 p=21 u=root n=ansible | ok: [serverc]
+2026-08-16 07:56:11,048 p=21 u=root n=ansible | TASK [redhat.rhel_system_roles.timesync : Set variable `timesync_services` with filtered uniq service names] *************************************************
+2026-08-16 07:56:11,144 p=21 u=root n=ansible | ok: [servera]
+2026-08-16 07:56:11,145 p=21 u=root n=ansible | ok: [serverb]
+2026-08-16 07:56:11,180 p=21 u=root n=ansible | ok: [serverc]
+2026-08-16 07:56:11,201 p=21 u=root n=ansible | ok: [serverd]
+2026-08-16 07:56:11,221 p=21 u=root n=ansible | TASK [redhat.rhel_system_roles.timesync : Check that variable 'timesync_services' is defined] ****************************************************************
+2026-08-16 07:56:11,278 p=21 u=root n=ansible | ok: [servera] => {
+    "changed": false,
+    "msg": "All assertions passed"
+}
+2026-08-16 07:56:11,306 p=21 u=root n=ansible | ok: [serverb] => {
+    "changed": false,
+    "msg": "All assertions passed"
+}
+2026-08-16 07:56:11,307 p=21 u=root n=ansible | ok: [serverc] => {
+    "changed": false,
+    "msg": "All assertions passed"
+}
+2026-08-16 07:56:11,334 p=21 u=root n=ansible | ok: [serverd] => {
+    "changed": false,
+    "msg": "All assertions passed"
+}
+2026-08-16 07:56:11,352 p=21 u=root n=ansible | TASK [redhat.rhel_system_roles.timesync : Check if only NTP is needed] ***************************************************************************************
+2026-08-16 07:56:11,410 p=21 u=root n=ansible | ok: [servera]
+2026-08-16 07:56:11,440 p=21 u=root n=ansible | ok: [serverb]
+2026-08-16 07:56:11,450 p=21 u=root n=ansible | ok: [serverc]
+2026-08-16 07:56:11,521 p=21 u=root n=ansible | ok: [serverd]
+2026-08-16 07:56:11,541 p=21 u=root n=ansible | TASK [redhat.rhel_system_roles.timesync : Check if single PTP is needed] *************************************************************************************
+2026-08-16 07:56:11,605 p=21 u=root n=ansible | skipping: [servera]
+2026-08-16 07:56:11,634 p=21 u=root n=ansible | skipping: [serverb]
+2026-08-16 07:56:11,660 p=21 u=root n=ansible | skipping: [serverc]
+2026-08-16 07:56:11,674 p=21 u=root n=ansible | skipping: [serverd]
+2026-08-16 07:56:11,693 p=21 u=root n=ansible | TASK [redhat.rhel_system_roles.timesync : Check if both NTP and PTP are needed] ******************************************************************************
+2026-08-16 07:56:11,722 p=21 u=root n=ansible | skipping: [servera]
+2026-08-16 07:56:11,748 p=21 u=root n=ansible | skipping: [serverb]
+2026-08-16 07:56:11,775 p=21 u=root n=ansible | skipping: [serverc]
+2026-08-16 07:56:11,788 p=21 u=root n=ansible | skipping: [serverd]
+2026-08-16 07:56:11,808 p=21 u=root n=ansible | TASK [redhat.rhel_system_roles.timesync : Determine current NTP provider] ************************************************************************************
+2026-08-16 07:56:11,852 p=21 u=root n=ansible | skipping: [servera]
+2026-08-16 07:56:11,915 p=21 u=root n=ansible | skipping: [serverb]
+2026-08-16 07:56:11,916 p=21 u=root n=ansible | skipping: [serverc]
+2026-08-16 07:56:11,939 p=21 u=root n=ansible | skipping: [serverd]
+2026-08-16 07:56:11,959 p=21 u=root n=ansible | TASK [redhat.rhel_system_roles.timesync : Select NTP provider] ***********************************************************************************************
+2026-08-16 07:56:12,001 p=21 u=root n=ansible | skipping: [servera]
+2026-08-16 07:56:12,054 p=21 u=root n=ansible | skipping: [serverb]
+2026-08-16 07:56:12,055 p=21 u=root n=ansible | skipping: [serverc]
+2026-08-16 07:56:12,078 p=21 u=root n=ansible | skipping: [serverd]
+2026-08-16 07:56:12,096 p=21 u=root n=ansible | TASK [redhat.rhel_system_roles.timesync : Install chrony] ****************************************************************************************************
+2026-08-16 07:56:13,317 p=21 u=root n=ansible | ok: [serverb]
+2026-08-16 07:56:13,323 p=21 u=root n=ansible | ok: [servera]
+2026-08-16 07:56:13,335 p=21 u=root n=ansible | ok: [serverc]
+2026-08-16 07:56:13,349 p=21 u=root n=ansible | ok: [serverd]
+2026-08-16 07:56:13,369 p=21 u=root n=ansible | TASK [redhat.rhel_system_roles.timesync : Install ntp] *******************************************************************************************************
+2026-08-16 07:56:13,401 p=21 u=root n=ansible | skipping: [servera]
+2026-08-16 07:56:13,426 p=21 u=root n=ansible | skipping: [serverb]
+2026-08-16 07:56:13,451 p=21 u=root n=ansible | skipping: [serverc]
+2026-08-16 07:56:13,461 p=21 u=root n=ansible | skipping: [serverd]
+2026-08-16 07:56:13,515 p=21 u=root n=ansible | TASK [redhat.rhel_system_roles.timesync : Install linuxptp] **************************************************************************************************
+2026-08-16 07:56:13,548 p=21 u=root n=ansible | skipping: [servera]
+2026-08-16 07:56:13,573 p=21 u=root n=ansible | skipping: [serverb]
+2026-08-16 07:56:13,599 p=21 u=root n=ansible | skipping: [serverc]
+2026-08-16 07:56:13,606 p=21 u=root n=ansible | skipping: [serverd]
+2026-08-16 07:56:13,626 p=21 u=root n=ansible | TASK [redhat.rhel_system_roles.timesync : Gather package facts] **********************************************************************************************
+2026-08-16 07:56:14,891 p=21 u=root n=ansible | ok: [serverb]
+2026-08-16 07:56:14,924 p=21 u=root n=ansible | ok: [servera]
+2026-08-16 07:56:14,954 p=21 u=root n=ansible | ok: [serverd]
+2026-08-16 07:56:14,975 p=21 u=root n=ansible | ok: [serverc]
+2026-08-16 07:56:15,006 p=21 u=root n=ansible | TASK [redhat.rhel_system_roles.timesync : Run phc_ctl on PTP interface] **************************************************************************************
+2026-08-16 07:56:15,052 p=21 u=root n=ansible | skipping: [servera]
+2026-08-16 07:56:15,094 p=21 u=root n=ansible | skipping: [serverb]
+2026-08-16 07:56:15,135 p=21 u=root n=ansible | skipping: [serverc]
+2026-08-16 07:56:15,143 p=21 u=root n=ansible | skipping: [serverd]
+2026-08-16 07:56:15,177 p=21 u=root n=ansible | TASK [redhat.rhel_system_roles.timesync : Check if PTP interface supports HW timestamping] *******************************************************************
+2026-08-16 07:56:15,220 p=21 u=root n=ansible | skipping: [servera]
+2026-08-16 07:56:15,260 p=21 u=root n=ansible | skipping: [serverb]
+2026-08-16 07:56:15,303 p=21 u=root n=ansible | skipping: [serverc]
+2026-08-16 07:56:15,311 p=21 u=root n=ansible | skipping: [serverd]
+2026-08-16 07:56:15,346 p=21 u=root n=ansible | TASK [redhat.rhel_system_roles.timesync : Generate chrony.conf file] *****************************************************************************************
+2026-08-16 07:56:16,695 p=21 u=root n=ansible | changed: [serverd]
+2026-08-16 07:56:16,698 p=21 u=root n=ansible | changed: [serverb]
+2026-08-16 07:56:16,701 p=21 u=root n=ansible | changed: [servera]
+2026-08-16 07:56:16,705 p=21 u=root n=ansible | changed: [serverc]
+2026-08-16 07:56:16,746 p=21 u=root n=ansible | TASK [redhat.rhel_system_roles.timesync : Generate chronyd sysconfig file] ***********************************************************************************
+2026-08-16 07:56:17,771 p=21 u=root n=ansible | changed: [serverb]
+2026-08-16 07:56:17,775 p=21 u=root n=ansible | changed: [servera]
+2026-08-16 07:56:17,840 p=21 u=root n=ansible | changed: [serverc]
+2026-08-16 07:56:17,858 p=21 u=root n=ansible | changed: [serverd]
+2026-08-16 07:56:17,940 p=21 u=root n=ansible | TASK [redhat.rhel_system_roles.timesync : Generate ntp.conf file] ********************************************************************************************
+2026-08-16 07:56:17,992 p=21 u=root n=ansible | skipping: [servera]
+2026-08-16 07:56:18,033 p=21 u=root n=ansible | skipping: [serverb]
+2026-08-16 07:56:18,075 p=21 u=root n=ansible | skipping: [serverc]
+2026-08-16 07:56:18,084 p=21 u=root n=ansible | skipping: [serverd]
+2026-08-16 07:56:18,118 p=21 u=root n=ansible | TASK [redhat.rhel_system_roles.timesync : Generate ntpd sysconfig file] **************************************************************************************
+2026-08-16 07:56:18,163 p=21 u=root n=ansible | skipping: [servera]
+2026-08-16 07:56:18,203 p=21 u=root n=ansible | skipping: [serverb]
+2026-08-16 07:56:18,243 p=21 u=root n=ansible | skipping: [serverc]
+2026-08-16 07:56:18,253 p=21 u=root n=ansible | skipping: [serverd]
+2026-08-16 07:56:18,289 p=21 u=root n=ansible | TASK [redhat.rhel_system_roles.timesync : Generate ptp4l.conf file] ******************************************************************************************
+2026-08-16 07:56:18,335 p=21 u=root n=ansible | skipping: [servera]
+2026-08-16 07:56:18,378 p=21 u=root n=ansible | skipping: [serverb]
+2026-08-16 07:56:18,422 p=21 u=root n=ansible | skipping: [serverc]
+2026-08-16 07:56:18,430 p=21 u=root n=ansible | skipping: [serverd]
+2026-08-16 07:56:18,518 p=21 u=root n=ansible | TASK [redhat.rhel_system_roles.timesync : Generate ptp4l sysconfig file] *************************************************************************************
+2026-08-16 07:56:18,569 p=21 u=root n=ansible | skipping: [servera]
+2026-08-16 07:56:18,611 p=21 u=root n=ansible | skipping: [serverb]
+2026-08-16 07:56:18,652 p=21 u=root n=ansible | skipping: [serverc]
+2026-08-16 07:56:18,660 p=21 u=root n=ansible | skipping: [serverd]
+2026-08-16 07:56:18,694 p=21 u=root n=ansible | TASK [redhat.rhel_system_roles.timesync : Generate phc2sys sysconfig file] ***********************************************************************************
+2026-08-16 07:56:18,736 p=21 u=root n=ansible | skipping: [servera]
+2026-08-16 07:56:18,777 p=21 u=root n=ansible | skipping: [serverb]
+2026-08-16 07:56:18,818 p=21 u=root n=ansible | skipping: [serverc]
+2026-08-16 07:56:18,826 p=21 u=root n=ansible | skipping: [serverd]
+2026-08-16 07:56:18,861 p=21 u=root n=ansible | TASK [redhat.rhel_system_roles.timesync : Generate timemaster.conf file] *************************************************************************************
+2026-08-16 07:56:18,906 p=21 u=root n=ansible | skipping: [servera]
+2026-08-16 07:56:18,946 p=21 u=root n=ansible | skipping: [serverb]
+2026-08-16 07:56:18,994 p=21 u=root n=ansible | skipping: [serverc]
+2026-08-16 07:56:19,006 p=21 u=root n=ansible | skipping: [serverd]
+2026-08-16 07:56:19,095 p=21 u=root n=ansible | TASK [redhat.rhel_system_roles.timesync : Update network sysconfig file] *************************************************************************************
+2026-08-16 07:56:19,792 p=21 u=root n=ansible | changed: [serverb]
+2026-08-16 07:56:19,793 p=21 u=root n=ansible | changed: [servera]
+2026-08-16 07:56:19,800 p=21 u=root n=ansible | changed: [serverd]
+2026-08-16 07:56:19,803 p=21 u=root n=ansible | changed: [serverc]
+2026-08-16 07:56:19,842 p=21 u=root n=ansible | TASK [redhat.rhel_system_roles.timesync : Disable chronyd] ***************************************************************************************************
+2026-08-16 07:56:19,887 p=21 u=root n=ansible | skipping: [servera]
+2026-08-16 07:56:19,930 p=21 u=root n=ansible | skipping: [serverb]
+2026-08-16 07:56:19,970 p=21 u=root n=ansible | skipping: [serverc]
+2026-08-16 07:56:19,979 p=21 u=root n=ansible | skipping: [serverd]
+2026-08-16 07:56:20,015 p=21 u=root n=ansible | TASK [redhat.rhel_system_roles.timesync : Disable ntpd] ******************************************************************************************************
+2026-08-16 07:56:20,060 p=21 u=root n=ansible | skipping: [servera]
+2026-08-16 07:56:20,101 p=21 u=root n=ansible | skipping: [serverb]
+2026-08-16 07:56:20,200 p=21 u=root n=ansible | skipping: [serverc]
+2026-08-16 07:56:20,210 p=21 u=root n=ansible | skipping: [serverd]
+2026-08-16 07:56:20,246 p=21 u=root n=ansible | TASK [redhat.rhel_system_roles.timesync : Disable ntpdate] ***************************************************************************************************
+2026-08-16 07:56:20,293 p=21 u=root n=ansible | skipping: [servera]
+2026-08-16 07:56:20,335 p=21 u=root n=ansible | skipping: [serverb]
+2026-08-16 07:56:20,377 p=21 u=root n=ansible | skipping: [serverc]
+2026-08-16 07:56:20,386 p=21 u=root n=ansible | skipping: [serverd]
+2026-08-16 07:56:20,420 p=21 u=root n=ansible | TASK [redhat.rhel_system_roles.timesync : Disable sntp] ******************************************************************************************************
+2026-08-16 07:56:20,465 p=21 u=root n=ansible | skipping: [servera]
+2026-08-16 07:56:20,507 p=21 u=root n=ansible | skipping: [serverb]
+2026-08-16 07:56:20,548 p=21 u=root n=ansible | skipping: [serverc]
+2026-08-16 07:56:20,557 p=21 u=root n=ansible | skipping: [serverd]
+2026-08-16 07:56:20,591 p=21 u=root n=ansible | TASK [redhat.rhel_system_roles.timesync : Disable ptp4l] *****************************************************************************************************
+2026-08-16 07:56:20,637 p=21 u=root n=ansible | skipping: [servera]
+2026-08-16 07:56:20,679 p=21 u=root n=ansible | skipping: [serverb]
+2026-08-16 07:56:20,778 p=21 u=root n=ansible | skipping: [serverc]
+2026-08-16 07:56:20,788 p=21 u=root n=ansible | skipping: [serverd]
+2026-08-16 07:56:20,824 p=21 u=root n=ansible | TASK [redhat.rhel_system_roles.timesync : Disable phc2sys] ***************************************************************************************************
+2026-08-16 07:56:20,870 p=21 u=root n=ansible | skipping: [servera]
+2026-08-16 07:56:20,912 p=21 u=root n=ansible | skipping: [serverb]
+2026-08-16 07:56:20,954 p=21 u=root n=ansible | skipping: [serverc]
+2026-08-16 07:56:20,967 p=21 u=root n=ansible | skipping: [serverd]
+2026-08-16 07:56:21,004 p=21 u=root n=ansible | TASK [redhat.rhel_system_roles.timesync : Disable timemaster] ************************************************************************************************
+2026-08-16 07:56:21,050 p=21 u=root n=ansible | skipping: [servera]
+2026-08-16 07:56:21,092 p=21 u=root n=ansible | skipping: [serverb]
+2026-08-16 07:56:21,134 p=21 u=root n=ansible | skipping: [serverc]
+2026-08-16 07:56:21,144 p=21 u=root n=ansible | skipping: [serverd]
+2026-08-16 07:56:21,178 p=21 u=root n=ansible | TASK [redhat.rhel_system_roles.timesync : Enable chronyd] ****************************************************************************************************
+2026-08-16 07:56:22,228 p=21 u=root n=ansible | ok: [servera]
+2026-08-16 07:56:22,252 p=21 u=root n=ansible | ok: [serverc]
+2026-08-16 07:56:22,294 p=21 u=root n=ansible | ok: [serverd]
+2026-08-16 07:56:22,304 p=21 u=root n=ansible | ok: [serverb]
+2026-08-16 07:56:22,344 p=21 u=root n=ansible | TASK [redhat.rhel_system_roles.timesync : Enable ntpd] *******************************************************************************************************
+2026-08-16 07:56:22,390 p=21 u=root n=ansible | skipping: [servera]
+2026-08-16 07:56:22,432 p=21 u=root n=ansible | skipping: [serverb]
+2026-08-16 07:56:22,473 p=21 u=root n=ansible | skipping: [serverc]
+2026-08-16 07:56:22,483 p=21 u=root n=ansible | skipping: [serverd]
+2026-08-16 07:56:22,516 p=21 u=root n=ansible | TASK [redhat.rhel_system_roles.timesync : Enable ptp4l] ******************************************************************************************************
+2026-08-16 07:56:22,562 p=21 u=root n=ansible | skipping: [servera]
+2026-08-16 07:56:22,603 p=21 u=root n=ansible | skipping: [serverb]
+2026-08-16 07:56:22,646 p=21 u=root n=ansible | skipping: [serverc]
+2026-08-16 07:56:22,654 p=21 u=root n=ansible | skipping: [serverd]
+2026-08-16 07:56:22,735 p=21 u=root n=ansible | TASK [redhat.rhel_system_roles.timesync : Enable phc2sys] ****************************************************************************************************
+2026-08-16 07:56:22,784 p=21 u=root n=ansible | skipping: [servera]
+2026-08-16 07:56:22,826 p=21 u=root n=ansible | skipping: [serverb]
+2026-08-16 07:56:22,866 p=21 u=root n=ansible | skipping: [serverc]
+2026-08-16 07:56:22,875 p=21 u=root n=ansible | skipping: [serverd]
+2026-08-16 07:56:22,910 p=21 u=root n=ansible | TASK [redhat.rhel_system_roles.timesync : Enable timemaster] *************************************************************************************************
+2026-08-16 07:56:22,952 p=21 u=root n=ansible | skipping: [servera]
+2026-08-16 07:56:22,994 p=21 u=root n=ansible | skipping: [serverb]
+2026-08-16 07:56:23,033 p=21 u=root n=ansible | skipping: [serverc]
+2026-08-16 07:56:23,042 p=21 u=root n=ansible | skipping: [serverd]
+2026-08-16 07:56:23,249 p=21 u=root n=ansible | TASK [持久关闭冲突服务] **************************************************************************************************************************************
+2026-08-16 07:56:24,354 p=21 u=root n=ansible | changed: [servera] => (item=firewalld)
+2026-08-16 07:56:24,385 p=21 u=root n=ansible | changed: [serverb] => (item=firewalld)
+2026-08-16 07:56:24,452 p=21 u=root n=ansible | changed: [serverc] => (item=firewalld)
+2026-08-16 07:56:24,529 p=21 u=root n=ansible | changed: [serverd] => (item=firewalld)
+2026-08-16 07:56:25,365 p=21 u=root n=ansible | changed: [serverb] => (item=cockpit)
+2026-08-16 07:56:25,391 p=21 u=root n=ansible | changed: [servera] => (item=cockpit)
+2026-08-16 07:56:25,430 p=21 u=root n=ansible | changed: [serverc] => (item=cockpit)
+2026-08-16 07:56:25,518 p=21 u=root n=ansible | changed: [serverd] => (item=cockpit)
+2026-08-16 07:56:25,554 p=21 u=root n=ansible | RUNNING HANDLER [redhat.rhel_system_roles.timesync : restart chronyd] ****************************************************************************************
+2026-08-16 07:56:26,361 p=21 u=root n=ansible | changed: [serverd]
+2026-08-16 07:56:26,426 p=21 u=root n=ansible | changed: [serverb]
+2026-08-16 07:56:26,564 p=21 u=root n=ansible | changed: [servera]
+2026-08-16 07:56:26,610 p=21 u=root n=ansible | changed: [serverc]
+2026-08-16 07:56:26,653 p=21 u=root n=ansible | PLAY RECAP ***************************************************************************************************************************************************
+2026-08-16 07:56:26,653 p=21 u=root n=ansible | servera                    : ok=23   changed=5    unreachable=0    failed=0    skipped=40   rescued=0    ignored=0   
+2026-08-16 07:56:26,653 p=21 u=root n=ansible | serverb                    : ok=23   changed=5    unreachable=0    failed=0    skipped=40   rescued=0    ignored=0   
+2026-08-16 07:56:26,653 p=21 u=root n=ansible | serverc                    : ok=23   changed=5    unreachable=0    failed=0    skipped=40   rescued=0    ignored=0   
+2026-08-16 07:56:26,653 p=21 u=root n=ansible | serverd                    : ok=23   changed=5    unreachable=0    failed=0    skipped=40   rescued=0    ignored=0   
+2026-08-16 07:56:30,694 p=16 u=root n=ansible | {"/home/devops/monitoring-stacks/collections/ansible_collections": {"ansible.posix": {"version": "1.5.2"}, "community.general": {"version": "9.5.7"}, "community.mysql": {"version": "3.12.0"}, "redhat.rhel_system_roles": {"version": "1.16.2"}}}
+2026-08-16 07:56:31,868 p=21 u=root n=ansible | PLAY [节点基础设置：NTP 服务器、SELinux 与 Firewalld 防火墙] *************************************************************************************************
+2026-08-16 07:56:31,888 p=21 u=root n=ansible | TASK [Gathering Facts] ***************************************************************************************************************************************
+2026-08-16 07:56:33,522 p=21 u=root n=ansible | ok: [serverd]
+2026-08-16 07:56:33,525 p=21 u=root n=ansible | ok: [serverc]
+2026-08-16 07:56:33,535 p=21 u=root n=ansible | ok: [serverb]
+2026-08-16 07:56:33,538 p=21 u=root n=ansible | ok: [servera]
+2026-08-16 07:56:33,641 p=21 u=root n=ansible | PLAY [部署 Prometheus] ***************************************************************************************************************************************
+2026-08-16 07:56:33,654 p=21 u=root n=ansible | TASK [Gathering Facts] ***************************************************************************************************************************************
+2026-08-16 07:56:34,521 p=21 u=root n=ansible | ok: [servera]
+2026-08-16 07:56:34,540 p=21 u=root n=ansible | TASK [prometheus : 创建 Prometheus 用户] *********************************************************************************************************************
+2026-08-16 07:56:35,205 p=21 u=root n=ansible | changed: [servera]
+2026-08-16 07:56:35,216 p=21 u=root n=ansible | TASK [prometheus : 创建 Prometheus 相关目录] *****************************************************************************************************************
+2026-08-16 07:56:35,715 p=21 u=root n=ansible | changed: [servera] => (item=/usr/local/bin)
+2026-08-16 07:56:36,059 p=21 u=root n=ansible | changed: [servera] => (item=/etc/prometheus)
+2026-08-16 07:56:36,399 p=21 u=root n=ansible | changed: [servera] => (item=/var/lib/prometheus)
+2026-08-16 07:56:36,410 p=21 u=root n=ansible | TASK [prometheus : 下载 Prometheus 二进制安装包] *************************************************************************************************************
+2026-08-16 07:56:37,577 p=21 u=root n=ansible | changed: [servera]
+2026-08-16 07:56:37,588 p=21 u=root n=ansible | TASK [prometheus : 判断 Prometheus 安装包是否存在] ***********************************************************************************************************
+2026-08-16 07:56:38,077 p=21 u=root n=ansible | changed: [servera]
+2026-08-16 07:56:38,088 p=21 u=root n=ansible | TASK [prometheus : 解压 Prometheus 二进制安装包] *************************************************************************************************************
+2026-08-16 07:56:45,635 p=21 u=root n=ansible | changed: [servera]
+2026-08-16 07:56:45,649 p=21 u=root n=ansible | TASK [prometheus : 安装 Prometheus 二进制文件] ***************************************************************************************************************
+2026-08-16 07:56:46,989 p=21 u=root n=ansible | changed: [servera] => (item=prometheus)
+2026-08-16 07:56:48,295 p=21 u=root n=ansible | changed: [servera] => (item=promtool)
+2026-08-16 07:56:48,312 p=21 u=root n=ansible | TASK [prometheus : 部署 Prometheus 配置文件] *****************************************************************************************************************
+2026-08-16 07:56:49,083 p=21 u=root n=ansible | changed: [servera]
+2026-08-16 07:56:49,093 p=21 u=root n=ansible | TASK [prometheus : 创建告警规则目录] *************************************************************************************************************************
+2026-08-16 07:56:49,454 p=21 u=root n=ansible | changed: [servera]
+2026-08-16 07:56:49,467 p=21 u=root n=ansible | TASK [prometheus : 部署节点告警规则] *************************************************************************************************************************
+2026-08-16 07:56:50,131 p=21 u=root n=ansible | changed: [servera]
+2026-08-16 07:56:50,142 p=21 u=root n=ansible | TASK [prometheus : 部署应用告警规则] *************************************************************************************************************************
+2026-08-16 07:56:50,811 p=21 u=root n=ansible | changed: [servera]
+2026-08-16 07:56:50,822 p=21 u=root n=ansible | TASK [prometheus : 验证 Prometheus 配置] *********************************************************************************************************************
+2026-08-16 07:56:51,214 p=21 u=root n=ansible | ok: [servera]
+2026-08-16 07:56:51,225 p=21 u=root n=ansible | TASK [prometheus : 部署 systemd 的 service 单元] *************************************************************************************************************
+2026-08-16 07:56:51,897 p=21 u=root n=ansible | changed: [servera]
+2026-08-16 07:56:51,908 p=21 u=root n=ansible | TASK [prometheus : 启动与开机自启 Prometheus] ****************************************************************************************************************
+2026-08-16 07:56:53,238 p=21 u=root n=ansible | changed: [servera]
+2026-08-16 07:56:53,261 p=21 u=root n=ansible | RUNNING HANDLER [prometheus : restart prometheus] ************************************************************************************************************
+2026-08-16 07:56:53,965 p=21 u=root n=ansible | changed: [servera]
+2026-08-16 07:56:53,966 p=21 u=root n=ansible | RUNNING HANDLER [prometheus : reload prometheus] *************************************************************************************************************
+2026-08-16 07:56:54,728 p=21 u=root n=ansible | ok: [servera]
+2026-08-16 07:56:54,740 p=21 u=root n=ansible | PLAY [部署 Alertmanager] *************************************************************************************************************************************
+2026-08-16 07:56:54,783 p=21 u=root n=ansible | PLAY [所有节点上部署 Node Exporter] **************************************************************************************************************************
+2026-08-16 07:56:54,846 p=21 u=root n=ansible | PLAY [部署 Python 应用] **************************************************************************************************************************************
+2026-08-16 07:56:54,897 p=21 u=root n=ansible | PLAY [部署 Grafana Server 数据可视化面板] ********************************************************************************************************************
+2026-08-16 07:56:54,908 p=21 u=root n=ansible | TASK [Gathering Facts] ***************************************************************************************************************************************
+2026-08-16 07:56:55,851 p=21 u=root n=ansible | ok: [servera]
+2026-08-16 07:56:55,883 p=21 u=root n=ansible | PLAY RECAP ***************************************************************************************************************************************************
+2026-08-16 07:56:55,883 p=21 u=root n=ansible | servera                    : ok=18   changed=13   unreachable=0    failed=0    skipped=0    rescued=0    ignored=0   
+2026-08-16 07:56:55,883 p=21 u=root n=ansible | serverb                    : ok=1    changed=0    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0   
+2026-08-16 07:56:55,883 p=21 u=root n=ansible | serverc                    : ok=1    changed=0    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0   
+2026-08-16 07:56:55,884 p=21 u=root n=ansible | serverd                    : ok=1    changed=0    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0   
+2026-08-16 07:57:09,045 p=16 u=root n=ansible | {"/home/devops/monitoring-stacks/collections/ansible_collections": {"ansible.posix": {"version": "1.5.2"}, "community.general": {"version": "9.5.7"}, "community.mysql": {"version": "3.12.0"}, "redhat.rhel_system_roles": {"version": "1.16.2"}}}
+2026-08-16 07:57:10,253 p=21 u=root n=ansible | PLAY [节点基础设置：NTP 服务器、SELinux 与 Firewalld 防火墙] *************************************************************************************************
+2026-08-16 07:57:10,274 p=21 u=root n=ansible | TASK [Gathering Facts] ***************************************************************************************************************************************
+2026-08-16 07:57:12,042 p=21 u=root n=ansible | ok: [serverc]
+2026-08-16 07:57:12,078 p=21 u=root n=ansible | ok: [serverd]
+2026-08-16 07:57:12,084 p=21 u=root n=ansible | ok: [serverb]
+2026-08-16 07:57:12,095 p=21 u=root n=ansible | ok: [servera]
+2026-08-16 07:57:12,202 p=21 u=root n=ansible | PLAY [部署 Prometheus] ***************************************************************************************************************************************
+2026-08-16 07:57:12,247 p=21 u=root n=ansible | PLAY [部署 Alertmanager] *************************************************************************************************************************************
+2026-08-16 07:57:12,261 p=21 u=root n=ansible | TASK [Gathering Facts] ***************************************************************************************************************************************
+2026-08-16 07:57:13,225 p=21 u=root n=ansible | ok: [servera]
+2026-08-16 07:57:13,245 p=21 u=root n=ansible | TASK [alertmanager : 创建 Alertmanager 相关目录] *************************************************************************************************************
+2026-08-16 07:57:13,758 p=21 u=root n=ansible | changed: [servera] => (item=/etc/alertmanager)
+2026-08-16 07:57:14,122 p=21 u=root n=ansible | changed: [servera] => (item=/var/lib/alertmanager)
+2026-08-16 07:57:14,134 p=21 u=root n=ansible | TASK [alertmanager : 下载 Alertmanager 二进制安装包] *********************************************************************************************************
+2026-08-16 07:57:14,994 p=21 u=root n=ansible | changed: [servera]
+2026-08-16 07:57:15,010 p=21 u=root n=ansible | TASK [alertmanager : 判断 Alertmanager 安装包是否存在] *******************************************************************************************************
+2026-08-16 07:57:15,542 p=21 u=root n=ansible | changed: [servera]
+2026-08-16 07:57:15,554 p=21 u=root n=ansible | TASK [alertmanager : 解压 Alertmanager 二进制安装包] *********************************************************************************************************
+2026-08-16 07:57:18,402 p=21 u=root n=ansible | changed: [servera]
+2026-08-16 07:57:18,413 p=21 u=root n=ansible | TASK [alertmanager : 安装 Alertmanager 二进制文件] ***********************************************************************************************************
+2026-08-16 07:57:19,088 p=21 u=root n=ansible | changed: [servera] => (item=alertmanager)
+2026-08-16 07:57:19,558 p=21 u=root n=ansible | changed: [servera] => (item=amtool)
+2026-08-16 07:57:19,571 p=21 u=root n=ansible | TASK [alertmanager : 部署 Alertmanager 配置文件] *************************************************************************************************************
+2026-08-16 07:57:20,248 p=21 u=root n=ansible | changed: [servera]
+2026-08-16 07:57:20,259 p=21 u=root n=ansible | TASK [alertmanager : 验证 Alertmanager 配置] *****************************************************************************************************************
+2026-08-16 07:57:20,631 p=21 u=root n=ansible | ok: [servera]
+2026-08-16 07:57:20,641 p=21 u=root n=ansible | TASK [alertmanager : 部署 systemd 的单元文件] ****************************************************************************************************************
+2026-08-16 07:57:21,310 p=21 u=root n=ansible | changed: [servera]
+2026-08-16 07:57:21,323 p=21 u=root n=ansible | TASK [alertmanager : 启动与开机自启 Alertmanager] ************************************************************************************************************
+2026-08-16 07:57:22,667 p=21 u=root n=ansible | changed: [servera]
+2026-08-16 07:57:22,688 p=21 u=root n=ansible | RUNNING HANDLER [alertmanager : reload systemd] **************************************************************************************************************
+2026-08-16 07:57:23,412 p=21 u=root n=ansible | ok: [servera]
+2026-08-16 07:57:23,413 p=21 u=root n=ansible | RUNNING HANDLER [alertmanager : restart alertmanager] ********************************************************************************************************
+2026-08-16 07:57:23,971 p=21 u=root n=ansible | changed: [servera]
+2026-08-16 07:57:23,985 p=21 u=root n=ansible | PLAY [所有节点上部署 Node Exporter] **************************************************************************************************************************
+2026-08-16 07:57:24,053 p=21 u=root n=ansible | PLAY [部署 Python 应用] **************************************************************************************************************************************
+2026-08-16 07:57:24,104 p=21 u=root n=ansible | PLAY [部署 Grafana Server 数据可视化面板] ********************************************************************************************************************
+2026-08-16 07:57:24,115 p=21 u=root n=ansible | TASK [Gathering Facts] ***************************************************************************************************************************************
+2026-08-16 07:57:25,024 p=21 u=root n=ansible | ok: [servera]
+2026-08-16 07:57:25,056 p=21 u=root n=ansible | PLAY RECAP ***************************************************************************************************************************************************
+2026-08-16 07:57:25,056 p=21 u=root n=ansible | servera                    : ok=14   changed=9    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0   
+2026-08-16 07:57:25,056 p=21 u=root n=ansible | serverb                    : ok=1    changed=0    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0   
+2026-08-16 07:57:25,057 p=21 u=root n=ansible | serverc                    : ok=1    changed=0    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0   
+2026-08-16 07:57:25,057 p=21 u=root n=ansible | serverd                    : ok=1    changed=0    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0   
+2026-08-16 07:57:29,193 p=16 u=root n=ansible | {"/home/devops/monitoring-stacks/collections/ansible_collections": {"ansible.posix": {"version": "1.5.2"}, "community.general": {"version": "9.5.7"}, "community.mysql": {"version": "3.12.0"}, "redhat.rhel_system_roles": {"version": "1.16.2"}}}
+2026-08-16 07:57:30,357 p=21 u=root n=ansible | PLAY [节点基础设置：NTP 服务器、SELinux 与 Firewalld 防火墙] *************************************************************************************************
+2026-08-16 07:57:30,381 p=21 u=root n=ansible | TASK [Gathering Facts] ***************************************************************************************************************************************
+2026-08-16 07:57:32,056 p=21 u=root n=ansible | ok: [serverc]
+2026-08-16 07:57:32,060 p=21 u=root n=ansible | ok: [serverd]
+2026-08-16 07:57:32,075 p=21 u=root n=ansible | ok: [servera]
+2026-08-16 07:57:32,081 p=21 u=root n=ansible | ok: [serverb]
+2026-08-16 07:57:32,177 p=21 u=root n=ansible | PLAY [部署 Prometheus] ***************************************************************************************************************************************
+2026-08-16 07:57:32,214 p=21 u=root n=ansible | PLAY [部署 Alertmanager] *************************************************************************************************************************************
+2026-08-16 07:57:32,250 p=21 u=root n=ansible | PLAY [所有节点上部署 Node Exporter] **************************************************************************************************************************
+2026-08-16 07:57:32,261 p=21 u=root n=ansible | TASK [Gathering Facts] ***************************************************************************************************************************************
+2026-08-16 07:57:33,310 p=21 u=root n=ansible | ok: [servera]
+2026-08-16 07:57:33,313 p=21 u=root n=ansible | ok: [serverc]
+2026-08-16 07:57:33,423 p=21 u=root n=ansible | ok: [serverb]
+2026-08-16 07:57:33,460 p=21 u=root n=ansible | ok: [serverd]
+2026-08-16 07:57:33,480 p=21 u=root n=ansible | TASK [node_exporter : 创建 Prometheus 用户] ******************************************************************************************************************
+2026-08-16 07:57:34,211 p=21 u=root n=ansible | ok: [servera]
+2026-08-16 07:57:34,281 p=21 u=root n=ansible | changed: [serverd]
+2026-08-16 07:57:34,297 p=21 u=root n=ansible | changed: [serverc]
+2026-08-16 07:57:34,306 p=21 u=root n=ansible | changed: [serverb]
+2026-08-16 07:57:34,318 p=21 u=root n=ansible | TASK [node_exporter : 下载 Node Exporter 二进制安装包] *******************************************************************************************************
+2026-08-16 07:57:35,185 p=21 u=root n=ansible | changed: [serverd]
+2026-08-16 07:57:35,189 p=21 u=root n=ansible | changed: [serverc]
+2026-08-16 07:57:35,194 p=21 u=root n=ansible | changed: [serverb]
+2026-08-16 07:57:35,205 p=21 u=root n=ansible | changed: [servera]
+2026-08-16 07:57:35,217 p=21 u=root n=ansible | TASK [node_exporter : 判断 Node Exporter 安装包是否存在] *****************************************************************************************************
+2026-08-16 07:57:35,863 p=21 u=root n=ansible | changed: [serverd]
+2026-08-16 07:57:35,867 p=21 u=root n=ansible | changed: [serverb]
+2026-08-16 07:57:35,944 p=21 u=root n=ansible | changed: [servera]
+2026-08-16 07:57:35,946 p=21 u=root n=ansible | changed: [serverc]
+2026-08-16 07:57:35,958 p=21 u=root n=ansible | TASK [node_exporter : 解压 Node Exporter 二进制安装包] *******************************************************************************************************
+2026-08-16 07:57:38,003 p=21 u=root n=ansible | changed: [servera]
+2026-08-16 07:57:38,018 p=21 u=root n=ansible | changed: [serverd]
+2026-08-16 07:57:38,020 p=21 u=root n=ansible | changed: [serverc]
+2026-08-16 07:57:38,032 p=21 u=root n=ansible | changed: [serverb]
+2026-08-16 07:57:38,043 p=21 u=root n=ansible | TASK [node_exporter : 安装 Node Exporter 二进制文件] *********************************************************************************************************
+2026-08-16 07:57:38,804 p=21 u=root n=ansible | changed: [serverc]
+2026-08-16 07:57:38,813 p=21 u=root n=ansible | changed: [serverb]
+2026-08-16 07:57:38,878 p=21 u=root n=ansible | changed: [serverd]
+2026-08-16 07:57:38,890 p=21 u=root n=ansible | changed: [servera]
+2026-08-16 07:57:38,903 p=21 u=root n=ansible | TASK [node_exporter : 部署 systemd 的 service 单元文件] ******************************************************************************************************
+2026-08-16 07:57:39,884 p=21 u=root n=ansible | changed: [servera]
+2026-08-16 07:57:39,939 p=21 u=root n=ansible | changed: [serverb]
+2026-08-16 07:57:40,018 p=21 u=root n=ansible | changed: [serverc]
+2026-08-16 07:57:40,049 p=21 u=root n=ansible | changed: [serverd]
+2026-08-16 07:57:40,061 p=21 u=root n=ansible | TASK [node_exporter : 启动与开机自启 Node Exporter] **********************************************************************************************************
+2026-08-16 07:57:41,567 p=21 u=root n=ansible | changed: [serverd]
+2026-08-16 07:57:41,609 p=21 u=root n=ansible | changed: [servera]
+2026-08-16 07:57:41,632 p=21 u=root n=ansible | changed: [serverb]
+2026-08-16 07:57:41,666 p=21 u=root n=ansible | changed: [serverc]
+2026-08-16 07:57:41,728 p=21 u=root n=ansible | RUNNING HANDLER [node_exporter : reload systemd] *************************************************************************************************************
+2026-08-16 07:57:42,686 p=21 u=root n=ansible | ok: [servera]
+2026-08-16 07:57:42,687 p=21 u=root n=ansible | ok: [serverb]
+2026-08-16 07:57:42,719 p=21 u=root n=ansible | ok: [serverc]
+2026-08-16 07:57:42,742 p=21 u=root n=ansible | ok: [serverd]
+2026-08-16 07:57:42,743 p=21 u=root n=ansible | RUNNING HANDLER [node_exporter : restart node_exporter] ******************************************************************************************************
+2026-08-16 07:57:43,485 p=21 u=root n=ansible | changed: [servera]
+2026-08-16 07:57:43,511 p=21 u=root n=ansible | changed: [serverc]
+2026-08-16 07:57:43,550 p=21 u=root n=ansible | changed: [serverb]
+2026-08-16 07:57:43,563 p=21 u=root n=ansible | changed: [serverd]
+2026-08-16 07:57:43,578 p=21 u=root n=ansible | PLAY [部署 Python 应用] **************************************************************************************************************************************
+2026-08-16 07:57:43,633 p=21 u=root n=ansible | PLAY [部署 Grafana Server 数据可视化面板] ********************************************************************************************************************
+2026-08-16 07:57:43,645 p=21 u=root n=ansible | TASK [Gathering Facts] ***************************************************************************************************************************************
+2026-08-16 07:57:44,532 p=21 u=root n=ansible | ok: [servera]
+2026-08-16 07:57:44,565 p=21 u=root n=ansible | PLAY RECAP ***************************************************************************************************************************************************
+2026-08-16 07:57:44,565 p=21 u=root n=ansible | servera                    : ok=12   changed=7    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0   
+2026-08-16 07:57:44,565 p=21 u=root n=ansible | serverb                    : ok=11   changed=8    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0   
+2026-08-16 07:57:44,566 p=21 u=root n=ansible | serverc                    : ok=11   changed=8    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0   
+2026-08-16 07:57:44,566 p=21 u=root n=ansible | serverd                    : ok=11   changed=8    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0   
+2026-08-16 07:57:49,276 p=16 u=root n=ansible | {"/home/devops/monitoring-stacks/collections/ansible_collections": {"ansible.posix": {"version": "1.5.2"}, "community.general": {"version": "9.5.7"}, "community.mysql": {"version": "3.12.0"}, "redhat.rhel_system_roles": {"version": "1.16.2"}}}
+2026-08-16 07:57:50,468 p=21 u=root n=ansible | PLAY [节点基础设置：NTP 服务器、SELinux 与 Firewalld 防火墙] *************************************************************************************************
+2026-08-16 07:57:50,491 p=21 u=root n=ansible | TASK [Gathering Facts] ***************************************************************************************************************************************
+2026-08-16 07:57:52,090 p=21 u=root n=ansible | ok: [serverd]
+2026-08-16 07:57:52,169 p=21 u=root n=ansible | ok: [serverb]
+2026-08-16 07:57:52,186 p=21 u=root n=ansible | ok: [servera]
+2026-08-16 07:57:52,231 p=21 u=root n=ansible | ok: [serverc]
+2026-08-16 07:57:52,349 p=21 u=root n=ansible | PLAY [部署 Prometheus] ***************************************************************************************************************************************
+2026-08-16 07:57:52,395 p=21 u=root n=ansible | PLAY [部署 Alertmanager] *************************************************************************************************************************************
+2026-08-16 07:57:52,437 p=21 u=root n=ansible | PLAY [所有节点上部署 Node Exporter] **************************************************************************************************************************
+2026-08-16 07:57:52,502 p=21 u=root n=ansible | PLAY [部署 Python 应用] **************************************************************************************************************************************
+2026-08-16 07:57:52,514 p=21 u=root n=ansible | TASK [Gathering Facts] ***************************************************************************************************************************************
+2026-08-16 07:57:53,456 p=21 u=root n=ansible | ok: [serverc]
+2026-08-16 07:57:53,478 p=21 u=root n=ansible | ok: [serverb]
+2026-08-16 07:57:53,497 p=21 u=root n=ansible | TASK [python_app : 创建 dnf repo 文件] ***********************************************************************************************************************
+2026-08-16 07:57:54,100 p=21 u=root n=ansible | changed: [serverc] => (item=/etc/yum.repos.d/rhel_dvd.repo)
+2026-08-16 07:57:54,111 p=21 u=root n=ansible | changed: [serverb] => (item=/etc/yum.repos.d/rhel_dvd.repo)
+2026-08-16 07:57:54,559 p=21 u=root n=ansible | changed: [serverb] => (item=/etc/yum.repos.d/additional.repo)
+2026-08-16 07:57:54,585 p=21 u=root n=ansible | changed: [serverc] => (item=/etc/yum.repos.d/additional.repo)
+2026-08-16 07:57:54,600 p=21 u=root n=ansible | TASK [python_app : 配置 dnf 软件源1] *************************************************************************************************************************
+2026-08-16 07:57:55,139 p=21 u=root n=ansible | changed: [serverc]
+2026-08-16 07:57:55,143 p=21 u=root n=ansible | changed: [serverb]
+2026-08-16 07:57:55,160 p=21 u=root n=ansible | TASK [python_app : 配置 dnf 软件源2] *************************************************************************************************************************
+2026-08-16 07:57:55,559 p=21 u=root n=ansible | changed: [serverb]
+2026-08-16 07:57:55,574 p=21 u=root n=ansible | changed: [serverc]
+2026-08-16 07:57:55,585 p=21 u=root n=ansible | TASK [python_app : 安装 Python3 相关软件包] ******************************************************************************************************************
+2026-08-16 07:57:56,735 p=21 u=root n=ansible | ok: [serverc]
+2026-08-16 07:57:56,735 p=21 u=root n=ansible | ok: [serverb]
+2026-08-16 07:57:56,746 p=21 u=root n=ansible | TASK [python_app : 创建 Python3 应用目录] ********************************************************************************************************************
+2026-08-16 07:57:57,145 p=21 u=root n=ansible | changed: [serverb]
+2026-08-16 07:57:57,181 p=21 u=root n=ansible | changed: [serverc]
+2026-08-16 07:57:57,193 p=21 u=root n=ansible | TASK [python_app : 设置 pip3 模块源] *************************************************************************************************************************
+2026-08-16 07:57:58,477 p=21 u=root n=ansible | changed: [serverb]
+2026-08-16 07:57:58,485 p=21 u=root n=ansible | changed: [serverc]
+2026-08-16 07:57:58,497 p=21 u=root n=ansible | TASK [python_app : 拷贝 Python3 依赖包文件] ******************************************************************************************************************
+2026-08-16 07:57:59,494 p=21 u=root n=ansible | changed: [serverc]
+2026-08-16 07:57:59,509 p=21 u=root n=ansible | changed: [serverb]
+2026-08-16 07:57:59,522 p=21 u=root n=ansible | TASK [python_app : 部署 Python3 应用源码] ********************************************************************************************************************
+2026-08-16 07:58:00,259 p=21 u=root n=ansible | changed: [serverb]
+2026-08-16 07:58:00,313 p=21 u=root n=ansible | changed: [serverc]
+2026-08-16 07:58:00,325 p=21 u=root n=ansible | TASK [python_app : 安装应用依赖包] ***************************************************************************************************************************
+2026-08-16 07:58:12,652 p=21 u=root n=ansible | changed: [serverc]
+2026-08-16 07:58:12,813 p=21 u=root n=ansible | changed: [serverb]
+2026-08-16 07:58:12,824 p=21 u=root n=ansible | TASK [python_app : 部署 systemd 服务] ************************************************************************************************************************
+2026-08-16 07:58:13,632 p=21 u=root n=ansible | changed: [serverc]
+2026-08-16 07:58:13,634 p=21 u=root n=ansible | changed: [serverb]
+2026-08-16 07:58:13,647 p=21 u=root n=ansible | TASK [python_app : 启动并开机自启 Python 应用] ***************************************************************************************************************
+2026-08-16 07:58:14,950 p=21 u=root n=ansible | changed: [serverc]
+2026-08-16 07:58:15,027 p=21 u=root n=ansible | changed: [serverb]
+2026-08-16 07:58:15,080 p=21 u=root n=ansible | RUNNING HANDLER [python_app : reload systemd] ****************************************************************************************************************
+2026-08-16 07:58:16,179 p=21 u=root n=ansible | ok: [serverc]
+2026-08-16 07:58:16,274 p=21 u=root n=ansible | ok: [serverb]
+2026-08-16 07:58:16,275 p=21 u=root n=ansible | RUNNING HANDLER [python_app : restart python_app] ************************************************************************************************************
+2026-08-16 07:58:17,009 p=21 u=root n=ansible | changed: [serverb]
+2026-08-16 07:58:17,086 p=21 u=root n=ansible | changed: [serverc]
+2026-08-16 07:58:17,099 p=21 u=root n=ansible | PLAY [部署 Grafana Server 数据可视化面板] ********************************************************************************************************************
+2026-08-16 07:58:17,112 p=21 u=root n=ansible | TASK [Gathering Facts] ***************************************************************************************************************************************
+2026-08-16 07:58:18,075 p=21 u=root n=ansible | ok: [servera]
+2026-08-16 07:58:18,107 p=21 u=root n=ansible | PLAY RECAP ***************************************************************************************************************************************************
+2026-08-16 07:58:18,107 p=21 u=root n=ansible | servera                    : ok=2    changed=0    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0   
+2026-08-16 07:58:18,107 p=21 u=root n=ansible | serverb                    : ok=15   changed=11   unreachable=0    failed=0    skipped=0    rescued=0    ignored=0   
+2026-08-16 07:58:18,107 p=21 u=root n=ansible | serverc                    : ok=15   changed=11   unreachable=0    failed=0    skipped=0    rescued=0    ignored=0   
+2026-08-16 07:58:18,107 p=21 u=root n=ansible | serverd                    : ok=1    changed=0    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0   
+2026-08-16 08:06:33,527 p=16 u=root n=ansible | {"/home/devops/monitoring-stacks/collections/ansible_collections": {"ansible.posix": {"version": "1.5.2"}, "community.general": {"version": "9.5.7"}, "community.mysql": {"version": "3.12.0"}, "redhat.rhel_system_roles": {"version": "1.16.2"}}}
+2026-08-16 08:06:34,630 p=21 u=root n=ansible | PLAY [节点基础设置：NTP 服务器、SELinux 与 Firewalld 防火墙] *************************************************************************************************
+2026-08-16 08:06:34,655 p=21 u=root n=ansible | TASK [Gathering Facts] ***************************************************************************************************************************************
+2026-08-16 08:06:36,313 p=21 u=root n=ansible | ok: [servera]
+2026-08-16 08:06:36,317 p=21 u=root n=ansible | ok: [serverc]
+2026-08-16 08:06:36,355 p=21 u=root n=ansible | ok: [serverd]
+2026-08-16 08:06:36,359 p=21 u=root n=ansible | ok: [serverb]
+2026-08-16 08:06:36,461 p=21 u=root n=ansible | PLAY [部署 Prometheus] ***************************************************************************************************************************************
+2026-08-16 08:06:36,500 p=21 u=root n=ansible | PLAY [部署 Alertmanager] *************************************************************************************************************************************
+2026-08-16 08:06:36,537 p=21 u=root n=ansible | PLAY [所有节点上部署 Node Exporter] **************************************************************************************************************************
+2026-08-16 08:06:36,596 p=21 u=root n=ansible | PLAY [部署 Grafana Server 数据可视化面板] ********************************************************************************************************************
+2026-08-16 08:06:36,605 p=21 u=root n=ansible | TASK [Gathering Facts] ***************************************************************************************************************************************
+2026-08-16 08:06:37,420 p=21 u=root n=ansible | ok: [servera]
+2026-08-16 08:06:37,440 p=21 u=root n=ansible | TASK [下载 Grafana 二进制安装包] *****************************************************************************************************************************
+2026-08-16 08:06:39,319 p=21 u=root n=ansible | changed: [servera]
+2026-08-16 08:06:39,330 p=21 u=root n=ansible | TASK [判断 Grafana 安装包是否存在] ***************************************************************************************************************************
+2026-08-16 08:06:39,830 p=21 u=root n=ansible | changed: [servera]
+2026-08-16 08:06:39,840 p=21 u=root n=ansible | TASK [创建 Grafana 根目录] ***********************************************************************************************************************************
+2026-08-16 08:06:40,315 p=21 u=root n=ansible | changed: [servera]
+2026-08-16 08:06:40,325 p=21 u=root n=ansible | TASK [解压 Grafana 二进制安装包] *****************************************************************************************************************************
+2026-08-16 08:06:56,402 p=21 u=root n=ansible | changed: [servera]
+2026-08-16 08:06:56,413 p=21 u=root n=ansible | TASK [配置 Grafana 数据源] ***********************************************************************************************************************************
+2026-08-16 08:06:57,301 p=21 u=root n=ansible | fatal: [servera]: FAILED! => {"changed": false, "checksum": "5000c2b9f970cb78a171f47edd8f469f2573c82f", "msg": "Destination directory /usr/local/grafana-12.3.3/conf/provisioning/datasources does not exist"}
+2026-08-16 08:06:57,302 p=21 u=root n=ansible | PLAY RECAP ***************************************************************************************************************************************************
+2026-08-16 08:06:57,303 p=21 u=root n=ansible | servera                    : ok=6    changed=4    unreachable=0    failed=1    skipped=0    rescued=0    ignored=0   
+2026-08-16 08:06:57,303 p=21 u=root n=ansible | serverb                    : ok=1    changed=0    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0   
+2026-08-16 08:06:57,303 p=21 u=root n=ansible | serverc                    : ok=1    changed=0    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0   
+2026-08-16 08:06:57,303 p=21 u=root n=ansible | serverd                    : ok=1    changed=0    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0   
+2026-08-16 08:09:37,421 p=16 u=root n=ansible | {"/home/devops/monitoring-stacks/collections/ansible_collections": {"ansible.posix": {"version": "1.5.2"}, "community.general": {"version": "9.5.7"}, "community.mysql": {"version": "3.12.0"}, "redhat.rhel_system_roles": {"version": "1.16.2"}}}
+2026-08-16 08:09:38,536 p=21 u=root n=ansible | PLAY [节点基础设置：NTP 服务器、SELinux 与 Firewalld 防火墙] *************************************************************************************************
+2026-08-16 08:09:38,558 p=21 u=root n=ansible | TASK [Gathering Facts] ***************************************************************************************************************************************
+2026-08-16 08:09:40,178 p=21 u=root n=ansible | ok: [serverc]
+2026-08-16 08:09:40,182 p=21 u=root n=ansible | ok: [serverb]
+2026-08-16 08:09:40,200 p=21 u=root n=ansible | ok: [serverd]
+2026-08-16 08:09:40,226 p=21 u=root n=ansible | ok: [servera]
+2026-08-16 08:09:40,323 p=21 u=root n=ansible | PLAY [部署 Prometheus] ***************************************************************************************************************************************
+2026-08-16 08:09:40,362 p=21 u=root n=ansible | PLAY [部署 Alertmanager] *************************************************************************************************************************************
+2026-08-16 08:09:40,398 p=21 u=root n=ansible | PLAY [所有节点上部署 Node Exporter] **************************************************************************************************************************
+2026-08-16 08:09:40,457 p=21 u=root n=ansible | PLAY [部署 Grafana Server 数据可视化面板] ********************************************************************************************************************
+2026-08-16 08:09:40,466 p=21 u=root n=ansible | TASK [Gathering Facts] ***************************************************************************************************************************************
+2026-08-16 08:09:41,318 p=21 u=root n=ansible | ok: [servera]
+2026-08-16 08:09:41,340 p=21 u=root n=ansible | TASK [下载 Grafana 二进制安装包] *****************************************************************************************************************************
+2026-08-16 08:09:43,041 p=21 u=root n=ansible | ok: [servera]
+2026-08-16 08:09:43,052 p=21 u=root n=ansible | TASK [判断 Grafana 安装包是否存在] ***************************************************************************************************************************
+2026-08-16 08:09:43,568 p=21 u=root n=ansible | changed: [servera]
+2026-08-16 08:09:43,578 p=21 u=root n=ansible | TASK [解压 Grafana 二进制安装包] *****************************************************************************************************************************
+2026-08-16 08:09:59,126 p=21 u=root n=ansible | changed: [servera]
+2026-08-16 08:09:59,137 p=21 u=root n=ansible | TASK [配置 Grafana 数据源] ***********************************************************************************************************************************
+2026-08-16 08:09:59,963 p=21 u=root n=ansible | changed: [servera]
+2026-08-16 08:09:59,973 p=21 u=root n=ansible | TASK [配置 Grafana 的 service 单元文件] **********************************************************************************************************************
+2026-08-16 08:10:00,628 p=21 u=root n=ansible | changed: [servera]
+2026-08-16 08:10:00,639 p=21 u=root n=ansible | RUNNING HANDLER [reload systemd] *****************************************************************************************************************************
+2026-08-16 08:10:01,658 p=21 u=root n=ansible | ok: [servera]
+2026-08-16 08:10:01,659 p=21 u=root n=ansible | RUNNING HANDLER [restart grafana] ****************************************************************************************************************************
+2026-08-16 08:10:08,673 p=21 u=root n=ansible | changed: [servera]
+2026-08-16 08:10:08,686 p=21 u=root n=ansible | PLAY [部署 Python 应用] **************************************************************************************************************************************
+2026-08-16 08:10:08,740 p=21 u=root n=ansible | PLAY RECAP ***************************************************************************************************************************************************
+2026-08-16 08:10:08,740 p=21 u=root n=ansible | servera                    : ok=9    changed=5    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0   
+2026-08-16 08:10:08,740 p=21 u=root n=ansible | serverb                    : ok=1    changed=0    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0   
+2026-08-16 08:10:08,740 p=21 u=root n=ansible | serverc                    : ok=1    changed=0    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0   
+2026-08-16 08:10:08,740 p=21 u=root n=ansible | serverd                    : ok=1    changed=0    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0   

@@ -22,18 +22,10 @@
       ansible.builtin.shell: ls /opt/{{ grafana_tarball }}
       register: grafana_state
 
-    - name: 创建 Grafana 根目录
-      ansible.builtin.file:
-        path: "{{ grafana_homepath }}"
-        state: directory
-        owner: root
-        group: root
-        mode: '0755'
-
     - name: 解压 Grafana 二进制安装包
       ansible.builtin.unarchive:
         src: /opt/{{ grafana_tarball }}
-        dest: "{{ grafana_homepath }}"
+        dest: /usr/local
         remote_src: yes
       when: grafana_state.rc == 0
 

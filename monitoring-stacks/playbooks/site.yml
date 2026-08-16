@@ -2,4 +2,3 @@
 - import_playbook: base_setup.yml
 - import_playbook: deploy_monitor.yml
 - import_playbook: deploy_app.yml
-- import_playbook: deploy_grafana.yml

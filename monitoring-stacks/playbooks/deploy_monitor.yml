@@ -20,3 +20,7 @@
   tags:
     - node_exporter
 
+- name: 部署 Grafana
+  import_playbook: deploy_grafana.yml
+  tags:
+    - grafana
