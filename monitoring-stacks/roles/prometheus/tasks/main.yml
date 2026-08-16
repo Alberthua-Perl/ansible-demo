@@ -1,0 +1,101 @@
+---
+- name: 创建 Prometheus 用户
+  ansible.builtin.user:
+    name: prometheus
+    shell: /usr/sbin/nologin
+    system: yes
+    create_home: no
+
+- name: 创建 Prometheus 相关目录
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    owner: prometheus
+    group: prometheus
+    mode: '0755'
+  loop:
+    - "{{ prometheus_install_dir }}"
+    - "{{ prometheus_config_dir }}"
+    - "{{ prometheus_data_dir }}"
+
+- name: 下载 Prometheus 二进制安装包
+  ansible.builtin.get_url:
+    url: "{{ prometheus_download_url }}"
+    dest: /opt
+    mode: '0644'
+
+- name: 判断 Prometheus 安装包是否存在
+  ansible.builtin.shell: ls /opt/prometheus-{{ prometheus_version }}.linux-amd64.tar.gz
+  register: prom_state
+
+- name: 解压 Prometheus 二进制安装包
+  ansible.builtin.unarchive:
+    src: /opt/prometheus-{{ prometheus_version }}.linux-amd64.tar.gz
+    dest: /tmp
+    remote_src: yes
+    creates: /tmp/prometheus-{{ prometheus_version }}.linux-amd64
+    owner: prometheus
+    group: prometheus
+  when: prom_state.rc == 0
+
+- name: 安装 Prometheus 二进制文件
+  ansible.builtin.copy:
+    src: /tmp/prometheus-{{ prometheus_version }}.linux-amd64/{{ item }}
+    dest: "{{ prometheus_install_dir }}/{{ item }}"
+    mode: '0755'
+    remote_src: yes
+  loop:
+    - prometheus
+    - promtool
+
+- name: 部署 Prometheus 配置文件
+  ansible.builtin.template:
+    src: prometheus.yml.j2
+    dest: "{{ prometheus_config_dir }}/prometheus.yml"
+    owner: prometheus
+    group: prometheus
+    mode: '0644'
+  notify: restart prometheus
+
+- name: 创建告警规则目录
+  ansible.builtin.file:
+    path: "{{ prometheus_config_dir }}/rules"
+    state: directory
+    owner: prometheus
+    group: prometheus
+    mode: '0755'
+
+- name: 部署节点告警规则
+  ansible.builtin.template:
+    src: node_rules.yml.j2
+    dest: "{{ prometheus_config_dir }}/rules/node_rules.yml"
+  notify:
+    - reload prometheus
+
+- name: 部署应用告警规则
+  ansible.builtin.template:
+    src: app_rules.yml.j2
+    dest: "{{ prometheus_config_dir }}/rules/app_rules.yml"
+  notify:
+    - reload prometheus
+
+- name: 验证 Prometheus 配置
+  ansible.builtin.command: "{{ prometheus_install_dir }}/promtool check config {{ prometheus_config_dir }}/prometheus.yml"
+  changed_when: false
+
+- name: 部署 systemd 的 service 单元
+  ansible.builtin.template:
+    src: prometheus.service.j2
+    dest: /etc/systemd/system/prometheus.service
+    mode: '0644'
+  notify:
+    - restart prometheus
+    - reload prometheus
+
+- name: 启动与开机自启 Prometheus
+  ansible.builtin.systemd:
+    name: prometheus
+    state: started
+    enabled: yes
+    daemon_reload: yes    # 自动加载服务配置单元文件
+

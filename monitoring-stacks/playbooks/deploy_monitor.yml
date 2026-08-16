@@ -1,0 +1,22 @@
+---
+- name: 部署 Prometheus
+  hosts: monitoring
+  roles:
+    - role: prometheus
+  tags:
+    - prometheus
+
+- name: 部署 Alertmanager
+  hosts: monitoring
+  roles:
+    - role: alertmanager
+  tags:
+    - alertmanager
+
+- name: 所有节点上部署 Node Exporter
+  hosts: all_servers
+  roles:
+    - role: node_exporter
+  tags:
+    - node_exporter
+

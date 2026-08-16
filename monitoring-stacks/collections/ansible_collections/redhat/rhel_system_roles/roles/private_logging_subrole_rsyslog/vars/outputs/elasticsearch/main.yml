@@ -1,0 +1,72 @@
+---
+# SPDX-License-Identifier: GPL-3.0-only
+
+# Elasticsearch output configuration setting
+# ------------------------------------------
+
+# __rsyslog_elasticsearch_package
+#
+# List of rpm packages for Elasticsearch output.
+__rsyslog_elasticsearch_packages: ['rsyslog-elasticsearch']
+
+# Elasticsearch Rsyslog configuration rules
+# ---------------------------
+
+__rsyslog_elasticsearch_rules:
+
+  - '{{ __rsyslog_conf_es_main_modules }}'
+  - '{{ __rsyslog_conf_es_elasticsearch }}'
+
+# Default elasticsearch configuration options [[[
+# ---------------------------------
+
+__rsyslog_conf_es_main_modules:
+
+  - name: 'output-elasticsearch-module'
+    type: 'modules'
+
+    sections:
+
+      - options: |-
+          # Send to Elasticsearch
+          module(load="omelasticsearch")
+
+__rsyslog_conf_es_elasticsearch:
+
+  - name: 'output-elasticsearch'
+    type: 'output'
+    sections:
+
+      - options: |-
+          # omelasticsearch
+          template(name="es_template" type="list") {
+              property(name="$!all-json-plain")
+          }
+          template(name="es_template_nl" type="list") {
+              property(name="$!all-json-plain")
+              constant(value="\n")
+          }
+
+          # Add date to the end of the index name - index_prefix.yyyy-mm-dd,
+          # based on the log timestamp.
+          # This template sets "index_name"
+          template(name="prefix_index_template" type="list") {
+              property(name="$.index_prefix")
+              property(name="$!@timestamp" dateFormat="rfc3339"
+                  position.from="1" position.to="4")
+              constant(value=".")
+              property(name="$!@timestamp" dateFormat="rfc3339"
+                  position.from="6" position.to="7")
+              constant(value=".")
+              property(name="$!@timestamp" dateFormat="rfc3339"
+                  position.from="9" position.to="10")
+          }
+
+          template(name="index_template" type="string" string="%$.index_name%")
+          template(name="id_template" type="string" string="%$.es_msg_id%")
+
+          ruleset(name="error_es") {
+              action(name="es_bulk_errors" type="omfile"
+                  template="es_template_nl"
+                  file="{{ __rsyslog_work_dir }}/es-bulk-errors.log")
+          }

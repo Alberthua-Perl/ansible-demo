@@ -1,4 +1,4 @@
-# **同步节点 SSH 公钥**
+# 🛡️  authorized_keys 模块同步用户 SSH 公钥
 
 使用 `sync-sshkey.yml` playbook 可实现以下功能：
 

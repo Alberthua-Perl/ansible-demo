@@ -1,0 +1,15 @@
+[Unit]
+Description=Python Prometheus Demo Application
+After=network-online.target
+
+[Service]
+Type=simple
+User=root
+Group=root
+WorkingDirectory={{ python_app_dir }}
+ExecStart=/usr/local/bin/gunicorn -w 4 -b 0.0.0.0:{{ python_app_port }} app:app
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target

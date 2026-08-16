@@ -1,0 +1,10 @@
+# SPDX-License-Identifier: BSD-3-Clause
+---
+- hosts: all
+  name: Run playbook 'playbooks/tests_switch_provider.yml'
+
+- import_playbook: playbooks/tests_switch_provider.yml
+  when:
+  # The test requires NetworkManager and initscripts, therefore it can only
+  # run on RHEL/CentOS 7, RHEL/CentOS 8, or Fedora
+    - ansible_distribution in ['CentOS', 'RedHat'] and ansible_distribution_major_version in ['7', '8']

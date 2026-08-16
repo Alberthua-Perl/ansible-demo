@@ -1,0 +1,25 @@
+[Unit]
+Description=Prometheus Monitoring System Service
+After=network-online.target
+
+[Service]
+Type=simple
+User=prometheus
+Group=prometheus
+ExecReload=/bin/kill -HUP $MAINPID
+ExecStart={{ prometheus_install_dir }}/prometheus \
+  --config.file={{ prometheus_config_dir }}/prometheus.yml \
+  --storage.tsdb.path={{ prometheus_data_dir }} \
+  --storage.tsdb.retention.time=15d \
+  --web.listen-address=0.0.0.0:{{ prometheus_port }} \
+  --web.read-timeout=5m \
+  --web.max-connections=10 \
+  --web.enable-lifecycle \
+  --query.max-concurrency=20 \
+  --query.timeout=3m \
+  --log.level=debug
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target

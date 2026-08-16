@@ -1,0 +1,37 @@
+# SPDX-License-Identifier: MIT
+---
+- name: Find platform/version specific tasks to enable repositories
+  set_fact:
+    __ha_cluster_enable_repo_tasks_file: "{{ __ha_cluster_enable_repo_tasks_file_candidate }}"
+  loop:
+    - "{{ ansible_facts['os_family'] }}.yml"
+    - "{{ ansible_facts['distribution'] }}.yml"
+    - >-
+      {{ ansible_facts['distribution'] ~ '_' ~
+      ansible_facts['distribution_major_version'] }}.yml
+    - >-
+      {{ ansible_facts['distribution'] ~ '_' ~
+      ansible_facts['distribution_version'] }}.yml
+  vars:
+    __ha_cluster_enable_repo_tasks_file_candidate: "{{ role_path }}/tasks/enable-repositories/{{ item }}"
+  when:
+    - ha_cluster_enable_repos
+    - __ha_cluster_enable_repo_tasks_file_candidate is file
+
+- name: Run platform/version specific tasks to enable repositories
+  include_tasks: "{{ __ha_cluster_enable_repo_tasks_file }}"
+  when:
+    - ha_cluster_enable_repos
+    - __ha_cluster_enable_repo_tasks_file is defined
+
+- name: Install cluster packages
+  package:
+    name: "{{ __ha_cluster_fullstack_node_packages + ha_cluster_fence_agent_packages + ha_cluster_extra_packages }}"
+    state: present
+
+# The user is created by installing pacemaker packages. We just need to set the
+# password.
+- name: Set hacluster password
+  user:
+    name: hacluster
+    password: "{{ ha_cluster_hacluster_password | password_hash( 'sha512', ansible_hostname|replace('-','x')|truncate(16, True, '') ) }}"

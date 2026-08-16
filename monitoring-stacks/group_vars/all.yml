@@ -1,0 +1,42 @@
+---
+# 软件下载地址
+prometheus_download_url: "http://workstation.lab.example.com/materials/prometheus-3.8.0.linux-amd64.tar.gz"
+alertmanager_download_url: "http://workstation.lab.example.com/materials/alertmanager-0.30.0.linux-amd64.tar.gz"
+node_exporter_download_url: "http://workstation.lab.example.com/materials/node_exporter-1.10.2.linux-amd64.tar.gz"
+
+# Prometheus 配置
+prometheus_version: "3.8.0"
+prometheus_port: 9090
+prometheus_data_dir: /var/lib/prometheus
+prometheus_config_dir: /etc/prometheus
+prometheus_install_dir: /usr/local/bin
+
+# Alertmanager 配置
+alertmanager_version: "0.30.0"
+alertmanager_port: 9093
+alertmanager_data_dir: /var/lib/alertmanager
+alertmanager_config_dir: /etc/alertmanager
+
+# Node Exporter
+node_exporter_version: "1.10.2"
+node_exporter_port: 9100
+
+# 邮件告警配置
+alertmanager_smtp_smarthost: "smtp.163.com:465"
+alertmanager_smtp_from: "tiancaizhifuyyy@163.com"
+alertmanager_smtp_auth_username: "tiancaizhifuyyy@163.com"
+alertmanager_smtp_auth_password: "SWm62ME5JzJgWZGU"
+alertmanager_email_to: "825989090@qq.com"
+
+# Python 应用
+python_app_port: 5000
+python_app_dir: /opt/python_app
+
+# 告警阈值
+alert_cpu_threshold: 80
+alert_memory_threshold: 85
+alert_disk_threshold: 10
+alert_load_threshold: 2.0
+alert_latency_threshold: 0.5
+alert_error_rate_threshold: 0.1
+

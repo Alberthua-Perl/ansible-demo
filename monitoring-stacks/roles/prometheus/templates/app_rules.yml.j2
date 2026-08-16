@@ -1,0 +1,58 @@
+groups:
+  - name: 应用告警规则
+    interval: 15s
+    rules:
+      # ===== 维度2：应用故障/性能异常 =====
+      - alert: AppDown
+        expr: up{job="python_app"} == 0
+        for: 1m
+        labels:
+          severity: critical
+          dimension: application
+        annotations:
+          summary: "应用宕机: {{ '{{ $labels.instance }}' }}"
+
+      - alert: HighErrorRate
+        expr: rate(app_errors_total[5m]) > {{ alert_error_rate_threshold }}
+        for: 2m
+        labels:
+          severity: warning
+          dimension: application
+        annotations:
+          summary: "应用错误率过高: {{ '{{ $labels.instance }}' }}"
+
+      - alert: HighLatencyP95
+        expr: histogram_quantile(0.95, rate(http_request_duration_seconds_bucket[5m])) > {{ alert_latency_threshold }}
+        for: 5m
+        labels:
+          severity: warning
+          dimension: application
+        annotations:
+          summary: "应用 P95 延迟过高: {{ '{{ $labels.instance }}' }}"
+
+      - alert: HighAppCPUUsage
+        expr: app_cpu_usage_percent > {{ alert_cpu_threshold }}
+        for: 5m
+        labels:
+          severity: warning
+          dimension: application
+        annotations:
+          summary: "应用 CPU 使用率过高: {{ '{{ $labels.instance }}' }}"
+
+      - alert: HighAppMemoryUsage
+        expr: app_memory_usage_bytes > 2 * 1024 * 1024 * 1024
+        for: 5m
+        labels:
+          severity: warning
+          dimension: application
+        annotations:
+          summary: "应用内存使用过高: {{ '{{ $labels.instance }}' }}"
+
+      - alert: AppQueueDepthHigh
+        expr: app_queue_depth > 100
+        for: 2m
+        labels:
+          severity: warning
+          dimension: application
+        annotations:
+          summary: "应用队列积压: {{ '{{ $labels.instance }}' }}"

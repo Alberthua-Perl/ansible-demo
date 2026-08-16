@@ -1,0 +1,22 @@
+[Unit]
+Description=Prometheus Node Exporter Agent
+After=network-online.target
+
+[Service]
+Type=simple
+User=prometheus
+Group=prometheus
+ExecStart={{ prometheus_install_dir }}/node_exporter \
+  --web.listen-address=0.0.0.0:{{ node_exporter_port }} \
+  --web.telemetry-path=/metrics \
+  --collector.systemd \
+  --collector.processes \
+  --collector.tcpstat \
+  --collector.vmstat \
+  --log.level=info \
+  --log.format=logfmt
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target

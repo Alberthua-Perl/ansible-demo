@@ -1,0 +1,98 @@
+---
+- name: 创建 dnf repo 文件
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: touch
+    owner: root
+    group: root
+    mode: '0644'
+  loop:
+    - /etc/yum.repos.d/rhel_dvd.repo
+    - /etc/yum.repos.d/additional.repo
+
+- name: 配置 dnf 软件源1
+  ansible.builtin.blockinfile:
+    path: /etc/yum.repos.d/rhel_dvd.repo
+    block: |
+      [rhel-9-for-x86_64-baseos-rpms]
+      baseurl = http://content.example.com/rhel9.0/x86_64/dvd/BaseOS
+      enabled = true
+      gpgcheck = false
+      name = Red Hat Enterprise Linux 9 for x86_64 - BaseOS (RPMs)
+
+      [rhel-9-for-x86_64-appstream-rpms]
+      baseurl = http://content.example.com/rhel9.0/x86_64/dvd/AppStream
+      enabled = true
+      gpgcheck = false
+      name = Red Hat Enterprise Linux 9 for x86_64 - AppStream (RPMs)
+
+- name: 配置 dnf 软件源2
+  ansible.builtin.blockinfile:
+    path: /etc/yum.repos.d/additional.repo
+    block: |
+      [ansible-automation-platform-2.2-for-rhel-9-x86_64-rpms]
+      baseurl = http://content.example.com/rhel9.0/x86_64/rhel9-additional/ansible-automation-platform-2.2-for-rhel-9-x86_64-rpms
+      enabled = true
+      gpgcheck = false
+      name = Red Hat Ansible Automation Platform 2.2 for RHEL 9 x86_64 (RPMs)
+      
+      [rhel-9-for-x86_64-baseos-rpms-updates]
+      baseurl = http://content.example.com/rhel9.0/x86_64/rhel9-additional/rhel-9-for-x86_64-baseos-rpms
+      enabled = true
+      gpgcheck = false
+      name = Red Hat Enterprise Linux 9 for x86_64 - BaseOS (RPMs) - Updates
+      
+      [rhel-9-for-x86_64-appstream-rpms-updates]
+      baseurl = http://content.example.com/rhel9.0/x86_64/rhel9-additional/rhel-9-for-x86_64-appstream-rpms
+      enabled = true
+      gpgcheck = false
+      name = Red Hat Enterprise Linux 9 for x86_64 - AppStream (RPMs) - Updates
+
+- name: 安装 Python3 相关软件包
+  ansible.builtin.dnf:
+    name: python3-pip
+    state: present
+
+- name: 创建 Python3 应用目录
+  ansible.builtin.file:
+    path: "{{ python_app_dir }}"
+    state: directory
+    mode: '0755'
+
+- name: 设置 pip3 模块源
+  ansible.builtin.shell: |
+    pip3 config set global.index-url https://mirrors.aliyun.com/pypi/simple &&
+    pip3 config set install.trusted-host mirrors.aliyun.com
+
+- name: 拷贝 Python3 依赖包文件
+  ansible.builtin.copy:
+    src: requirements.txt
+    dest: "{{ python_app_dir }}/requirements.txt"
+    mode: '0644'
+
+- name: 部署 Python3 应用源码
+  ansible.builtin.copy:
+    src: app.py
+    dest: "{{ python_app_dir }}/app.py"
+    mode: '0644'
+
+- name: 安装应用依赖包
+  ansible.builtin.pip:
+    requirements: "{{ python_app_dir }}/requirements.txt"
+
+- name: 部署 systemd 服务
+  ansible.builtin.template:
+    src: python_app.service.j2
+    dest: /etc/systemd/system/python_app.service
+    mode: '0644'
+  notify:
+    - reload systemd
+    - restart python_app
+
+- name: 启动并开机自启 Python 应用
+  ansible.builtin.systemd:
+    name: python_app
+    state: started
+    enabled: yes
+    daemon_reload: yes
+

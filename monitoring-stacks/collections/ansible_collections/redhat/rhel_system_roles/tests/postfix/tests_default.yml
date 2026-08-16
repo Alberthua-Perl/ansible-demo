@@ -1,0 +1,5 @@
+- name: Ensure that the rule runs with default parameters
+  hosts: all
+
+  roles:
+    - redhat.rhel_system_roles.postfix

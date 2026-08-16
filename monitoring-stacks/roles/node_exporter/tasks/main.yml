@@ -1,0 +1,51 @@
+---
+- name: 创建 Prometheus 用户
+  ansible.builtin.user:
+    name: prometheus
+    shell: /usr/sbin/nologin
+    system: yes
+    create_home: no
+
+- name: 下载 Node Exporter 二进制安装包
+  ansible.builtin.get_url:
+    url: "{{ node_exporter_download_url }}"
+    dest: /opt
+    mode: '0644'
+
+- name: 判断 Node Exporter 安装包是否存在
+  ansible.builtin.shell: ls /opt/node_exporter-{{ node_exporter_version }}.linux-amd64.tar.gz
+  register: node_state
+
+- name: 解压 Node Exporter 二进制安装包
+  ansible.builtin.unarchive:
+    src: /opt/node_exporter-{{ node_exporter_version }}.linux-amd64.tar.gz
+    dest: /tmp
+    remote_src: yes
+    creates: /tmp/node_exporter-{{ node_exporter_version }}.linux-amd64
+  when: node_state.rc == 0
+
+- name: 安装 Node Exporter 二进制文件
+  ansible.builtin.copy:
+    src: /tmp/node_exporter-{{ node_exporter_version }}.linux-amd64/node_exporter
+    dest: "{{ prometheus_install_dir }}/node_exporter"
+    owner: prometheus
+    group: prometheus
+    mode: '0755'
+    remote_src: yes
+
+- name: 部署 systemd 的 service 单元文件
+  ansible.builtin.template:
+    src: node_exporter.service.j2
+    dest: /etc/systemd/system/node_exporter.service
+    mode: '0644'
+  notify:
+    - reload systemd
+    - restart node_exporter
+
+- name: 启动与开机自启 Node Exporter
+  ansible.builtin.systemd:
+    name: node_exporter
+    state: started
+    enabled: yes
+    daemon_reload: yes
+

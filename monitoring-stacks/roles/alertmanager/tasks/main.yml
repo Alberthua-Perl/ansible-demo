@@ -1,0 +1,75 @@
+---
+#- name: 创建 Alertmanager 用户
+#  ansible.builtin.user:
+#    name: alertmanager
+#    shell: /usr/sbin/nologin
+#    system: yes
+#    create_home: no
+
+- name: 创建 Alertmanager 相关目录
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+#    owner: alertmanager
+#    group: alertmanager
+    mode: '0755'
+  loop:
+    - "{{ alertmanager_config_dir }}"
+    - "{{ alertmanager_data_dir }}"
+
+- name: 下载 Alertmanager 二进制安装包
+  ansible.builtin.get_url:
+    url: "{{ alertmanager_download_url }}"
+    dest: /opt
+    mode: '0644'
+
+- name: 判断 Alertmanager 安装包是否存在
+  ansible.builtin.shell: ls /opt/alertmanager-{{ alertmanager_version }}.linux-amd64.tar.gz
+  register: alert_state
+
+- name: 解压 Alertmanager 二进制安装包
+  ansible.builtin.unarchive:
+    src: /opt/alertmanager-{{ alertmanager_version }}.linux-amd64.tar.gz
+    dest: /tmp
+    remote_src: yes
+    creates: /tmp/alertmanager-{{ alertmanager_version }}.linux-amd64
+  when: alert_state.rc == 0
+
+- name: 安装 Alertmanager 二进制文件
+  ansible.builtin.copy:
+    src: /tmp/alertmanager-{{ alertmanager_version }}.linux-amd64/{{ item }}
+    dest: "{{ prometheus_install_dir }}/{{ item }}"
+    mode: '0755'
+    remote_src: yes
+  loop:
+    - alertmanager
+    - amtool
+
+- name: 部署 Alertmanager 配置文件
+  ansible.builtin.template:
+    src: alertmanager.yml.j2
+    dest: "{{ alertmanager_config_dir }}/alertmanager.yml"
+    mode: '0644'
+  notify:
+    - restart alertmanager
+
+- name: 验证 Alertmanager 配置
+  ansible.builtin.command: "{{ prometheus_install_dir }}/amtool check-config {{ alertmanager_config_dir }}/alertmanager.yml"
+  changed_when: false
+
+- name: 部署 systemd 的单元文件
+  ansible.builtin.template:
+    src: alertmanager.service.j2
+    dest: /etc/systemd/system/alertmanager.service
+    mode: '0644'
+  notify:
+    - reload systemd
+    - restart alertmanager
+
+- name: 启动与开机自启 Alertmanager
+  ansible.builtin.systemd:
+    name: alertmanager
+    state: started
+    enabled: yes
+    daemon_reload: yes
+

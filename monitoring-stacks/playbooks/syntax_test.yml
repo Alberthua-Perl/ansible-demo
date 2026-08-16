@@ -1,0 +1,23 @@
+---
+- name: Ansible 语法测试
+  hosts: localhost
+  serial: 1
+
+  vars_prompt:
+    - name: confirm_rollback
+      prompt: "确认要回滚到上一个版本吗？(yes/no)"
+      private: no
+
+  tasks:
+    - name: 交互式确认
+      ansible.builtin.fail:
+        msg: "回滚操作已取消"
+      when: confirm_rollback != "yes"
+
+    - name: 过滤器正则表达式使用
+      debug:
+        msg: >
+          {{ grafana_tarball | regex_replace('^.*_([0-9]+\\.[0-9]+\\.[0-9]+)_.*$','\\1') }}
+      vars:
+        grafana_tarball: grafana-enterprise_12.3.3_21957728731_linux_amd64.tar.gz
+

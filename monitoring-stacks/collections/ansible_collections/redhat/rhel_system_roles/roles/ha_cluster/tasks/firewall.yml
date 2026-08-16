@@ -1,0 +1,61 @@
+# SPDX-License-Identifier: MIT
+---
+- name: Get services status - detect firewall
+  service_facts:
+
+- name: Configure firewalld
+  block:
+    - name: Enable service 'high-availability' in firewalld
+      command: firewall-cmd --add-service high-availability
+      when: ansible_facts.services['firewalld.service'].state == 'running'
+      register: __ha_cluster_firewall_cmd
+      failed_when:
+        - __ha_cluster_firewall_cmd.rc != 0
+        - __ha_cluster_firewall_cmd.rc != 11 # already enabled
+
+    - name: Enable service 'high-availability' in firewalld permanent config
+      command: firewall-cmd --permanent --add-service high-availability
+      register: __ha_cluster_firewall_cmd
+      when: ansible_facts.services['firewalld.service'].state == 'running'
+      failed_when:
+        - __ha_cluster_firewall_cmd.rc != 0
+        - __ha_cluster_firewall_cmd.rc != 11 # already enabled
+
+    - name: Enable service 'high-availability' in firewalld offline config
+      command: firewall-offline-cmd --add-service high-availability
+      register: __ha_cluster_firewall_cmd
+      when: ansible_facts.services['firewalld.service'].state != 'running'
+      failed_when:
+        - __ha_cluster_firewall_cmd.rc != 0
+        - __ha_cluster_firewall_cmd.rc != 11 # already enabled
+
+    - name: Enable fence-virt port in firewalld - all options
+      when:
+        - ( 'fence-virt' in ha_cluster_fence_agent_packages or 'fence-virt' in ha_cluster_extra_packages or 'fence-agents-all' in ha_cluster_fence_agent_packages or 'fence-agents-all' in ha_cluster_extra_packages )
+      block:
+        - name: Enable fence-virt port in firewalld
+          command: firewall-cmd --add-port 1229/tcp
+          when: ansible_facts.services['firewalld.service'].state == 'running'
+          register: __ha_cluster_firewall_cmd
+          failed_when:
+            - __ha_cluster_firewall_cmd.rc != 0
+            - __ha_cluster_firewall_cmd.rc != 11 # already enabled
+
+        - name: Enable fence-virt port in firewalld permanent config
+          command: firewall-cmd --permanent --add-port 1229/tcp
+          when: ansible_facts.services['firewalld.service'].state == 'running'
+          register: __ha_cluster_firewall_cmd
+          failed_when:
+            - __ha_cluster_firewall_cmd.rc != 0
+            - __ha_cluster_firewall_cmd.rc != 11 # already enabled
+
+        - name: Enable fence-virt port in firewalld offline config
+          command: firewall-offline-cmd --add-port 1229/tcp
+          when: ansible_facts.services['firewalld.service'].state != 'running'
+          register: __ha_cluster_firewall_cmd
+          failed_when:
+            - __ha_cluster_firewall_cmd.rc != 0
+            - __ha_cluster_firewall_cmd.rc != 11 # already enabled
+
+  when:
+    - '"firewalld.service" in ansible_facts.services'

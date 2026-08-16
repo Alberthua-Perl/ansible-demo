@@ -1,0 +1,7 @@
+---
+- name: 部署 Python 应用
+  hosts: app_servers
+  roles:
+    - role: python_app
+  tags:
+    - python_app

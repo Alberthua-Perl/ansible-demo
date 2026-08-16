@@ -1,4 +1,4 @@
-# **HAproxy LAMP Ansible Demo**
+# 🌐 自定义角色部署 Haproxy + Apache + PHP + MySQL 的 Web 堆栈
 
 - haproxy-lamp 项目中使用多个自定义角色部署 Apache HTTPD 服务器与 PHP 应用，此应用可对接后端 MariaDB 数据库。
 - HAProxy 实现客户端流量的反向代理至后端 Web 服务器。

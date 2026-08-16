@@ -1,0 +1,69 @@
+---
+- name: 部署 Grafana Server 数据可视化面板
+  hosts: monitoring
+  vars:
+    # Grafana 配置
+    grafana_download_url: "http://workstation.lab.example.com/materials/grafana-enterprise_12.3.3_21957728731_linux_amd64.tar.gz"
+    grafana_tarball: grafana-enterprise_12.3.3_21957728731_linux_amd64.tar.gz
+    grafana_version: "{{ grafana_tarball | regex_replace('^.*_([0-9]+\\.[0-9]+\\.[0-9]+)_.*$','\\1') }}"    # 提取版本号
+    grafana_homepath: /usr/local/grafana-{{ grafana_version }}
+    grafana_port: 3000
+
+  tasks:
+    - name: 下载 Grafana 二进制安装包
+      ansible.builtin.get_url:
+        url: "{{ grafana_download_url }}"
+        dest: /opt
+        owner: root
+        group: root
+        mode: '0644'
+
+    - name: 判断 Grafana 安装包是否存在
+      ansible.builtin.shell: ls /opt/{{ grafana_tarball }}
+      register: grafana_state
+
+    - name: 创建 Grafana 根目录
+      ansible.builtin.file:
+        path: "{{ grafana_homepath }}"
+        state: directory
+        owner: root
+        group: root
+        mode: '0755'
+
+    - name: 解压 Grafana 二进制安装包
+      ansible.builtin.unarchive:
+        src: /opt/{{ grafana_tarball }}
+        dest: "{{ grafana_homepath }}"
+        remote_src: yes
+      when: grafana_state.rc == 0
+
+    - name: 配置 Grafana 数据源
+      ansible.builtin.template:
+        src: templates/datasources.yml.j2
+        dest: "{{ grafana_homepath }}/conf/provisioning/datasources/datasources.yml"
+        owner: root
+        group: root
+        mode: '0644'
+
+    - name: 配置 Grafana 的 service 单元文件
+      ansible.builtin.template:
+        src: templates/grafana-server.service.j2
+        dest: /etc/systemd/system/grafana-server.service
+        owner: root
+        group: root
+        mode: '0644'
+      notify:
+        - reload systemd
+        - restart grafana
+
+  handlers:
+    - name: reload systemd
+      ansible.builtin.systemd:
+        name: grafana-server
+        daemon_reload: True
+
+    - name: restart grafana
+      ansible.builtin.systemd:
+        name: grafana-server
+        state: restarted
+

@@ -1,0 +1,84 @@
+---
+- vars:
+    mysql_parameters: &mysql_params
+      login_user: '{{ mysql_user }}'
+      login_password: '{{ mysql_password }}'
+      login_host: '{{ mysql_host }}'
+      login_port: '{{ mysql_primary_port }}'
+
+  block:
+
+    - name: Issue-29511 | test setup | drop database
+      mysql_db:
+        <<: *mysql_params
+        name: "{{ item }}"
+        state: absent
+      loop:
+        - foo
+        - bar
+
+    - name: Issue-29511 | test setup | create database
+      mysql_db:
+        <<: *mysql_params
+        name: "{{ item }}"
+        state: present
+      loop:
+        - foo
+        - bar
+
+    - name: Issue-29511 | Copy SQL scripts to remote
+      copy:
+        src: "{{ item }}"
+        dest: "{{ remote_tmp_dir }}/{{ item | basename }}"
+      with_items:
+        - create-function.sql
+        - create-procedure.sql
+
+    - name: Issue-29511 | Create function for test
+      shell: "{{ mysql_command }} < {{ remote_tmp_dir }}/create-function.sql"
+
+    - name: Issue-29511 | Create procedure for test
+      shell: "{{ mysql_command }} < {{ remote_tmp_dir }}/create-procedure.sql"
+
+    - name: Issue-29511 | Create user with FUNCTION and PROCEDURE privileges
+      mysql_user:
+        <<: *mysql_params
+        name: '{{ user_name_2 }}'
+        password: '{{ user_password_2 }}'
+        state: present
+        priv: 'FUNCTION foo.function:EXECUTE/foo.*:SELECT/PROCEDURE bar.procedure:EXECUTE'
+      register: result
+
+    - name: Issue-29511 | Assert Create user with FUNCTION and PROCEDURE privileges
+      assert:
+        that:
+          - result is success
+          - result is changed
+
+    - name: Issue-29511 | Create user with FUNCTION and PROCEDURE privileges - Idempotent check
+      mysql_user:
+        <<: *mysql_params
+        name: '{{ user_name_2 }}'
+        password: '{{ user_password_2 }}'
+        state: present
+        priv: 'FUNCTION foo.function:EXECUTE/foo.*:SELECT/PROCEDURE bar.procedure:EXECUTE'
+      register: result
+
+    - name: Issue-29511 | Assert Create user with FUNCTION and PROCEDURE privileges
+      assert:
+        that:
+          - result is success
+          - result is not changed
+
+    - name: Issue-29511 | Test teardown | cleanup databases
+      mysql_db:
+        <<: *mysql_params
+        name: "{{ item }}"
+        state: absent
+      loop:
+        - foo
+        - bar
+
+    - include_tasks: utils/remove_user.yml
+      vars:
+        user_name: "{{ user_name_2 }}"

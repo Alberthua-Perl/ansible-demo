@@ -1,0 +1,18 @@
+[Unit]
+Description=Prometheus Alertmanager Service
+After=network-online.target
+
+[Service]
+Type=simple
+User=root
+ExecStart={{ prometheus_install_dir }}/alertmanager \
+  --config.file={{ alertmanager_config_dir }}/alertmanager.yml \
+  --storage.path={{ alertmanager_data_dir }} \
+  --web.listen-address=0.0.0.0:{{ alertmanager_port }} \
+  --data.retention=120h
+# 注意：无需手动指定 --cluster.listen-address="" 选项，集群状态自动监听 9094 端口。
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target

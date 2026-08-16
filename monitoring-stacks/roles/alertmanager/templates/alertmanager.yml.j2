@@ -1,0 +1,70 @@
+global:
+  resolve_timeout: 3m
+  smtp_smarthost: {{ alertmanager_smtp_smarthost }}
+  smtp_from: {{ alertmanager_smtp_from }}
+  smtp_auth_username: {{ alertmanager_smtp_auth_username }}
+  smtp_auth_password: {{ alertmanager_smtp_auth_password }}
+  smtp_require_tls: false
+
+route:
+  group_by: ['alertname', 'dimension', 'severity', 'instance']
+  group_wait: 30s
+  group_interval: 3m
+  repeat_interval: 10m
+  receiver: 'email-notifications'
+  routes:
+    - match:
+        dimension: node
+      receiver: 'email-notifications'
+      group_wait: 30s
+      group_interval: 3m
+      repeat_interval: 2h
+      continue: true
+
+    - match:
+        dimension: application
+      receiver: 'email-notifications'
+      group_wait: 30s
+      group_interval: 5m
+      repeat_interval: 1h
+      continue: true
+
+    - match:
+        severity: critical
+      receiver: 'email-notifications'
+      group_wait: 10s
+      group_interval: 2m
+      repeat_interval: 1h
+      continue: true
+
+# 抑制规则：节点宕机时抑制该节点上的应用告警
+inhibit_rules:
+  - source_match:
+      severity: 'critical'
+      alertname: 'NodeDown'
+    target_match:
+      dimension: 'application'
+    equal: ['instance']
+
+receivers:
+  - name: 'email-notifications'
+    email_configs:
+      - to: {{ alertmanager_email_to }}
+        send_resolved: true
+        headers:
+          Subject: '【Prometheus 告警】{% raw %}{{ .GroupLabels.alertname }}{% endraw %}'
+        html: |
+          {% raw %}
+          <h2>Prometheus 告警通知</h2>
+          <p><b>告警维度:</b> {{ .GroupLabels.dimension }}</p>
+          <p><b>告警级别:</b> {{ .GroupLabels.severity }}</p>
+          <hr/>
+          {{ range .Alerts }}
+          <p><b>告警名称:</b> {{ .Labels.alertname }}</p>
+          <p><b>实例:</b> {{ .Labels.instance }}</p>
+          <p><b>摘要:</b> {{ .Annotations.summary }}</p>
+          <p><b>详情:</b> {{ .Annotations.description }}</p>
+          <p><b>开始时间:</b> {{ .StartsAt.Format "2006-01-02 15:04:05" }}</p>
+          <hr/>
+          {{ end }}
+          {% endraw %}

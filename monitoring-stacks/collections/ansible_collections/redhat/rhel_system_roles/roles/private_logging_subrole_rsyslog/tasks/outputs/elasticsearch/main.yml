@@ -1,0 +1,50 @@
+---
+- name: Set and check certs and key for elasticsearch
+  include_tasks:
+    file: "{{ role_path }}/tasks/set_certs.yml"
+  vars:
+    __rsyslog_cert_subject: "{{ __rsyslog_output }}"
+
+# Deploy configuration files
+- name: "Install/Update elasticsearch logging packages and generate configuration files in /etc/rsyslog.d"
+  vars:
+    __rsyslog_packages: "{{ __rsyslog_elasticsearch_packages }}"
+    __rsyslog_rules: "{{ __rsyslog_elasticsearch_rules }}"
+  include_tasks:
+    file: "{{ role_path }}/tasks/deploy.yml"
+
+- name: "Create elasticsearch output configuration file output-elasticsearch-{{ __rsyslog_output.name }} in /etc/rsyslog.d"
+  vars:
+    __rsyslog_packages: []
+    __rsyslog_rules:
+      - name: "output-elasticsearch-{{ __rsyslog_output.name }}"
+        type: "output"
+        weight: "31"
+        state: "{{ __rsyslog_output.state | d('present') }}"
+        sections:
+          - options: "{{ lookup('template', 'output_elasticsearch.j2') }}"
+        mode: "0600"
+        owner: "root"
+        group: "root"
+  include_tasks:
+    file: "{{ role_path }}/tasks/deploy.yml"
+  when: (logging_elasticsearch_password is not defined) or (logging_elasticsearch_password | length == 0)
+
+- name: "Create elasticsearch output configuration file output-elasticsearch-{{ __rsyslog_output.name }} in /etc/rsyslog.d (no_log)"
+  vars:
+    __rsyslog_packages: []
+    __rsyslog_rules:
+      - name: "output-elasticsearch-{{ __rsyslog_output.name }}"
+        type: "output"
+        weight: "31"
+        state: "{{ __rsyslog_output.state | d('present') }}"
+        sections:
+          - options: "{{ lookup('template', 'output_elasticsearch.j2') }}"
+        mode: "0600"
+        owner: "root"
+        group: "root"
+  include_tasks:
+    file: "{{ role_path }}/tasks/deploy_nolog.yml"
+  when:
+    - logging_elasticsearch_password is defined
+    - logging_elasticsearch_password | length > 0

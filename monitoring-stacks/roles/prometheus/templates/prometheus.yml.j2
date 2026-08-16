@@ -1,0 +1,49 @@
+global:
+  scrape_interval: 15s        # Prometheus 从各种 metrics 接口抓取指标数据的时间间隔
+  evaluation_interval: 15s    # Prometheus 对告警规则进行评估计算的时间间隔
+  external_labels:
+    monitor: 'prometheus-monitor'
+
+alerting:
+  alertmanagers:
+    - static_configs:
+        - targets:
+            - localhost:{{ alertmanager_port }}
+
+rule_files:
+  - {{ prometheus_config_dir }}/rules/node_rules.yml
+  - {{ prometheus_config_dir }}/rules/app_rules.yml
+
+scrape_configs:
+  - job_name: 'prometheus'
+    static_configs:
+      - targets: ['localhost:{{ prometheus_port }}']
+        labels:
+          app: 'prometheus-master'
+          env: 'production'
+
+  - job_name: 'node_exporter'
+    static_configs:
+{% for host in groups['all_servers'] %}
+      - targets: ['{{ hostvars[host]['ansible_facts']['hostname'] | default(host) }}:{{ node_exporter_port }}']
+        labels:
+          instance: '{{ host }}'
+          env: 'production'
+{% endfor %}
+    scrape_interval: 10s
+
+  - job_name: 'python_app'
+    static_configs:
+{% for host in groups['app_servers'] %}
+      - targets: ['{{ hostvars[host]['ansible_facts']['hostname'] | default(host) }}:{{ python_app_port }}']
+        labels:
+          instance: '{{ host }}'
+          service: 'python-app'
+{% endfor %}
+    scrape_interval: 10s
+    metrics_path: /metrics
+
+  - job_name: 'alertmanager'
+    static_configs:
+      - targets: ['localhost:{{ alertmanager_port }}']
+

@@ -1,0 +1,104 @@
+---
+# SPDX-License-Identifier: GPL-3.0-only
+
+# oVirt input configuration setting
+# ---------------------------------
+
+# List of rpm packages to install.
+__rsyslog_ovirt_packages:
+  - rsyslog-mmnormalize
+  - rsyslog-mmjsonparse
+  - libfastjson
+  - liblognorm
+  - libestr
+
+# oVirt Rsyslog configuration rules
+# ---------------------------
+
+__rsyslog_ovirt_rules:
+  - '{{ rsyslog_conf_ovirt_local_modules }}'
+  - '{{ rsyslog_conf_ovirt_main_modules }}'
+  - '{{ rsyslog_rulebase_ovirt_engine }}'
+  - '{{ rsyslog_rulebase_ovirt_vdsm }}'
+  - '{{ rsyslog_rulebase_ovirt_parse_json }}'
+
+# Default oVirt configuration options
+# -----------------------------------
+
+# rsyslog_conf_ovirt_local_modules
+#
+# List of ``rsyslogd`` modules that enable logs from the local system to be
+# received and parsed by the ``rsyslogd`` daemon.
+rsyslog_conf_ovirt_local_modules:
+
+  - name: 'input-ovirt-local_modules'
+    type: 'modules'
+    sections:
+
+      - options: |-
+          {% if rsyslog_inputs | selectattr('name', 'defined') |
+            selectattr('type', 'defined') |
+            selectattr('type', 'match', '^basics$') | list | length == 0 %}
+          # Log messages sent to local UNIX socket with use=off'
+          module(load="imuxsock" SysSock.Use="off")
+          {% endif %}
+
+rsyslog_conf_ovirt_main_modules:
+
+  - name: 'input-ovirt-main-modules'
+    type: 'modules'
+    sections:
+
+      - options: |-
+          # Read from file with inotify enabled
+          module(load="imfile" mode="inotify")
+
+      - options: |-
+          # Read from tcp collectd metrics
+          module(load="imtcp")
+
+      - options: |-
+          # Normalize logs
+          module(load="mmnormalize")
+
+      - options: |-
+          # Parse logs to JSON
+          module(load="mmjsonparse")
+
+      - options: |-
+          template(name="cnvt_to_viaq_timestamp" type="list") {
+              property(name="TIMESTAMP" dateFormat="rfc3339")
+          }
+
+rsyslog_rulebase_ovirt_engine:
+
+  # yamllint disable rule:line-length
+  - name: 'ovirt_engine'
+    filename: 'ovirt_engine.rulebase'
+    nocomment: true
+    sections:
+      - options: |-
+          version=2
+          rule=:%date:date-iso% %time:time-24hr%,%msec:number%%tz:word% %level:word%%-:whitespace%%class:string{"quoting.char.begin":"[","quoting.char.end":"]"}% %thread:string{"quoting.char.begin":"(","quoting.char.end":")"}% %correlationid:string{"quoting.char.begin":"[","quoting.char.end":"]"}% %message:rest%
+
+rsyslog_rulebase_ovirt_vdsm:
+
+  - name: 'ovirt_vdsm'
+    filename: 'ovirt_vdsm.rulebase'
+    nocomment: true
+    sections:
+      - options: |-
+          version=2
+          rule=:%date:date-iso% %time:time-24hr%,%msec:number%%tz:word% %level:word%%-:whitespace%%class:string{"quoting.char.begin":"(","quoting.char.end":")"}% %thread:string{"quoting.char.begin":"[","quoting.char.end":"]"}% %message:rest%
+  # yamllint enable rule:line-length
+
+rsyslog_rulebase_ovirt_parse_json:
+
+  - name: 'parse_json'
+    filename: 'parse_json.rulebase'
+    nocomment: true
+    sections:
+
+      - options: |-
+          version=2
+          rule=:%.:json%

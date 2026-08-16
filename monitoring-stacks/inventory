@@ -1,0 +1,15 @@
+[monitoring]
+servera
+
+[app_servers]
+serverb
+serverc
+
+[nodes]
+serverc
+serverd
+
+[all_servers:children]
+monitoring
+app_servers
+nodes

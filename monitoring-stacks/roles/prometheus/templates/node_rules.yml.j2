@@ -1,0 +1,61 @@
+groups:
+  - name: 节点告警规则
+    interval: 15s
+    rules:
+      # ===== 维度1：受管主机节点故障/性能异常 =====
+      - alert: NodeDown
+        expr: up{job="node_exporter"} == 0
+        for: 1m
+        labels:
+          severity: critical
+          dimension: node
+        annotations:
+          summary: "节点宕机: {{ '{{ $labels.instance }}' }}"
+          description: "节点 {{ '{{ $labels.instance }}' }} 已宕机超过 1 分钟，无法采集主机指标。"
+
+      - alert: HighCPUUsage
+        expr: 100 - (avg by(instance) (irate(node_cpu_seconds_total{mode="idle"}[5m])) * 100) > {{ alert_cpu_threshold }}
+        for: 5m
+        labels:
+          severity: warning
+          dimension: node
+        annotations:
+          summary: "节点 CPU 使用率过高: {{ '{{ $labels.instance }}' }}"
+          description: "节点 {{ '{{ $labels.instance }}' }} CPU 使用率超过 {{ alert_cpu_threshold }}%，当前值: {{ '{{ $value }}' }}%"
+
+      - alert: HighMemoryUsage
+        expr: (node_memory_MemTotal_bytes - node_memory_MemAvailable_bytes) / node_memory_MemTotal_bytes * 100 > {{ alert_memory_threshold }}
+        for: 5m
+        labels:
+          severity: warning
+          dimension: node
+        annotations:
+          summary: "节点内存使用率过高: {{ '{{ $labels.instance }}' }}"
+          description: "节点 {{ '{{ $labels.instance }}' }} 内存使用率超过 {{ alert_memory_threshold }}%"
+
+      - alert: DiskSpaceLow
+        expr: (node_filesystem_avail_bytes{mountpoint="/"} / node_filesystem_size_bytes{mountpoint="/"}) * 100 < {{ alert_disk_threshold }}
+        for: 5m
+        labels:
+          severity: warning
+          dimension: node
+        annotations:
+          summary: "节点磁盘空间不足: {{ '{{ $labels.instance }}' }}"
+
+      - alert: HighLoadAverage
+        expr: node_load1 > {{ alert_load_threshold }}
+        for: 5m
+        labels:
+          severity: warning
+          dimension: node
+        annotations:
+          summary: "节点负载过高: {{ '{{ $labels.instance }}' }}"
+
+      - alert: NodeOutOfMemory
+        expr: node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes * 100 < 5
+        for: 2m
+        labels:
+          severity: critical
+          dimension: node
+        annotations:
+          summary: "节点内存即将耗尽: {{ '{{ $labels.instance }}' }}"

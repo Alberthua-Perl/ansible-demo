@@ -1,0 +1,14 @@
+# SPDX-License-Identifier: MIT
+---
+- name: List active RHEL repositories
+  command:
+    cmd: dnf repolist
+    warn: no
+  register: __ha_cluster_repolist
+  changed_when: no
+  check_mode: no
+
+- name: Enable RHEL repositories
+  command: subscription-manager repos --enable {{ item.id | quote }}
+  loop: "{{ __ha_cluster_repos }}"
+  when: item.name not in __ha_cluster_repolist.stdout

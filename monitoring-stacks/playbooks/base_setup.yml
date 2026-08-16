@@ -1,0 +1,34 @@
+---
+- name: "节点基础设置：NTP 服务器、SELinux 与 Firewalld 防火墙"
+  hosts: all
+  vars:
+    selinux_policy: targeted
+    selinux_state: disabled
+    timesync_ntp_provider: chrony
+    timesync_ntp_servers:
+      - hostname: 172.25.254.254
+        iburst: yes
+
+  pre_tasks:
+    - name: 永久关闭 SELinux
+      ansible.builtin.debug:
+        msg: "永久关闭 SELinux"
+    - name: 设置时间同步服务器
+      ansible.builtin.debug:
+        msg: "设置时间同步服务器"
+
+  roles:
+    - redhat.rhel_system_roles.selinux
+    - redhat.rhel_system_roles.timesync
+
+  tasks:
+    - name: 持久关闭冲突服务
+      ansible.builtin.service:
+        service: "{{ item }}"
+        state: stopped
+        enabled: no
+      loop:
+        - firewalld
+        - cockpit
+        # 关闭 cockpit 服务防止 9090 端口占用冲突
+
