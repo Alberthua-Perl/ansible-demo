@@ -1,0 +1,38 @@
+# SPDX-License-Identifier: BSD-3-Clause
+---
+- block:
+    - name: Create EPEL {{ ansible_distribution_major_version }}
+    # yamllint disable-line rule:line-length
+      command: yum install -y https://dl.fedoraproject.org/pub/epel/epel-release-latest-{{ ansible_distribution_major_version }}.noarch.rpm
+      args:
+        warn: false
+        creates: /etc/yum.repos.d/epel.repo
+
+    - name: Enable EPEL 7
+      command: yum-config-manager --enable epel
+      when: ansible_distribution_major_version == '7'
+      args:
+        warn: false
+
+    - name: Enable EPEL 8
+      command: dnf config-manager --set-enabled epel
+      when: ansible_distribution_major_version == '8'
+      args:
+        warn: false
+  when:
+    - ansible_distribution in ['RedHat', 'CentOS']
+    - ansible_distribution_major_version in ['7', '8']
+
+- name: Enable EPEL 6
+  copy:
+    dest: /etc/yum.repos.d/epel.repo
+    content: |
+      [epel]
+      name=Extra Packages for Enterprise Linux 6 - $basearch
+      baseurl=https://archives.fedoraproject.org/pub/archive/epel/6/$basearch
+      enabled=1
+      gpgcheck=0
+    mode: "0644"
+  when:
+    - ansible_distribution in ['RedHat', 'CentOS']
+    - ansible_distribution_major_version == '6'

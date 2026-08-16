@@ -1,0 +1,22 @@
+---
+- name: Set version specific variables
+  include_vars: "{{ lookup('first_found', ffparams) }}"
+  vars:
+    ffparams:
+      files:
+        - "{{ ansible_facts['distribution'] }}_{{ ansible_facts['distribution_major_version'] }}.yml"
+        - "{{ ansible_facts['distribution'] }}.yml"
+        - "{{ ansible_facts['os_family'] }}.yml"
+      paths:
+        - "{{ role_path }}/vars"
+
+- name: define an empty list of pools to be used in testing
+  set_fact:
+    _storage_pools_list: []
+
+- name: define an empty list of volumes to be used in testing
+  set_fact:
+    _storage_volumes_list: []
+
+- name: include the appropriate provider tasks
+  include_tasks: "main-{{ storage_provider }}.yml"

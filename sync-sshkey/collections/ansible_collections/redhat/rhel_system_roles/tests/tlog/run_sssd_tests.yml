@@ -1,0 +1,28 @@
+- name: Check stats for sssd-session-recording.conf
+  stat:
+    path: "{{ __tlog_sssd_session_recording_conf }}"
+  register: __tlog_sssd_session_recording_conf_stat
+
+- name: Report error if conf sssd conf file does not exist
+  assert:
+    that:
+      - __tlog_sssd_session_recording_conf_stat.stat.exists
+      - __tlog_sssd_session_recording_conf_stat.stat.mode == "0600"
+
+- name: Get file contents of sssd-session-recording.conf
+  command: cat {{ __tlog_sssd_session_recording_conf }}
+  register: __tlog_conf_content
+  changed_when: false
+
+- name: Verify that contents of sssd conf are correct
+  assert:
+    that:
+      - __tlog_conf_content.stdout.find('scope={{ tlog_scope_sssd }}')
+    # yamllint disable-line rule:line-length
+      - __tlog_conf_content.stdout.find('users={{ tlog_users_sssd|join(', ') }}')
+    # yamllint disable-line rule:line-length
+      - __tlog_conf_content.stdout.find('groups={{ tlog_groups_sssd|join(', ') }}')
+    # yamllint disable-line rule:line-length
+      - __tlog_conf_content.stdout.find('exclude_users={{ tlog_exclude_users_sssd|join(', ') }}')
+    # yamllint disable-line rule:line-length
+      - __tlog_conf_content.stdout.find('exclude_groups={{ tlog_exclude_groups_sssd|join(', ') }}')

@@ -1,0 +1,21 @@
+---
+- hosts: all
+
+  vars:
+    certificate_requests:
+      - name: mycert
+        dns: www.example.com
+        key_usage:
+          - digitalSignature
+          - nonRepudiation
+          - keyEncipherment
+        extended_key_usage:
+          - id-kp-clientAuth
+          - id-kp-serverAuth
+          - anyExtendedKeyUsage
+          - id-kp-OCSPSigning
+          - id-kp-ipsecUser
+        ca: self-sign
+
+  roles:
+    - redhat.rhel_system_roles.certificate

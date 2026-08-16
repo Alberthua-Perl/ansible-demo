@@ -1,0 +1,17 @@
+---
+- name: Ensure that the role declares all parameters in defaults
+  hosts: all
+
+  roles:
+    - redhat.rhel_system_roles.tlog
+  tasks:
+    - name: check that all variables are defined
+      assert:
+        that: "vars[item] is defined"
+      loop:
+        - tlog_use_sssd
+        - tlog_scope_sssd
+        - tlog_users_sssd
+        - tlog_groups_sssd
+        - tlog_exclude_users_sssd
+        - tlog_exclude_groups_sssd

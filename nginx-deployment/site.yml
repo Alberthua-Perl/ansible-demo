@@ -1,12 +1,12 @@
 ---
 - name: Deploy Nginx Web Servers
-  hosts: webservers
+  hosts: controller,!webservers
 
   vars:
     nginx_port: 80
-    nginx_worker_processes: "{{ ansible_processor_vcpus }}"
+    nginx_worker_processes: "{{ ansible_facts['processor_vcpus'] }}"
     nginx_worker_connections: 1024
-    website_title: "Ansible自动化部署演示"
+    website_title: "Nginx 共享 web 服务器"
 
   tasks:
     - name: 更新系统包缓存
@@ -21,9 +21,13 @@
 
     - name: 创建网站目录
       ansible.builtin.file:
-        path: /var/www/html
+        path: "{{ item }}"
         state: directory
         mode: '0755'
+        setype: httpd_sys_content_t
+      loop:
+        - /var/www/html
+        - /var/www/html/materials    # 创建材料共享目录
 
     - name: 部署 Nginx 配置文件
       ansible.builtin.template:
@@ -50,6 +54,12 @@
         host: "{{ ansible_default_ipv4.address }}"
         delay: 5
         timeout: 30
+
+    - name: 关闭防火墙服务
+      ansible.builtin.service:
+        name: firewalld
+        state: stopped
+        enabled: false
 
   handlers:
     - name: restart nginx

@@ -1,0 +1,14 @@
+---
+- name: Gather state of keys
+  redhat.rhel_system_roles.nbde_server_tang:
+    state: keys-created
+    keygen: "{{ __nbde_server_keygen }}"
+    keydir: "{{ __nbde_server_keydir }}"
+  check_mode: true
+  register: nbde_server_existing_keys
+
+- name: Check whether there are keys
+  assert:
+    that: not nbde_server_existing_keys.changed
+
+# vim:set ts=2 sw=2 et:

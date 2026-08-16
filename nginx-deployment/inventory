@@ -1,3 +1,6 @@
+[controller]
+workstation
+
 [webservers]
 serverc
 serverd

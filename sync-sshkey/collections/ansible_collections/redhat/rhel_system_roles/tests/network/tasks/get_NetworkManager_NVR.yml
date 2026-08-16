@@ -1,0 +1,19 @@
+# SPDX-License-Identifier: BSD-3-Clause
+---
+- block:
+    - name: Get NetworkManager RPM version
+      command:
+        cmd: rpm -qa --qf '%{name}-%{version}-%{release}\n' NetworkManager
+        warn: false
+      register: __rpm_q_NetworkManager
+
+    - name: Store NetworkManager version
+      set_fact:
+        NetworkManager_NVR: "{{ __rpm_q_NetworkManager.stdout }}"
+
+    - name: Show NetworkManager version
+      debug:
+        var: NetworkManager_NVR
+  tags:
+    - always
+...

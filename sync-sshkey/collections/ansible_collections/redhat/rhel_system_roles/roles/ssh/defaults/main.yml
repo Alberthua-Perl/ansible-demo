@@ -1,0 +1,25 @@
+---
+# Whether to change global configuration or per-user one
+ssh_user:
+
+# Use default OS values or start from scratch
+# (for per-user configuration or included files in drop-in directories)
+ssh_skip_defaults: auto
+
+# The name to be used as part of filename in drop-in directory
+ssh_drop_in_name: "{{ __ssh_drop_in_name }}"
+
+# dict of configuration options
+ssh: []
+
+# list of additional packages to install
+# for exmaple openssh-keycat or openssh-askpass
+ssh_additional_packages: []
+
+# the override values for the owner, group and mode of configuration file
+ssh_config_owner:
+ssh_config_group:
+ssh_config_mode:
+
+# the override for the configuration file we are writing
+ssh_config_file:

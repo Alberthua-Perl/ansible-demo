@@ -1,0 +1,147 @@
+---
+- name: Set virtualenv_path
+  set_fact:
+    __virtualenv_path: /tmp/certificate-tests-venv
+
+- name: Ensure python3 is installed
+  package:
+    name:
+      - python3
+
+- name: Install the package, force upgrade
+  pip:
+    name: pip
+    state: latest
+    virtualenv: "{{ __virtualenv_path }}"
+    virtualenv_command: /usr/bin/python3 -m venv
+
+- name: Install certreader
+  pip:
+    name:
+      - cryptography<35
+      - certreader>=0.1.1
+    virtualenv: "{{ __virtualenv_path }}"
+    virtualenv_command: /usr/bin/python3 -m venv
+
+- name: Retrieve certificate file stats
+  stat:
+    path: "{{ cert['path'] }}"
+  register: result
+
+- name: Verify if certificate file exists
+  assert:
+    that:
+      - result.stat.exists
+    fail_msg: "Certificate file '{{ cert['path'] }}' does not exist."
+
+- name: Verify certificate file owner and group
+  assert:
+    that:
+      - (cert['owner'] | default('root')) in [result.stat.pw_name, result.stat.uid]
+      - (cert['group'] | default('root')) in [result.stat.gr_name, result.stat.gid]
+    fail_msg: >-
+      {{ result.stat.pw_name }}:{{ result.stat.gr_name }} !=
+      {{ cert['owner'] | default('root') }}:
+      {{ cert['group'] | default('root') }}
+
+- name: Verify certificate permissions
+  assert:
+    that:
+      - result.stat.mode == (cert['mode'] | default('0600'))
+    fail_msg: "{{ result.stat.mode }} != {{ cert['mode'] | default('0600') }}"
+
+- name: Retrieve key file stats
+  stat:
+    path: "{{ cert['key_path'] }}"
+  register: result
+
+- name: Verify if key file exists
+  assert:
+    that:
+      - result.stat.exists
+    fail_msg: "Key file '{{ cert['key_path'] }}' does not exist."
+
+- name: Verify key file owner and group
+  assert:
+    that:
+      - (cert['owner'] | default('root')) in [result.stat.pw_name, result.stat.uid]
+      - (cert['group'] | default('root')) in [result.stat.gr_name, result.stat.gid]
+    fail_msg: >-
+      {{ result.stat.pw_name }}:{{ result.stat.gr_name }} !=
+      {{ cert['owner'] | default('root') }}:
+      {{ cert['group'] | default('root') }}
+
+- name: Parse certificate
+  command: "{{ __virtualenv_path }}/bin/certreader2json {{ cert['path'] }}"
+  register: certreader_result
+  changed_when: false
+
+- name: Load certificate YAML to cert_issued variable
+  set_fact:
+    cert_issued: "{{ certreader_result.stdout | from_json }}"
+
+- name: Verify certificate subject
+  assert:
+    that:
+      - cert.subject | sort(attribute="name") == cert_issued.subject | sort(attribute="name")
+    fail_msg: >-
+      {{ cert.subject | sort(attribute="name") }} !=
+      {{ cert_issued.subject | sort(attribute="name") }}
+
+- name: Verify certificate SAN
+  assert:
+    that:
+      - cert.subject_alt_name == cert_issued.extensions.subjectAltName.value
+    fail_msg: >-
+      {{ cert.subject_alt_name }} !=
+      {{ cert_issued.extensions.subjectAltName.value }}
+
+- name: Verify key size
+  assert:
+    that:
+      - cert.key_size | default(2048) == cert_issued.key_size
+    fail_msg: >-
+      {{ cert.key_size | default(2048) }} != {{ cert_issued.key_size }}
+
+- name: Verify certificate Key Usage
+  vars:
+    default_ku:
+      - digital_signature
+      - key_encipherment
+  assert:
+    that:
+      - (cert.key_usage | default(default_ku)) == cert_issued.extensions.keyUsage.value
+    fail_msg: >-
+      {{ cert.key_usage | default(default_ku) }} !=
+      {{ cert_issued.extensions.keyUsage.value }}
+
+- name: Verify certificate Extended Key Usage
+  vars:
+    default_eku:
+      - name: id-kp-serverAuth
+        oid: 1.3.6.1.5.5.7.3.1
+      - name: id-kp-clientAuth
+        oid: 1.3.6.1.5.5.7.3.2
+  assert:
+    that:
+      - ( cert.extended_key_usage | default(default_eku) ) == cert_issued.extensions.extendedKeyUsage.value
+    fail_msg: >-
+      {{ cert.extended_key_usage | default(default_eku) }} !=
+      {{ cert_issued.extensions.extendedKeyUsage.value }}
+
+- name: Retrieve auto-renew flag
+  shell: >-
+    set -euo pipefail;
+    getcert list -f {{ cert['path'] }} |
+    grep 'auto-renew' |
+    sed 's/^\s\+auto-renew: //g'
+  register: result
+  changed_when: false
+
+- name: Verify certificate auto-renew flag
+  assert:
+    that:
+      - (cert['auto_renew'] | default('yes') | bool) == (result.stdout | bool)
+    fail_msg: >-
+      {{ cert['auto_renew'] | default('yes') | bool }} !=
+      {{ result.stdout | bool }}

@@ -1,0 +1,27 @@
+---
+- name: Set and check certs and key for relp output
+  include_tasks:
+    file: "{{ role_path }}/tasks/set_certs.yml"
+  vars:
+    __rsyslog_cert_subject: "{{ __rsyslog_output }}"
+
+# Deploy configuration files
+- name: "Install/Update relp logging packages and generate configuration files in /etc/rsyslog.d"
+  vars:
+    __rsyslog_packages: "{{ __rsyslog_output_relp_packages }}"
+    __rsyslog_rules: "{{ __rsyslog_output_relp_rules }}"
+  include_tasks:
+    file: "{{ role_path }}/tasks/deploy.yml"
+
+- name: "Create relp output configuration file output-relp-{{ __rsyslog_output.name }} in /etc/rsyslog.d"
+  vars:
+    __rsyslog_packages: []
+    __rsyslog_rules:
+      - name: "output-relp-{{ __rsyslog_output.name }}"
+        type: "output"
+        weight: "31"
+        state: "{{ __rsyslog_output.state | d('present') }}"
+        sections:
+          - options: "{{ lookup('template', 'output_relp.j2') }}"
+  include_tasks:
+    file: "{{ role_path }}/tasks/deploy.yml"

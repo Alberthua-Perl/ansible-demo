@@ -33,13 +33,20 @@ http {
         listen {{ nginx_port }} default_server;
         listen [::]:{{ nginx_port }} default_server;
 
-        root /var/www/html;
-        index index.html index.htm;
+        root /var/www/html;            # 指定 Nginx 根目录
+        index index.html index.htm;    # 指定 Web 的 index 文件
 
-        server_name {{ ansible_hostname }}.example.com;
+        server_name {{ ansible_facts['hostname'] }}.example.com;
 
         location / {
             try_files $uri $uri/ =404;
+        }
+
+        location /materials/ {
+            alias /var/www/html/materials/;
+            autoindex on;                      # 开启目录列表
+            autoindex_exact_size off;
+            autoindex_localtime on;
         }
 
         # 健康检查端点

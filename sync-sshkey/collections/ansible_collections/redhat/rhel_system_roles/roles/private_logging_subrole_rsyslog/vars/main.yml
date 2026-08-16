@@ -1,0 +1,98 @@
+# SPDX-License-Identifier: GPL-3.0-only
+# __rsyslog_base_packages
+#
+# List of default rpm packages to install.
+__rsyslog_base_packages: ['rsyslog']
+
+# rsyslog configuration directory
+__rsyslog_config_dir: /etc/rsyslog.d
+
+# rsyslog work directory
+__rsyslog_work_dir: '/var/lib/rsyslog'
+
+# __rsyslog_tls_packages
+#
+# List of rpm packages required for TLS support.
+__rsyslog_tls_packages: ['rsyslog-gnutls', 'ca-certificates']
+
+#
+# Firewall, UDP, TCP ports
+# ------------------------
+
+# default rsyslog port
+#
+# The incoming TCP/UDP port used for remote logging.
+__rsyslog_default_port: '514'
+
+# default rsyslog tcp port
+#
+# The incoming TCP TLS port used for remote logging.
+__rsyslog_default_tls_port: '6514'
+
+# __rsyslog_default_pki_path
+#
+# standard tls path
+__rsyslog_default_pki_path: "/etc/pki/tls/"
+
+# __rsyslog_default_pki_key_dir
+#
+__rsyslog_default_pki_key_dir: "private/"
+
+# __rsyslog_default_pki_cert_dir
+#
+__rsyslog_default_pki_cert_dir: "certs/"
+
+# __rsyslog_default_pki_ca_cert_name
+#
+__rsyslog_default_pki_ca_cert_name: "ca.crt"
+
+# __rsyslog_default_pki_key_name
+#
+__rsyslog_default_pki_key_name: "key.pem"
+
+# __rsyslog_default_pki_cert_name
+#
+__rsyslog_default_pki_cert_name: "cert.pem"
+
+# The default network driver authentication mode.
+#
+__rsyslog_default_pki_authmode: "x509/name"
+
+# communication over tls
+#
+
+__rsyslog_tls_netstream_driver: "gtls"
+
+# Specifying the TLS library used by librelp.
+# Note that `gnutls` is the current default for historic reasons.
+__rsyslog_tls_library: "gnutls"
+
+# Rsyslog configuration rules
+# ---------------------------
+
+# rsyslog_weight_map
+#
+# This is a dictionary map of different configuration "types" corresponding to
+# numbers used to sort configuration files in `{{ __rsyslog_config_dir }}`
+# directory (configuration order is important). You can specify a type in the
+# configuration by using the ``item.type`` parameter.
+#
+# If you change the default weight map values, you will most likely need to
+# remove all files from `{{ __rsyslog_config_dir }}` to reset the configuration.
+rsyslog_weight_map:
+  'global': '05'
+  'globals': '05'
+  'module': '10'
+  'modules': '10'
+  'template': '20'
+  'templates': '20'
+  'output': '30'
+  'outputs': '30'
+  'service': '30'
+  'services': '30'
+  'rule': '50'
+  'rules': '50'
+  'ruleset': '50'
+  'rulesets': '50'
+  'input': '90'
+  'inputs': '90'
